@@ -232,7 +232,7 @@
             </div>
 
             <!-- REALTIME WEATHER CARD -->
-            <section class="p-4 rounded-2xl glass shadow-md space-y-3">
+            <section id="weather-card" class="p-4 rounded-2xl glass shadow-md space-y-3 transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">直前物理気象状況</span>
                     <span id="weather-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">リアルタイム</span>
@@ -293,7 +293,7 @@
             </section>
 
             <!-- LIVE 1ST TURN TACTICAL SIMULATOR (GIF-LIKE ANIMATION) -->
-            <section class="p-4 rounded-2xl glass shadow-md space-y-3 overflow-hidden">
+            <section id="tactical-sim-card" class="p-4 rounded-2xl glass shadow-md space-y-3 overflow-hidden transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
                         <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">AI 1マーク戦術展開シミュレータ</span>
@@ -632,21 +632,31 @@
             const rno = RNO_SELECT.value;
             const cacheKey = jcd + "_" + rno;
 
+            let result = window.predictionsCache[cacheKey];
+
+            // プレースホルダー（「号艇選手」などが入っている、あるいはキャッシュが無い場合）は読み込み中（SKELETON）として扱う
+            const isPlaceholder = !result || (result.data && result.data.length > 0 && result.data[0].name.includes("号艇選手"));
+
+            if (isPlaceholder) {
+                WELCOME_MSG.classList.add('hidden');
+                SKELETON.classList.remove('hidden');
+                DATA_CONTAINER.classList.add('hidden');
+                
+                const progressText = document.getElementById('loading-progress-text');
+                if (progressText) {
+                    progressText.innerText = "出走情報・AI予想の取得を待機中...";
+                }
+                return;
+            }
+
             WELCOME_MSG.classList.add('hidden');
             SKELETON.classList.add('hidden');
+            DATA_CONTAINER.classList.remove('hidden');
             
             // 切り替えトランジション用スタイル適用（体感レスポンス爆速化）
-            DATA_CONTAINER.classList.remove('hidden');
             DATA_CONTAINER.style.transition = 'opacity 0.1s ease-out, transform 0.1s ease-out';
             DATA_CONTAINER.style.opacity = '0.4';
             DATA_CONTAINER.style.transform = 'scale(0.99)';
-
-            let result = window.predictionsCache[cacheKey];
-
-            if (!result) {
-                result = generateFallbackLocal(jcd, rno);
-                window.predictionsCache[cacheKey] = result;
-            }
 
             renderDashboard(result);
 
@@ -969,24 +979,30 @@
             // Populate Weather Details
             if (result.weather) {
                 const w = result.weather;
-                document.getElementById('weather-txt').innerText = w.weather || '曇り';
-                document.getElementById('temp-txt').innerText = (w.temp !== undefined ? w.temp : '--') + '℃';
-                document.getElementById('wind-dir-txt').innerText = w.wind_dir_name || '--';
-                document.getElementById('wind-speed-txt').innerText = (w.wind_speed !== undefined ? w.wind_speed : '--') + 'm';
-                document.getElementById('wave-txt').innerText = (w.wave_height !== undefined ? w.wave_height : '--') + 'cm';
-                document.getElementById('water-temp-txt').innerText = (w.water_temp !== undefined ? w.water_temp : '--') + '℃';
+                const showRealWeather = exhibitionCompleted;
+                
+                document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '曇り') : '計測中...';
+                document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '℃') : '--℃';
+                document.getElementById('wind-dir-txt').innerText = showRealWeather ? (w.wind_dir_name || '--') : '--';
+                document.getElementById('wind-speed-txt').innerText = showRealWeather ? ((w.wind_speed !== undefined ? w.wind_speed : '--') + 'm') : '--m';
+                document.getElementById('wave-txt').innerText = showRealWeather ? ((w.wave_height !== undefined ? w.wave_height : '--') + 'cm') : '--cm';
+                document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '℃') : '--℃';
                 
                 const windEffectBanner = document.getElementById('wind-effect-banner');
                 if (windEffectBanner) {
-                    windEffectBanner.innerText = `物理補正判定: ${w.wind_effect || '補正なし'}`;
+                    windEffectBanner.innerText = showRealWeather ? `物理補正判定: ${w.wind_effect || '補正なし'}` : '物理補正判定: 展示公開時にリアルタイム計算';
                 }
 
                 // 気象データの取得時刻を表示
                 const weatherStatusBadge = document.getElementById('weather-status-badge');
                 if (weatherStatusBadge) {
-                    const now = new Date();
-                    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                    weatherStatusBadge.innerText = `${timeStr} 取得`;
+                    if (showRealWeather) {
+                        const now = new Date();
+                        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        weatherStatusBadge.innerText = `${timeStr} 取得`;
+                    } else {
+                        weatherStatusBadge.innerText = `待機中`;
+                    }
                 }
 
                 // Rotate Wind Arrow
@@ -998,8 +1014,36 @@
                         9: 0, 10: 22.5, 11: 45, 12: 67.5,
                         13: 90, 14: 112.5, 15: 135, 16: 157.5
                     };
-                    const deg = angles[w.wind_dir_num] !== undefined ? angles[w.wind_dir_num] : 0;
+                    const deg = showRealWeather && angles[w.wind_dir_num] !== undefined ? angles[w.wind_dir_num] : 0;
                     windDirArrow.style.transform = `rotate(${deg}deg)`;
+                }
+            }
+
+            // 展示情報未公開時のカードグレーアウト表示
+            const weatherCard = document.getElementById('weather-card');
+            if (weatherCard) {
+                if (exhibitionCompleted) {
+                    weatherCard.classList.remove('opacity-40');
+                } else {
+                    weatherCard.classList.add('opacity-40');
+                }
+            }
+
+            const tacticalSimCard = document.getElementById('tactical-sim-card');
+            const replaySimBtn = document.getElementById('replay-sim-btn');
+            if (tacticalSimCard) {
+                if (exhibitionCompleted) {
+                    tacticalSimCard.classList.remove('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = false;
+                        replaySimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } else {
+                    tacticalSimCard.classList.add('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = true;
+                        replaySimBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                 }
             }
 
@@ -1007,105 +1051,129 @@
             const slitContainer = document.getElementById('slit-rows');
             slitContainer.innerHTML = '';
             
-            const hasExhibition = exhibitionCompleted || phase >= 2;
+            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
+            const hasExhibition = exhibitionCompleted && !isPlaceholder;
             
-            const slitItems = racers.map(r => {
-                const isNA = r.st_val === "N/A" || r.st_val === "";
-                return {
-                    lane: r.lane,
-                    st: isNA ? "待機中" : r.st_val,
-                    course: isNA ? r.lane.toString() : r.st_course,
-                    is_flying: isNA ? false : r.st_val.includes('F'),
-                    val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
-                };
-            });
+            if (!hasExhibition) {
+                slitContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full w-full text-slate-500 gap-1 text-center py-8">
+                        <span class="text-lg">🔒</span>
+                        <span class="text-[11px] font-bold">直前展示データ公開までシミュレーション待機中</span>
+                        <span class="text-[9px] text-slate-600">本番約15分前の展示情報取得後にスタート再現が表示されます</span>
+                    </div>
+                `;
+            } else {
+                const slitItems = racers.map(r => {
+                    const isNA = r.st_val === "N/A" || r.st_val === "";
+                    return {
+                        lane: r.lane,
+                        st: isNA ? "待機中" : r.st_val,
+                        course: isNA ? r.lane.toString() : r.st_course,
+                        is_flying: isNA ? false : r.st_val.includes('F'),
+                        val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
+                    };
+                });
 
-            // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
-            slitItems.sort((a, b) => {
-                const cA = parseFloat(a.course) || 99;
-                const cB = parseFloat(b.course) || 99;
-                return cA - cB;
-            });
+                // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
+                slitItems.sort((a, b) => {
+                    const cA = parseFloat(a.course) || 99;
+                    const cB = parseFloat(b.course) || 99;
+                    return cA - cB;
+                });
 
-            // 進入崩れ（枠なり崩れ）を自動検出
-            const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
-            
-            // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
-            if (isWakunariKuzure) {
-                const currentText = slitStatus.innerText;
-                if (!currentText.includes("進入崩れ")) {
-                    slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
-                    slitStatus.innerText = currentText + " ⚠️進入崩れ";
+                // 進入崩れ（枠なり崩れ）を自動検出
+                const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
+                
+                // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
+                if (isWakunariKuzure) {
+                    const currentText = slitStatus.innerText;
+                    if (!currentText.includes("進入崩れ")) {
+                        slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
+                        slitStatus.innerText = currentText + " ⚠️進入崩れ";
+                    }
                 }
+
+                slitItems.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center w-full h-6 relative';
+                    
+                    const courseLabel = document.createElement('span');
+                    courseLabel.className = 'text-[10px] font-black text-slate-500 w-6 z-20 font-mono';
+                    courseLabel.innerText = `C${item.course}`;
+                    row.appendChild(courseLabel);
+
+                    // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
+                    let badgeClass = `w-4.5 h-4.5 rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
+                    if (item.is_flying) {
+                        badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
+                    } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
+                        badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
+                    }
+
+                    const boatBadge = document.createElement('span');
+                    boatBadge.className = badgeClass;
+                    boatBadge.innerText = item.lane;
+                    
+                    let leftPercent = 66; // スリットライン(赤点線)の位置
+                    if (!hasExhibition) {
+                        leftPercent = 48; // 展示未実施時は中央付近に整列
+                    } else if (item.is_flying) {
+                        leftPercent += (item.val * 100); // フライングは右に突き抜け
+                        if (leftPercent > 92) leftPercent = 92;
+                    } else {
+                        leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
+                        if (leftPercent < 20) leftPercent = 20;
+                    }
+
+                    const boatWrapper = document.createElement('div');
+                    boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
+                    boatWrapper.style.left = `${leftPercent}%`;
+                    
+                    // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
+                    let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
+                    let timingTextContent = item.st;
+                    
+                    if (!hasExhibition) {
+                        timingTextClass += 'text-slate-500 bg-slate-900/30';
+                    } else if (item.is_flying) {
+                        timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
+                        timingTextContent = '🔥 F' + item.st.replace('F', '');
+                    } else if (item.val < 0.10) {
+                        timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
+                        timingTextContent = '⚡ ' + item.st;
+                    } else {
+                        timingTextClass += 'text-slate-300 bg-slate-900/40';
+                    }
+                    
+                    const timingText = document.createElement('span');
+                    timingText.className = timingTextClass;
+                    timingText.innerText = timingTextContent;
+
+                    boatWrapper.appendChild(boatBadge);
+                    boatWrapper.appendChild(timingText);
+                    row.appendChild(boatWrapper);
+                    slitContainer.appendChild(row);
+                });
             }
-
-            slitItems.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center w-full h-6 relative';
-                
-                const courseLabel = document.createElement('span');
-                courseLabel.className = 'text-[10px] font-black text-slate-500 w-6 z-20 font-mono';
-                courseLabel.innerText = `C${item.course}`;
-                row.appendChild(courseLabel);
-
-                // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
-                let badgeClass = `w-4.5 h-4.5 rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
-                if (item.is_flying) {
-                    badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
-                } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
-                    badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
-                }
-
-                const boatBadge = document.createElement('span');
-                boatBadge.className = badgeClass;
-                boatBadge.innerText = item.lane;
-                
-                let leftPercent = 66; // スリットライン(赤点線)の位置
-                if (!hasExhibition) {
-                    leftPercent = 48; // 展示未実施時は中央付近に整列
-                } else if (item.is_flying) {
-                    leftPercent += (item.val * 100); // フライングは右に突き抜け
-                    if (leftPercent > 92) leftPercent = 92;
-                } else {
-                    leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
-                    if (leftPercent < 20) leftPercent = 20;
-                }
-
-                const boatWrapper = document.createElement('div');
-                boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
-                boatWrapper.style.left = `${leftPercent}%`;
-                
-                // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
-                let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
-                let timingTextContent = item.st;
-                
-                if (!hasExhibition) {
-                    timingTextClass += 'text-slate-500 bg-slate-900/30';
-                } else if (item.is_flying) {
-                    timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
-                    timingTextContent = '🔥 F' + item.st.replace('F', '');
-                } else if (item.val < 0.10) {
-                    timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
-                    timingTextContent = '⚡ ' + item.st;
-                } else {
-                    timingTextClass += 'text-slate-300 bg-slate-900/40';
-                }
-                
-                const timingText = document.createElement('span');
-                timingText.className = timingTextClass;
-                timingText.innerText = timingTextContent;
-
-                boatWrapper.appendChild(boatBadge);
-                boatWrapper.appendChild(timingText);
-                row.appendChild(boatWrapper);
-                slitContainer.appendChild(row);
-            });
 
             // 3. Render Racer Table Details
             const racerList = document.getElementById('racer-list');
             racerList.innerHTML = '';
             
-            const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
+            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
+            if (isPlaceholder) {
+                racerList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
+                        <svg class="w-6 h-6 text-slate-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
+                        <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
+                    </div>
+                `;
+            } else {
+                const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
             const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
 
             // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
@@ -1209,10 +1277,12 @@
                 card.appendChild(rightArea);
                 racerList.appendChild(card);
             });
+            }
             
             // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
             try {
-                initTurnSimulation(racers, ai.focus);
+                const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
+                initTurnSimulation(racers, ai.focus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
             }
@@ -1475,7 +1545,7 @@
         // ==========================================
         // プレミアム2D 1マーク物理展開シミュレーター
         // ==========================================
-        function initTurnSimulation(racers, aiFocus) {
+        function initTurnSimulation(racers, aiFocus, hasExhibitionData) {
             const canvas = document.getElementById('turn-sim-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -1500,6 +1570,40 @@
             
             const viewWidth = rect.width;
             const viewHeight = rect.height;
+
+            if (!hasExhibitionData) {
+                // Draw grayed out state
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, viewWidth, viewHeight);
+                
+                // Draw faded buoys
+                const markX = viewWidth - 110;
+                const markY = 96;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.beginPath();
+                ctx.arc(markX, markY, 20, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+                ctx.beginPath();
+                ctx.arc(markX, markY, 7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw Overlay Faded Text
+                ctx.fillStyle = 'rgba(9, 13, 22, 0.6)';
+                ctx.fillRect(0, 0, viewWidth, viewHeight);
+                
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🔒 展示データ非公開のためシミュレータ待機中', viewWidth / 2, viewHeight / 2 - 6);
+                
+                ctx.font = '9px sans-serif';
+                ctx.fillStyle = '#475569';
+                ctx.fillText('展示情報取得後に戦術展開アニメーションを開始します', viewWidth / 2, viewHeight / 2 + 10);
+                return;
+            }
 
             // 第一推奨フォーカス（三連単）から着順を展開 (例: "1-2-5" -> [1, 2, 5, 3, 4, 6])
             let firstFocus = "1-2-3";
