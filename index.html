@@ -792,6 +792,57 @@
             console.error("Communication failure:", err);
         }
 
+        function getDynamicPredictions(racers) {
+            const courseBias = {
+                1: 0.55,
+                2: 0.15,
+                3: 0.12,
+                4: 0.10,
+                5: 0.05,
+                6: 0.03
+            };
+            
+            // Calculate raw scores based on course bias and racer win rate
+            let scores = {};
+            let sumScores = 0;
+            for (let b = 1; b <= 6; b++) {
+                const racer = racers.find(r => r.lane === b);
+                const rate = racer ? (parseFloat(racer.rate) || 5.00) : 5.00;
+                scores[b] = courseBias[b] * rate;
+                sumScores += scores[b];
+            }
+            
+            // Normalize to win rates
+            let winRates = {};
+            for (let b = 1; b <= 6; b++) {
+                winRates[b] = scores[b] / sumScores;
+            }
+            
+            // Run Harville formula for 3-連単 combinations
+            let combos = [];
+            for (let i = 1; i <= 6; i++) {
+                const p1 = winRates[i];
+                for (let j = 1; j <= 6; j++) {
+                    if (i === j) continue;
+                    const p2 = winRates[j] / (1.0 - p1);
+                    for (let k = 1; k <= 6; k++) {
+                        if (i === k || j === k) continue;
+                        const p3 = winRates[k] / (1.0 - p1 - winRates[j]);
+                        
+                        const prob = p1 * p2 * p3;
+                        combos.push({
+                            combo: `${i}-${j}-${k}`,
+                            prob: prob
+                        });
+                    }
+                }
+            }
+            
+            // Sort by probability descending
+            combos.sort((a, b) => b.prob - a.prob);
+            return combos;
+        }
+
         function get4Focus(pred) {
             if (!pred || !pred.ai) return [];
             let finalFocus = [];
@@ -799,15 +850,19 @@
             if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
                 finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
             }
-            if (finalFocus.length < 4 && pred.predictions && pred.predictions.length > 0) {
-                for (let i = 0; i < pred.predictions.length; i++) {
-                    const candidate = pred.predictions[i].combo;
+            
+            // 4通りに満たない場合の補完に、出走メンバーの勝率を反映した動的予測を使用する！
+            if (finalFocus.length < 4 && pred.data && pred.data.length >= 6) {
+                const dynamicCombos = getDynamicPredictions(pred.data);
+                for (let i = 0; i < dynamicCombos.length; i++) {
+                    const candidate = dynamicCombos[i].combo;
                     if (!finalFocus.includes(candidate)) {
                         finalFocus.push(candidate);
                     }
                     if (finalFocus.length >= 4) break;
                 }
             }
+            
             while (finalFocus.length < 4) {
                 finalFocus.push("1-2-3");
             }
