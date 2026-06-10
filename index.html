@@ -907,10 +907,33 @@
             const focusContainer = document.getElementById('ai-focus');
             focusContainer.innerHTML = '';
             
+            // 買い目を常に4通り（大本線、本線、中穴、穴狙い）確保するロジック
+            let finalFocus = [];
             if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
+                // 1-2-5 などの正規フォーマットに合致するもののみ抽出
+                finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
+            }
+            
+            // 4通りに満たない場合は、数学的予測確率の高い順（result.predictions）から補完する
+            if (finalFocus.length < 4 && result.predictions && result.predictions.length > 0) {
+                for (let i = 0; i < result.predictions.length; i++) {
+                    const candidate = result.predictions[i].combo;
+                    if (!finalFocus.includes(candidate)) {
+                        finalFocus.push(candidate);
+                    }
+                    if (finalFocus.length >= 4) break;
+                }
+            }
+
+            // それでも足りない場合のデフォルト値
+            while (finalFocus.length < 4) {
+                finalFocus.push("1-2-3");
+            }
+
+            if (finalFocus.length > 0) {
                 focusContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
                 
-                ai.focus.forEach((f, index) => {
+                finalFocus.slice(0, 4).forEach((f, index) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
                     
