@@ -794,6 +794,7 @@
 
         function renderDashboard(result) {
             const racers = result.data;
+            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai;
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
@@ -1051,7 +1052,6 @@
             const slitContainer = document.getElementById('slit-rows');
             slitContainer.innerHTML = '';
             
-            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const hasExhibition = exhibitionCompleted && !isPlaceholder;
             
             if (!hasExhibition) {
@@ -1160,7 +1160,6 @@
             const racerList = document.getElementById('racer-list');
             racerList.innerHTML = '';
             
-            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             if (isPlaceholder) {
                 racerList.innerHTML = `
                     <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
@@ -1281,7 +1280,6 @@
             
             // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
             try {
-                const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
                 initTurnSimulation(racers, ai.focus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
