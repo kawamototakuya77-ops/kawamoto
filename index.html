@@ -792,6 +792,28 @@
             console.error("Communication failure:", err);
         }
 
+        function get4Focus(pred) {
+            if (!pred || !pred.ai) return [];
+            let finalFocus = [];
+            const ai = pred.ai;
+            if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
+                finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
+            }
+            if (finalFocus.length < 4 && pred.predictions && pred.predictions.length > 0) {
+                for (let i = 0; i < pred.predictions.length; i++) {
+                    const candidate = pred.predictions[i].combo;
+                    if (!finalFocus.includes(candidate)) {
+                        finalFocus.push(candidate);
+                    }
+                    if (finalFocus.length >= 4) break;
+                }
+            }
+            while (finalFocus.length < 4) {
+                finalFocus.push("1-2-3");
+            }
+            return finalFocus.slice(0, 4);
+        }
+
         function renderDashboard(result) {
             const racers = result.data;
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
@@ -805,13 +827,13 @@
             const detailStatus = document.getElementById('detail-status-badge');
             const raceResultAlert = document.getElementById('race-result-alert');
 
+            const finalFocus = get4Focus(result);
+
             if (result.result && result.result.success) {
                 raceResultAlert.classList.remove('hidden');
                 const combo = result.result.combo;
                 const payout = result.result.payout;
-                const focus = ai.focus || [];
-                const cleanFocus = focus.filter(f => f && f !== "-" && /^[1-6]-[1-6]-[1-6]$/.test(f));
-                const isHit = cleanFocus.includes(combo);
+                const isHit = finalFocus.includes(combo);
 
                 if (isHit) {
                     raceResultAlert.innerHTML = `
@@ -907,28 +929,7 @@
             const focusContainer = document.getElementById('ai-focus');
             focusContainer.innerHTML = '';
             
-            // 買い目を常に4通り（大本線、本線、中穴、穴狙い）確保するロジック
-            let finalFocus = [];
-            if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
-                // 1-2-5 などの正規フォーマットに合致するもののみ抽出
-                finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
-            }
-            
-            // 4通りに満たない場合は、数学的予測確率の高い順（result.predictions）から補完する
-            if (finalFocus.length < 4 && result.predictions && result.predictions.length > 0) {
-                for (let i = 0; i < result.predictions.length; i++) {
-                    const candidate = result.predictions[i].combo;
-                    if (!finalFocus.includes(candidate)) {
-                        finalFocus.push(candidate);
-                    }
-                    if (finalFocus.length >= 4) break;
-                }
-            }
 
-            // それでも足りない場合のデフォルト値
-            while (finalFocus.length < 4) {
-                finalFocus.push("1-2-3");
-            }
 
             if (finalFocus.length > 0) {
                 focusContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
@@ -1323,17 +1324,15 @@
                 if (pred.result && pred.result.success) {
                     const resultCombo = pred.result.combo;
                     const payout = pred.result.payout || 0;
-                    const focus = pred.ai.focus || [];
-
-                    const cleanFocus = focus.filter(f => f && f !== "-" && /^[1-6]-[1-6]-[1-6]$/.test(f));
-                    if (cleanFocus.length === 0) continue;
+                    const finalFocus = get4Focus(pred);
+                    if (finalFocus.length === 0) continue;
 
                     finishedCount++;
-                    const betCount = cleanFocus.length;
+                    const betCount = finalFocus.length;
                     const betAmount = betCount * 100;
                     totalBet += betAmount;
 
-                    const isHit = cleanFocus.includes(resultCombo);
+                    const isHit = finalFocus.includes(resultCombo);
                     let racePayout = 0;
                     if (isHit) {
                         hitCount++;
