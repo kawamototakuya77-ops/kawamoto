@@ -59,9 +59,20 @@
         }
         /* AdMax Blur/Unlock style */
         .premium-blur {
-            filter: blur(5px);
+            filter: blur(12px);
             user-select: none;
             transition: filter 0.3s ease;
+        }
+        .premium-blur .boat-1,
+        .premium-blur .boat-2,
+        .premium-blur .boat-3,
+        .premium-blur .boat-4,
+        .premium-blur .boat-5,
+        .premium-blur .boat-6 {
+            background-color: #475569 !important;
+            color: #475569 !important;
+            border-color: #475569 !important;
+            box-shadow: none !important;
         }
         .premium-unlocked {
             filter: blur(0px);
@@ -983,49 +994,106 @@
             
             const focusContainer = document.getElementById('ai-focus');
             focusContainer.innerHTML = '';
-            
+            focusContainer.className = 'flex flex-col gap-3 w-full';
 
+            let solidFocus = [];
+            let upsetFocus = [];
+            if (result.ai) {
+                if (result.ai.solid_focus && Array.isArray(result.ai.solid_focus)) {
+                    solidFocus = result.ai.solid_focus.filter(f => f && f !== "-");
+                }
+                if (result.ai.upset_focus && Array.isArray(result.ai.upset_focus)) {
+                    upsetFocus = result.ai.upset_focus.filter(f => f && f !== "-");
+                }
+            }
+            if (solidFocus.length < 4) {
+                solidFocus = get4Focus(result);
+            }
+            if (upsetFocus.length < 4) {
+                if (result.data && result.data.length >= 6) {
+                    const dynamicCombos = getDynamicPredictions(result.data);
+                    upsetFocus = [];
+                    for (let i = 0; i < dynamicCombos.length; i++) {
+                        const combo = dynamicCombos[i].combo;
+                        if (!combo.startsWith("1-")) {
+                            upsetFocus.push(combo);
+                        }
+                        if (upsetFocus.length >= 4) break;
+                    }
+                }
+                while (upsetFocus.length < 4) {
+                    upsetFocus.push("2-1-3");
+                }
+            }
 
-            if (finalFocus.length > 0) {
-                focusContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
+            function renderFocusGroup(title, items, isUpset) {
+                const groupWrapper = document.createElement('div');
+                groupWrapper.className = isUpset 
+                    ? 'bg-purple-500/5 p-3 rounded-xl border border-purple-500/10 space-y-2 w-full'
+                    : 'bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2 w-full';
                 
-                finalFocus.slice(0, 4).forEach((f, index) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
+                const titleSpan = document.createElement('span');
+                titleSpan.className = isUpset
+                    ? 'text-[10px] text-purple-400 font-bold tracking-wider uppercase block'
+                    : 'text-[10px] text-indigo-400 font-bold tracking-wider uppercase block';
+                titleSpan.innerText = title;
+                groupWrapper.appendChild(titleSpan);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
+
+                items.slice(0, 4).forEach((f, index) => {
+                    const itemWrapper = document.createElement('div');
+                    itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
                     
                     let labelText = '抑え';
                     let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
-                    if (index === 0) {
-                        labelText = '大本線';
-                        labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-                    } else if (index === 1) {
-                        labelText = '本線';
-                        labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                    } else if (index === 2) {
-                        labelText = '中穴';
-                        labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-                    } else if (index === 3) {
-                        labelText = '穴狙い';
-                        labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+                    if (!isUpset) {
+                        if (index === 0) {
+                            labelText = '大本線';
+                            labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 1) {
+                            labelText = '本線';
+                            labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                        } else if (index === 2) {
+                            labelText = '抑え1';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                        } else if (index === 3) {
+                            labelText = '抑え2';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                        }
+                    } else {
+                        if (index === 0) {
+                            labelText = '中穴';
+                            labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                        } else if (index === 1) {
+                            labelText = '穴狙い';
+                            labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+                        } else if (index === 2) {
+                            labelText = '大穴1';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 3) {
+                            labelText = '大穴2';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        }
                     }
-                    
+
                     const labelSpan = document.createElement('span');
-                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[45px] text-center`;
+                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center`;
                     labelSpan.innerText = labelText;
                     
                     const focusBadgeWrapper = createPremiumFocusElement(f);
                     focusBadgeWrapper.className = 'flex items-center gap-1 w-full justify-start transition-all duration-500';
-                    
+
                     if (index >= 2) {
-                        // Premium Blur for 中穴・大穴
                         focusBadgeWrapper.classList.add('premium-blur');
                         
                         const lockOverlay = document.createElement('div');
                         lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
-                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
+                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告解除</span>';
                         
-                        wrapper.classList.add('relative');
-                        wrapper.appendChild(lockOverlay);
+                        itemWrapper.classList.add('relative');
+                        itemWrapper.appendChild(lockOverlay);
                         
                         lockOverlay.addEventListener('click', function() {
                             if (typeof window.triggerAdUnlock === 'function') {
@@ -1037,11 +1105,19 @@
                             }
                         });
                     }
-                    
-                    wrapper.appendChild(labelSpan);
-                    wrapper.appendChild(focusBadgeWrapper);
-                    focusContainer.appendChild(wrapper);
+
+                    itemWrapper.appendChild(labelSpan);
+                    itemWrapper.appendChild(focusBadgeWrapper);
+                    grid.appendChild(itemWrapper);
                 });
+
+                groupWrapper.appendChild(grid);
+                return groupWrapper;
+            }
+
+            if (solidFocus.length > 0 || upsetFocus.length > 0) {
+                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単 - 2/4 広告)', solidFocus, false));
+                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単 - 2/4 広告)', upsetFocus, true));
             } else {
                 focusContainer.className = 'flex flex-wrap gap-2 w-full';
                 const emptySpan = document.createElement('span');
