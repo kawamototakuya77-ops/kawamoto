@@ -98,6 +98,60 @@
 
         <!-- SELECTOR PANEL (STATION & RACE) - 全国24場投票画面風グリッド -->
         <section class="p-4 rounded-2xl glass space-y-4 shadow-md">
+            <!-- TODAY'S STATS CARD (GLOBAL RECOVERY & HIT RATE) - MOVED TO TOP -->
+            <div id="today-stats-card" class="hidden p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2.5 mb-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAIトータル成績</span>
+                    <span id="stats-progress-badge" class="px-2 py-0.5 rounded text-[9px] font-black bg-slate-900 text-slate-400">0 / 0 レース確定</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- 本命成績 -->
+                    <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 text-center space-y-1">
+                        <span class="text-[9px] text-indigo-400 font-bold block">🔥 本命推奨</span>
+                        <div class="grid grid-cols-2 gap-1 border-t border-indigo-500/5 pt-1 mt-1">
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
+                                <div id="stats-solid-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">的中率</span>
+                                <div id="stats-solid-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 穴成績 -->
+                    <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 text-center space-y-1">
+                        <span class="text-[9px] text-purple-400 font-bold block">⚡ 穴推奨</span>
+                        <div class="grid grid-cols-2 gap-1 border-t border-purple-500/5 pt-1 mt-1">
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
+                                <div id="stats-upset-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">的中率</span>
+                                <div id="stats-upset-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[9px] text-slate-400 border-t border-white/5 pt-2">
+                    <div class="flex items-center gap-1">
+                        <span>トータル収支:</span>
+                        <span id="stats-net-profit" class="font-bold font-outfit text-slate-300">±0円</span>
+                    </div>
+                    <button id="toggle-history-btn" class="flex items-center gap-1 font-bold hover:text-slate-200 transition-colors focus:outline-none">
+                        <span>詳細履歴</span>
+                        <span id="history-arrow" class="transition-transform duration-200 inline-block">▼</span>
+                    </button>
+                </div>
+                
+                <div id="history-list-container" class="hidden mt-1 max-h-32 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                    <div class="text-[9px] text-slate-500 text-center py-2">確定結果はまだありません。</div>
+                </div>
+            </div>
+
             <!-- 全国24場グリッド -->
             <div>
                 <div class="flex items-center justify-between mb-2">
@@ -106,7 +160,7 @@
                     </label>
                     <span class="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/10">緑枠：本日開催</span>
                 </div>
-                <div id="venue-grid" class="grid grid-cols-6 gap-1 p-2 bg-slate-950/50 rounded-xl border border-white/5 text-center">
+                <div id="venue-grid" class="grid grid-cols-4 gap-1 p-2 bg-slate-950/50 rounded-xl border border-white/5 text-center">
                     <!-- 24場がJavaScriptで動的に生成されます -->
                 </div>
                 <!-- 既存JSロジック互換用の隠し入力 -->
@@ -353,39 +407,7 @@
 
         </div>
 
-        <!-- TODAY'S STATS CARD (GLOBAL RECOVERY & HIT RATE) -->
-        <section id="today-stats-card" class="hidden p-4 rounded-2xl glass border border-white/5 shadow-md space-y-3 mt-4">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAIトータル成績</span>
-                <span id="stats-progress-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-800 text-slate-300">0 / 0 レース確定</span>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-2">
-                <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center">
-                    <span class="text-[10px] text-slate-400 font-bold block mb-1">回収率</span>
-                    <div id="stats-recovery-rate" class="text-lg font-black font-outfit text-slate-300">--%</div>
-                </div>
-                <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center">
-                    <span class="text-[10px] text-slate-400 font-bold block mb-1">的中率</span>
-                    <div id="stats-hit-rate" class="text-lg font-black font-outfit text-slate-300">--%</div>
-                </div>
-                <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center flex flex-col justify-center">
-                    <span class="text-[10px] text-slate-400 font-bold block mb-1">トータル収支</span>
-                    <div id="stats-net-profit" class="text-xs font-black font-outfit text-slate-300">±0円</div>
-                </div>
-            </div>
-
-            <!-- COLLAPSIBLE HISTORY LIST -->
-            <div class="border-t border-white/5 pt-2">
-                <button id="toggle-history-btn" class="w-full flex items-center justify-between text-[10px] text-slate-400 font-bold hover:text-slate-200 transition-colors focus:outline-none">
-                    <span>📋 本日のレース結果一覧 (良いも悪いも)</span>
-                    <span id="history-arrow" class="transition-transform duration-200 inline-block">▼</span>
-                </button>
-                <div id="history-list-container" class="hidden mt-2 max-h-40 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
-                    <div class="text-[10px] text-slate-500 text-center py-2">確定結果はまだありません。</div>
-                </div>
-            </div>
-        </section>
+        
     </main>
 
     <!-- NINJA ADMAX STICKY ANCHOR AD -->
@@ -1079,11 +1101,11 @@
                     }
 
                     const labelSpan = document.createElement('span');
-                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center`;
+                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center flex-shrink-0`;
                     labelSpan.innerText = labelText;
                     
                     const focusBadgeWrapper = createPremiumFocusElement(f);
-                    focusBadgeWrapper.className = 'flex items-center gap-1 w-full justify-start transition-all duration-500';
+                    focusBadgeWrapper.className = 'flex items-center gap-1 justify-end flex-1 min-w-0 transition-all duration-500';
 
                     const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
                                      window.location.hostname.indexOf('googleusercontent') !== -1;
@@ -1445,9 +1467,14 @@
         }
 
         function calculateTodayStats() {
-            let totalBet = 0;
-            let totalPayout = 0;
-            let hitCount = 0;
+            let totalSolidBet = 0;
+            let totalSolidPayout = 0;
+            let solidHitCount = 0;
+
+            let totalUpsetBet = 0;
+            let totalUpsetPayout = 0;
+            let upsetHitCount = 0;
+
             let finishedCount = 0;
             const historyList = [];
 
@@ -1458,20 +1485,66 @@
                 if (pred.result && pred.result.success) {
                     const resultCombo = pred.result.combo;
                     const payout = pred.result.payout || 0;
-                    const finalFocus = get4Focus(pred);
-                    if (finalFocus.length === 0) continue;
+
+                    // Get Solid Focus
+                    let solidFocus = [];
+                    if (pred.ai.solid_focus && Array.isArray(pred.ai.solid_focus)) {
+                        solidFocus = pred.ai.solid_focus.filter(f => f && f !== "-");
+                    }
+                    if (solidFocus.length < 4) {
+                        solidFocus = get4Focus(pred);
+                    }
+                    solidFocus = solidFocus.slice(0, 4);
+
+                    // Get Upset Focus
+                    let upsetFocus = [];
+                    if (pred.ai.upset_focus && Array.isArray(pred.ai.upset_focus)) {
+                        upsetFocus = pred.ai.upset_focus.filter(f => f && f !== "-");
+                    }
+                    if (upsetFocus.length < 4) {
+                        if (pred.data && pred.data.length >= 6) {
+                            const dynamicCombos = getDynamicPredictions(pred.data);
+                            upsetFocus = [];
+                            for (let i = 0; i < dynamicCombos.length; i++) {
+                                const combo = dynamicCombos[i].combo;
+                                if (!combo.startsWith("1-")) {
+                                    upsetFocus.push(combo);
+                                }
+                                if (upsetFocus.length >= 4) break;
+                            }
+                        }
+                        while (upsetFocus.length < 4) {
+                            upsetFocus.push("2-1-3");
+                        }
+                    }
+                    upsetFocus = upsetFocus.slice(0, 4);
+
+                    if (solidFocus.length === 0 && upsetFocus.length === 0) continue;
 
                     finishedCount++;
-                    const betCount = finalFocus.length;
-                    const betAmount = betCount * 100;
-                    totalBet += betAmount;
 
-                    const isHit = finalFocus.includes(resultCombo);
-                    let racePayout = 0;
-                    if (isHit) {
-                        hitCount++;
-                        racePayout = payout;
-                        totalPayout += payout;
+                    // Solid calcs
+                    const sBetCount = solidFocus.length;
+                    const sBetAmount = sBetCount * 100;
+                    totalSolidBet += sBetAmount;
+                    const isSolidHit = solidFocus.includes(resultCombo);
+                    let sPayout = 0;
+                    if (isSolidHit) {
+                        solidHitCount++;
+                        sPayout = payout;
+                        totalSolidPayout += payout;
+                    }
+
+                    // Upset calcs
+                    const uBetCount = upsetFocus.length;
+                    const uBetAmount = uBetCount * 100;
+                    totalUpsetBet += uBetAmount;
+                    const isUpsetHit = upsetFocus.includes(resultCombo);
+                    let uPayout = 0;
+                    if (isUpsetHit) {
+                        upsetHitCount++;
+                        uPayout = payout;
+                        totalUpsetPayout += payout;
                     }
 
                     const parts = key.split("_");
@@ -1485,48 +1558,78 @@
                         rno: rno,
                         combo: resultCombo,
                         payout: payout,
-                        isHit: isHit,
-                        betCount: betCount,
-                        netProfit: racePayout - betAmount
+                        isHit: isSolidHit || isUpsetHit,
+                        betCount: sBetCount + uBetCount,
+                        netProfit: (sPayout + uPayout) - (sBetAmount + uBetAmount)
                     });
                 }
             }
 
             const statsCard = document.getElementById('today-stats-card');
             const progressBadge = document.getElementById('stats-progress-badge');
-            const recoveryRateEl = document.getElementById('stats-recovery-rate');
-            const hitRateEl = document.getElementById('stats-hit-rate');
+            
+            const solidRecoveryEl = document.getElementById('stats-solid-recovery');
+            const solidHitEl = document.getElementById('stats-solid-hit');
+            const upsetRecoveryEl = document.getElementById('stats-upset-recovery');
+            const upsetHitEl = document.getElementById('stats-upset-hit');
+            
             const netProfitEl = document.getElementById('stats-net-profit');
             const historyContainer = document.getElementById('history-list-container');
 
             if (finishedCount > 0) {
-                statsCard.classList.remove('hidden');
-                progressBadge.innerText = `${hitCount} / ${finishedCount} レース的中`;
-                
-                const recoveryRate = Math.round((totalPayout / totalBet) * 100);
-                const hitRate = Math.round((hitCount / finishedCount) * 100);
-                const netProfit = totalPayout - totalBet;
-
-                if (recoveryRate >= 100) {
-                    recoveryRateEl.className = "text-lg font-black font-outfit text-emerald-400";
-                } else if (recoveryRate >= 70) {
-                    recoveryRateEl.className = "text-lg font-black font-outfit text-amber-400";
-                } else {
-                    recoveryRateEl.className = "text-lg font-black font-outfit text-rose-400";
+                if (statsCard) statsCard.classList.remove('hidden');
+                if (progressBadge) {
+                    progressBadge.innerText = `${finishedCount} レース確定`;
                 }
-                recoveryRateEl.innerText = `${recoveryRate}%`;
+                
+                // Solid metrics
+                const solidRecovery = totalSolidBet > 0 ? Math.round((totalSolidPayout / totalSolidBet) * 100) : 0;
+                const solidHit = Math.round((solidHitCount / finishedCount) * 100);
+                
+                if (solidRecoveryEl) {
+                    if (solidRecovery >= 100) {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-emerald-400";
+                    } else if (solidRecovery >= 70) {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-amber-400";
+                    } else {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-rose-400";
+                    }
+                    solidRecoveryEl.innerText = `${solidRecovery}%`;
+                }
+                if (solidHitEl) {
+                    solidHitEl.className = "text-xs font-black font-outfit text-slate-200";
+                    solidHitEl.innerText = `${solidHit}%`;
+                }
 
-                hitRateEl.className = "text-lg font-black font-outfit text-slate-200";
-                hitRateEl.innerText = `${hitRate}%`;
+                // Upset metrics
+                const upsetRecovery = totalUpsetBet > 0 ? Math.round((totalUpsetPayout / totalUpsetBet) * 100) : 0;
+                const upsetHit = Math.round((upsetHitCount / finishedCount) * 100);
+                
+                if (upsetRecoveryEl) {
+                    if (upsetRecovery >= 100) {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-emerald-400";
+                    } else if (upsetRecovery >= 70) {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-amber-400";
+                    } else {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-rose-400";
+                    }
+                    upsetRecoveryEl.innerText = `${upsetRecovery}%`;
+                }
+                if (upsetHitEl) {
+                    upsetHitEl.className = "text-xs font-black font-outfit text-slate-200";
+                    upsetHitEl.innerText = `${upsetHit}%`;
+                }
+
+                const netProfit = (totalSolidPayout + totalUpsetPayout) - (totalSolidBet + totalUpsetBet);
 
                 if (netProfit > 0) {
-                    netProfitEl.className = "text-xs font-black font-outfit text-emerald-400 mt-1";
+                    netProfitEl.className = "font-black font-outfit text-emerald-400";
                     netProfitEl.innerText = `+${netProfit.toLocaleString()}円`;
                 } else if (netProfit < 0) {
-                    netProfitEl.className = "text-xs font-black font-outfit text-rose-400 mt-1";
+                    netProfitEl.className = "font-black font-outfit text-rose-400";
                     netProfitEl.innerText = `${netProfit.toLocaleString()}円`;
                 } else {
-                    netProfitEl.className = "text-xs font-black font-outfit text-slate-300 mt-1";
+                    netProfitEl.className = "font-black font-outfit text-slate-300";
                     netProfitEl.innerText = "±0円";
                 }
 
