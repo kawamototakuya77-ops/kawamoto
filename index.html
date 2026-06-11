@@ -1120,13 +1120,17 @@
                         itemWrapper.classList.add('relative');
                         itemWrapper.appendChild(lockOverlay);
                         
-                        lockOverlay.addEventListener('click', function() {
+                        lockOverlay.addEventListener('click', function(e) {
+                            e.stopPropagation();
                             if (typeof window.triggerAdUnlock === 'function') {
-                                window.triggerAdUnlock(focusBadgeWrapper, lockOverlay);
+                                window.triggerAdUnlock(focusBadgeWrapper, lockOverlay, function() {
+                                    itemWrapper.click();
+                                });
                             } else {
                                 focusBadgeWrapper.classList.remove('premium-blur');
                                 focusBadgeWrapper.classList.add('premium-unlocked');
                                 lockOverlay.remove();
+                                itemWrapper.click();
                             }
                         });
                     }
@@ -1994,7 +1998,7 @@
                 simRacers.forEach(sr => {
                     if (sr.phase === 1) {
                         const targetSpeed = sr.straightSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.06; // smooth transition
+                        sr.speed += (targetSpeed - sr.speed) * 0.08; // smooth transition
 
                         // Move right on home stretch
                         sr.x += sr.speed;
@@ -2007,8 +2011,11 @@
                         }
                     } 
                     else if (sr.phase === 2) {
-                        const targetSpeed = sr.turnSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.06; // smooth transition
+                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; // 0 to 1
+                        // 最も減速する頂点 (turnProgress = 0.5) で元の旋回速度の最大40%減速、立ち上がりにかけて加速
+                        const speedFactor = 1.0 - 0.40 * Math.sin(turnProgress * Math.PI);
+                        const targetSpeed = sr.turnSpeed * speedFactor;
+                        sr.speed += (targetSpeed - sr.speed) * 0.10;
 
                         // Circular turn around (markX, markY)
                         const dPhi = sr.speed / sr.radius;
@@ -2028,7 +2035,7 @@
                     } 
                     else if (sr.phase === 3) {
                         const targetSpeed = sr.exitSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.06; // smooth transition
+                        sr.speed += (targetSpeed - sr.speed) * 0.08; // smooth transition
 
                         // Move left on back stretch
                         sr.x -= sr.speed;
@@ -2124,6 +2131,47 @@
                     ctx.fillText(sr.lane, -1, 0.5);
 
                     ctx.restore();
+
+                    // 旋回中に勝ち馬の上に決まり手バッジをフロート描画
+                    if (frame > 95 && frame < 155 && sr.lane === winnerLane) {
+                        let badgeText = "逃げ";
+                        let badgeBg = "rgba(16, 185, 129, 0.85)"; // Emerald
+                        if (winnerLane === 2) {
+                            badgeText = "差し";
+                            badgeBg = "rgba(239, 68, 68, 0.85)"; // Red
+                        } else if (winnerLane === 3) {
+                            badgeText = "まくり";
+                            badgeBg = "rgba(245, 158, 11, 0.85)"; // Amber
+                        } else if (winnerLane === 4) {
+                            badgeText = "まくり";
+                            badgeBg = "rgba(59, 130, 246, 0.85)"; // Blue
+                        } else if (winnerLane === 5) {
+                            badgeText = "まくり差し";
+                            badgeBg = "rgba(234, 179, 8, 0.85)"; // Yellow
+                        } else if (winnerLane === 6) {
+                            badgeText = "差し";
+                            badgeBg = "rgba(139, 92, 246, 0.85)"; // Purple
+                        }
+
+                        ctx.save();
+                        ctx.fillStyle = badgeBg;
+                        const badgeW = badgeText.length * 6 + 10;
+                        ctx.beginPath();
+                        // Draw round rect helper (fallback to simple rect if roundRect is not supported)
+                        if (typeof ctx.roundRect === 'function') {
+                            ctx.roundRect(sr.x - badgeW/2, sr.y - 18, badgeW, 10, 3);
+                        } else {
+                            ctx.rect(sr.x - badgeW/2, sr.y - 18, badgeW, 10);
+                        }
+                        ctx.fill();
+
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = 'bold 7px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(badgeText, sr.x, sr.y - 13);
+                        ctx.restore();
+                    }
                     
                     // 1マークを抜けた後のメダル演出 (3連単確定位置)
                     if (frame > 180 && sr.rank <= 3) {
@@ -2133,17 +2181,52 @@
                     }
                 });
 
-                // シミュレーション展開の字幕解説
-                if (frame > 100 && frame < 225) {
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-                    ctx.fillRect(viewWidth / 2 - 90, 8, 180, 20);
-                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
-                    ctx.strokeRect(viewWidth / 2 - 90, 8, 180, 20);
+                // Dynamic HUD status banner
+                let hudStatus = "";
+                let hudColor = "rgba(255, 255, 255, 0.4)";
+                if (frame < 80) {
+                    hudStatus = "ホームストレッチ - スリット通過";
+                } else if (frame >= 80 && frame < 165) {
+                    hudStatus = "第1ターンマーク - 旋回攻防";
+                    hudColor = "#f43f5e"; // Rose-500 red alert
+                } else {
+                    hudStatus = "バックストレッチ - AI判定着順";
+                    hudColor = "#10b981"; // Emerald-500 green
+                }
 
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.font = 'bold 9px Inter';
+                // Draw HUD Banner
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+                ctx.fillRect(8, 6, 120, 16);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.strokeRect(8, 6, 120, 16);
+                ctx.fillStyle = hudColor;
+                ctx.font = 'bold 8px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText("📡 " + hudStatus, 14, 14);
+
+                // シミュレーション展開の字幕解説
+                if (frame > 90 && frame < 225) {
+                    let descText = "";
+                    if (frame < 145) {
+                        if (winnerLane === 1) descText = "1号艇がインから先マイ逃げ体制！";
+                        else if (winnerLane === 2) descText = "2号艇が内を狙って鋭く切り込む！";
+                        else if (winnerLane === 3) descText = "3号艇が全速で外から握ってまわる！";
+                        else if (winnerLane === 4) descText = "4号艇がカドから一気にしぼってまくる！";
+                        else if (winnerLane === 5) descText = "5号艇が連動してまくり差しを狙う！";
+                        else if (winnerLane === 6) descText = "6号艇が大外から最内へ差しに入る！";
+                    } else {
+                        descText = tacticLabel;
+                    }
+
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+                    ctx.fillRect(viewWidth / 2 - 95, 8, 190, 20);
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                    ctx.strokeRect(viewWidth / 2 - 95, 8, 190, 20);
+
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.font = 'bold 9px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText(tacticLabel, viewWidth / 2, 21);
+                    ctx.fillText(descText, viewWidth / 2, 21);
                 }
 
                 // スクラバーシークバー
@@ -2188,7 +2271,7 @@
         }
 
         // 広告ロック解除用ロジック
-        window.triggerAdUnlock = function(targetWrapper, lockEl) {
+        window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
             const modal = document.getElementById('ad-unlock-modal');
             const btn = document.getElementById('unlock-countdown-btn');
             if (!modal || !btn) {
@@ -2241,6 +2324,10 @@
                 }, 300);
 
                 btn.removeEventListener('click', clickHandler);
+                
+                if (typeof onSuccess === 'function') {
+                    onSuccess();
+                }
             };
 
             btn.addEventListener('click', clickHandler);
