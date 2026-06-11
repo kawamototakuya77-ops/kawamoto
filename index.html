@@ -1825,6 +1825,14 @@
                 window.activeTurnSimTimeout = null;
             }
 
+            const simCard = document.getElementById('tactical-sim-card');
+            if (!hasExhibitionData) {
+                if (simCard) simCard.classList.add('hidden');
+                return;
+            } else {
+                if (simCard) simCard.classList.remove('hidden');
+            }
+
             // 高DPI対応 (Retina等でボヤけるバグを完全防止)
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
@@ -1834,40 +1842,6 @@
             
             const viewWidth = rect.width;
             const viewHeight = rect.height;
-
-            if (!hasExhibitionData) {
-                // Draw grayed out state
-                ctx.fillStyle = '#090d16';
-                ctx.fillRect(0, 0, viewWidth, viewHeight);
-                
-                // Draw faded buoys
-                const markX = viewWidth - 110;
-                const markY = 96;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-                ctx.beginPath();
-                ctx.arc(markX, markY, 20, 0, Math.PI * 2);
-                ctx.stroke();
-                
-                ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
-                ctx.beginPath();
-                ctx.arc(markX, markY, 7, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Draw Overlay Faded Text
-                ctx.fillStyle = 'rgba(9, 13, 22, 0.6)';
-                ctx.fillRect(0, 0, viewWidth, viewHeight);
-                
-                ctx.fillStyle = '#64748b';
-                ctx.font = 'bold 11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('🔒 展示データ非公開のためシミュレータ待機中', viewWidth / 2, viewHeight / 2 - 6);
-                
-                ctx.font = '9px sans-serif';
-                ctx.fillStyle = '#475569';
-                ctx.fillText('展示情報取得後に戦術展開アニメーションを開始します', viewWidth / 2, viewHeight / 2 + 10);
-                return;
-            }
 
             // 第一推奨フォーカス（三連単）から着順を展開 (例: "1-2-5" -> [1, 2, 5, 3, 4, 6])
             let firstFocus = "1-2-3";
@@ -2012,6 +1986,7 @@
                 const markY = 96;
 
                 simRacers.forEach(sr => {
+                    const laneNum = parseInt(sr.lane) || 1;
                     if (sr.phase === 1) {
                         const targetSpeed = sr.straightSpeed;
                         sr.speed += (targetSpeed - sr.speed) * 0.08;
@@ -2030,12 +2005,12 @@
                         const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; // 0 to 1
                         
                         // 差し展開（2号艇など）の場合、1号艇は旋回中に外に膨らむ！
-                        if (winnerLane >= 2 && winnerLane <= 3 && sr.lane === 1) {
+                        if (winnerLane >= 2 && winnerLane <= 3 && laneNum === 1) {
                             sr.radius = sr.baseRadius + 14.0 * Math.sin(turnProgress * Math.PI);
                         }
                         
                         // まくり展開（3〜6号艇勝ち）の場合、内側艇は外からおさえ込まれて失速する！
-                        if (winnerLane >= 3 && sr.lane < winnerLane && turnProgress > 0.2 && turnProgress < 0.8) {
+                        if (winnerLane >= 3 && laneNum < winnerLane && turnProgress > 0.2 && turnProgress < 0.8) {
                             sr.speed *= 0.95; // 被せられて失速
                         }
 
@@ -2044,7 +2019,7 @@
                         let targetSpeed = sr.turnSpeed * speedFactor;
                         
                         // まくり艇は旋回中もスピードを保つ（全速まくり）
-                        if (sr.lane === winnerLane && winnerLane >= 3) {
+                        if (laneNum === winnerLane && winnerLane >= 3) {
                             targetSpeed *= 1.15;
                         }
                         
@@ -2138,13 +2113,14 @@
                     let fillColor = '#ffffff';
                     let textColor = '#1e293b';
                     let strokeColor = 'transparent';
+                    const drawLaneNum = parseInt(sr.lane) || 1;
 
-                    if (sr.lane === 1) { fillColor = '#ffffff'; textColor = '#1e293b'; strokeColor = '#cbd5e1'; }
-                    else if (sr.lane === 2) { fillColor = '#1e293b'; textColor = '#ffffff'; strokeColor = '#475569'; }
-                    else if (sr.lane === 3) { fillColor = '#ef4444'; textColor = '#ffffff'; }
-                    else if (sr.lane === 4) { fillColor = '#3b82f6'; textColor = '#ffffff'; }
-                    else if (sr.lane === 5) { fillColor = '#eab308'; textColor = '#1e293b'; }
-                    else if (sr.lane === 6) { fillColor = '#10b981'; textColor = '#ffffff'; }
+                    if (drawLaneNum === 1) { fillColor = '#ffffff'; textColor = '#1e293b'; strokeColor = '#cbd5e1'; }
+                    else if (drawLaneNum === 2) { fillColor = '#1e293b'; textColor = '#ffffff'; strokeColor = '#475569'; }
+                    else if (drawLaneNum === 3) { fillColor = '#ef4444'; textColor = '#ffffff'; }
+                    else if (drawLaneNum === 4) { fillColor = '#3b82f6'; textColor = '#ffffff'; }
+                    else if (drawLaneNum === 5) { fillColor = '#eab308'; textColor = '#1e293b'; }
+                    else if (drawLaneNum === 6) { fillColor = '#10b981'; textColor = '#ffffff'; }
 
                     ctx.fillStyle = fillColor;
                     ctx.fill();
@@ -2160,12 +2136,13 @@
                     ctx.font = '900 8px Outfit';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(sr.lane, -1, 0.5);
+                    ctx.fillText(drawLaneNum, -1, 0.5);
 
                     ctx.restore();
 
                     // 旋回中に勝ち馬の上に決まり手バッジをフロート描画
-                    if (frame > 95 && frame < 155 && sr.lane === winnerLane) {
+                    const laneNum = parseInt(sr.lane) || 1;
+                    if (frame > 95 && frame < 155 && laneNum === winnerLane) {
                         let badgeText = "逃げ";
                         let badgeBg = "rgba(16, 185, 129, 0.85)"; // Emerald
                         if (winnerLane === 2) {
