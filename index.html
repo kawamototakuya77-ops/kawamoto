@@ -257,7 +257,10 @@
 
                 <!-- Recommended Focus -->
                 <div class="bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2">
-                    <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                        <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
+                    </div>
                     <div id="ai-focus" class="flex flex-wrap gap-2">
                         <!-- Focus badges here -->
                     </div>
@@ -1968,23 +1971,36 @@
                     sr.phi = Math.PI * 0.5; // turn angle (starts at 90 deg / bottom)
                     
                     // Speed parameters based on rank and exTime
-                    sr.straightSpeed = 2.4 + (sr.rate * 0.03) - (sr.exTime - 6.70) * 1.1;
-                    if (sr.rank === 1) sr.straightSpeed += 0.3; // rank 1 is slightly faster
+                    sr.straightSpeed = 2.3 + (sr.rate * 0.02) - (sr.exTime - 6.70) * 0.8;
+                    
+                    // まくり勝ちは直線で一気に伸びてくる！
+                    if (sr.rank === 1) {
+                        if (winnerLane >= 3) {
+                            sr.straightSpeed += 0.35; // まくり艇の直線伸び
+                        } else {
+                            sr.straightSpeed += 0.08; // 通常
+                        }
+                    }
                     
                     // Turn radius
                     sr.radius = sr.baseRadius;
-                    if (sr.rank === 1) {
-                        if (sr.lane === 1) sr.radius = sr.baseRadius - 2.5; // Tight turn
-                        else sr.radius = sr.baseRadius + 2.0; // Wide roll
+                    if (sr.lane === winnerLane) {
+                        if (winnerLane === 1) {
+                            sr.radius = sr.baseRadius - 3.0; // 逃げのイン小回り
+                        } else if (winnerLane === 2) {
+                            sr.radius = sr.baseRadius - 2.5; // 差しの小回り
+                        } else {
+                            sr.radius = sr.baseRadius + 1.0; // まくりは外を回る
+                        }
                     } else if (sr.rank >= 5) {
-                        sr.radius = sr.baseRadius + 4.0; // Poor handling/sliding turn
+                        sr.radius = sr.baseRadius + 3.0; // 下位艇は外に流れる
                     }
                     
-                    // Speed during turn (rank 1 maintains speed, rank 6 slows down)
-                    sr.turnSpeed = sr.straightSpeed * (0.85 - (sr.rank - 1) * 0.07);
+                    // Speed during turn
+                    sr.turnSpeed = sr.straightSpeed * (0.80 - (sr.rank - 1) * 0.05);
                     
                     // Speed at exit
-                    sr.exitSpeed = 1.6 + (6 - sr.rank) * 0.4; // rank 1 = 3.6, rank 6 = 1.6
+                    sr.exitSpeed = 1.6 + (6 - sr.rank) * 0.4;
                     
                     // Set initial speed
                     sr.speed = sr.straightSpeed;
@@ -1998,7 +2014,7 @@
                 simRacers.forEach(sr => {
                     if (sr.phase === 1) {
                         const targetSpeed = sr.straightSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.08; // smooth transition
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
 
                         // Move right on home stretch
                         sr.x += sr.speed;
@@ -2007,39 +2023,55 @@
                         // Enter turn phase when passing markX
                         if (sr.x >= markX) {
                             sr.phase = 2;
-                            sr.phi = Math.PI * 0.5; // Start turning from 90 degrees
+                            sr.phi = Math.PI * 0.5;
                         }
                     } 
                     else if (sr.phase === 2) {
                         const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; // 0 to 1
+                        
+                        // 差し展開（2号艇など）の場合、1号艇は旋回中に外に膨らむ！
+                        if (winnerLane >= 2 && winnerLane <= 3 && sr.lane === 1) {
+                            sr.radius = sr.baseRadius + 14.0 * Math.sin(turnProgress * Math.PI);
+                        }
+                        
+                        // まくり展開（3〜6号艇勝ち）の場合、内側艇は外からおさえ込まれて失速する！
+                        if (winnerLane >= 3 && sr.lane < winnerLane && turnProgress > 0.2 && turnProgress < 0.8) {
+                            sr.speed *= 0.95; // 被せられて失速
+                        }
+
                         // 最も減速する頂点 (turnProgress = 0.5) で元の旋回速度の最大40%減速、立ち上がりにかけて加速
                         const speedFactor = 1.0 - 0.40 * Math.sin(turnProgress * Math.PI);
-                        const targetSpeed = sr.turnSpeed * speedFactor;
+                        let targetSpeed = sr.turnSpeed * speedFactor;
+                        
+                        // まくり艇は旋回中もスピードを保つ（全速まくり）
+                        if (sr.lane === winnerLane && winnerLane >= 3) {
+                            targetSpeed *= 1.15;
+                        }
+                        
                         sr.speed += (targetSpeed - sr.speed) * 0.10;
 
                         // Circular turn around (markX, markY)
                         const dPhi = sr.speed / sr.radius;
-                        sr.phi -= dPhi; // Turn counter-clockwise
+                        sr.phi -= dPhi;
 
                         sr.x = markX + sr.radius * Math.cos(sr.phi);
                         sr.y = markY + sr.radius * Math.sin(sr.phi);
                         
-                        // Tangent angle
                         sr.angle = sr.phi - Math.PI * 0.5;
 
                         // Exit turn when angle reaches -90 degrees
                         if (sr.phi <= -Math.PI * 0.5) {
                             sr.phase = 3;
-                            sr.y = markY - sr.radius; // Lock onto back stretch line
+                            sr.y = markY - sr.radius;
                         }
                     } 
                     else if (sr.phase === 3) {
                         const targetSpeed = sr.exitSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.08; // smooth transition
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
 
                         // Move left on back stretch
                         sr.x -= sr.speed;
-                        sr.angle = Math.PI; // Heading left
+                        sr.angle = Math.PI;
                     }
                 });
             }
