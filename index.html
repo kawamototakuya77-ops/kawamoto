@@ -557,6 +557,46 @@
             renderVenueGrid(["14", "10", "07", "12"]);
         }
 
+        function findClosestUpcomingVenue(activeJcds) {
+            if (!activeJcds || activeJcds.length === 0) return "14";
+
+            const now = new Date();
+            let closestJcd = activeJcds[0];
+            let minDiffMs = Infinity;
+            let latestPastDiffMs = -Infinity;
+            let latestPastJcd = activeJcds[0];
+
+            activeJcds.forEach(jcd => {
+                const times = window.cutoffTimesMap[jcd];
+                if (!times) return;
+
+                for (let rno = 1; rno <= 12; rno++) {
+                    const timeStr = times[rno.toString()];
+                    if (!timeStr) continue;
+
+                    const parts = timeStr.split(":");
+                    const cutoffDate = new Date();
+                    cutoffDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+
+                    const diffMs = cutoffDate - now;
+
+                    if (diffMs > 0) {
+                        if (diffMs < minDiffMs) {
+                            minDiffMs = diffMs;
+                            closestJcd = jcd;
+                        }
+                    } else {
+                        if (diffMs > latestPastDiffMs) {
+                            latestPastDiffMs = diffMs;
+                            latestPastJcd = jcd;
+                        }
+                    }
+                }
+            });
+
+            return minDiffMs !== Infinity ? closestJcd : latestPastJcd;
+        }
+
         function renderVenueGrid(activeJcds) {
             const gridContainer = document.getElementById('venue-grid');
             gridContainer.innerHTML = '';
@@ -581,16 +621,7 @@
                 gridContainer.appendChild(btn);
             }
             
-            let initialJcd = "14";
-            if (activeJcds.length > 0) {
-                if (activeJcds.includes("14")) {
-                    initialJcd = "14";
-                } else if (activeJcds.includes("10")) {
-                    initialJcd = "10";
-                } else {
-                    initialJcd = activeJcds[0];
-                }
-            }
+            const initialJcd = findClosestUpcomingVenue(activeJcds);
             
             selectVenue(initialJcd, true);
         }
@@ -599,6 +630,12 @@
             const previousValue = JCD_SELECT.value;
             const targetJcd = String(jcd).padStart(2, '0');
             JCD_SELECT.value = targetJcd;
+
+            // ユーザーが別の場をクリックした時は、手動選択されたレース番号(currentRno)をリセットして
+            // その場の一番出走が近いレースを自動選択させる
+            if (!isInitial && targetJcd !== previousValue) {
+                window.currentRno = "";
+            }
             
             const gridContainer = document.getElementById('venue-grid');
             if (gridContainer) {
@@ -1138,6 +1175,38 @@
                         });
                     }
 
+                    // 初期状態で本命の1番目(大本線)をハイライト
+                    if (!isUpset && index === 0) {
+                        itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
+                    }
+
+                    // 買い目クリックでシミュレーション起動
+                    itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
+                    itemWrapper.addEventListener('click', function() {
+                        if (focusBadgeWrapper.classList.contains('premium-blur')) {
+                            return; 
+                        }
+
+                        // すべての買い目のハイライト枠を除去
+                        document.querySelectorAll('.focus-item-active').forEach(el => {
+                            el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
+                        });
+
+                        // 選択されたものをハイライト
+                        if (isUpset) {
+                            itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
+                        } else {
+                            itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
+                        }
+
+                        // 物理シミュレータをこの展開(f)で即座に再起動
+                        try {
+                            initTurnSimulation(racers, [f], exhibitionCompleted && !isPlaceholder);
+                        } catch (e) {
+                            console.error("Click-to-simulate error:", e);
+                        }
+                    });
+
                     itemWrapper.appendChild(labelSpan);
                     itemWrapper.appendChild(focusBadgeWrapper);
                     grid.appendChild(itemWrapper);
@@ -1147,15 +1216,18 @@
                 return groupWrapper;
             }
 
-            if (solidFocus.length > 0 || upsetFocus.length > 0) {
+            const hasRealPrediction = (solidFocus.length > 0 && solidFocus[0] !== "-") || (upsetFocus.length > 0 && upsetFocus[0] !== "-");
+
+            if (hasRealPrediction && (solidFocus.length > 0 || upsetFocus.length > 0)) {
                 focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
                 focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
             } else {
-                focusContainer.className = 'flex flex-wrap gap-2 w-full';
-                const emptySpan = document.createElement('span');
-                emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
-                emptySpan.innerText = '待機中...';
-                focusContainer.appendChild(emptySpan);
+                focusContainer.className = 'flex flex-col items-center justify-center p-4 text-slate-500 gap-1 text-center py-6 w-full';
+                focusContainer.innerHTML = `
+                    <span class="text-base">🤖</span>
+                    <span class="text-[11px] font-bold text-slate-400">AI予想の生成を待機中...</span>
+                    <span class="text-[9px] text-slate-600">直前情報取得後にAI展開予想と買い目が自動表示されます</span>
+                `;
             }
 
             // Populate Confidence Stars
