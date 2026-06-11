@@ -1119,8 +1119,8 @@
             }
 
             if (solidFocus.length > 0 || upsetFocus.length > 0) {
-                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単 - 2/4 広告)', solidFocus, false));
-                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単 - 2/4 広告)', upsetFocus, true));
+                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
+                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
             } else {
                 focusContainer.className = 'flex flex-wrap gap-2 w-full';
                 const emptySpan = document.createElement('span');
