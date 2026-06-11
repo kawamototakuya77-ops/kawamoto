@@ -381,6 +381,15 @@
                         <span>● 点線: 旋回航跡</span>
                     </div>
                 </div>
+                <!-- SIMULATOR CONTROLLER -->
+                <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>👁️ 展開シミュレーション切り替え</span>
+                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
+                    </div>
+                    <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
+                    <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
+                </div>
             </section>
 
             <!-- MERGED RACER TABLE -->
@@ -1201,7 +1210,11 @@
 
                         // 物理シミュレータをこの展開(f)で即座に再起動
                         try {
-                            initTurnSimulation(racers, [f], exhibitionCompleted && !isPlaceholder);
+                            initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+                            // もしシミュレータ側で直接 combo を切り替えられるように、シミュレータの setSimulationCombo もしくは 再起動処理を呼び出す
+                            if (window.setSimCombo) {
+                                window.setSimCombo(f);
+                            }
                         } catch (e) {
                             console.error("Click-to-simulate error:", e);
                         }
@@ -1539,7 +1552,7 @@
             
             // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
             try {
-                initTurnSimulation(racers, ai.focus, exhibitionCompleted && !isPlaceholder);
+                initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
             }
@@ -1881,7 +1894,7 @@
         // ==========================================
         // プレミアム2D 1マーク物理展開シミュレーター
         // ==========================================
-        function initTurnSimulation(racers, aiFocus, hasExhibitionData) {
+        function initTurnSimulation(racers, solidFocus, upsetFocus, hasExhibitionData) {
             const canvas = document.getElementById('turn-sim-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -1905,7 +1918,7 @@
                 if (simCard) simCard.classList.remove('hidden');
             }
 
-            // 高DPI対応 (Retina等でボヤけるバグを完全防止)
+            // 高DPI対応
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width * dpr;
@@ -1915,89 +1928,66 @@
             const viewWidth = rect.width;
             const viewHeight = rect.height;
 
-            // 第一推奨フォーカス（三連単）から着順を展開 (例: "1-2-5" -> [1, 2, 5, 3, 4, 6])
-            let firstFocus = "1-2-3";
-            if (aiFocus && aiFocus.length > 0 && aiFocus[0] !== "-") {
-                firstFocus = aiFocus[0];
-            }
-            
-            const predictedNums = firstFocus.replace(/[^1-6]/g, '').split('').map(Number);
-            const fullOrder = [...predictedNums];
-            for (let b = 1; b <= 6; b++) {
-                if (!fullOrder.includes(b)) {
-                    fullOrder.push(b);
-                }
+            let currentCombo = (solidFocus && solidFocus.length > 0) ? solidFocus[0] : "1-2-3";
+            let fullOrder = [];
+            let rankMap = {};
+            let winnerLane = 1;
+            let tacticLabel = "";
+            let simRacers = [];
+            let frame = 0;
+            const maxFrames = 260;
+
+            function getTacticLabel(wl) {
+                if (wl === 1) return "1号艇 イン逃げ快勝パターン";
+                if (wl === 2) return "2号艇 鋭い差し抜けパターン";
+                if (wl === 3) return "3号艇 まくり/まくり差し炸裂";
+                if (wl === 4) return "4号艇 カドからの一撃まくり";
+                if (wl === 5) return "5号艇 展開を突くまくり差し";
+                if (wl === 6) return "6号艇 大外から最内差し急浮上";
+                return "展開予想パターン";
             }
 
-            // 艇番号 -> AI着順（1〜6位）のマッピング
-            const rankMap = {};
-            fullOrder.forEach((lane, idx) => {
-                rankMap[lane] = idx + 1;
-            });
-
-            // シミュレーション用のレーサープロファイルを再構築
-            const simRacers = racers.map(r => {
-                const lane = r.lane;
-                const rank = rankMap[lane] || 6;
-                
-                // スタートタイミングの数値化
-                let stVal = 0.15;
-                let isFlying = false;
-                if (r.st_val && r.st_val !== "N/A" && r.st_val !== "") {
-                    const clean = r.st_val.replace('F', '');
-                    stVal = parseFloat(clean) || 0.15;
-                    if (r.st_val.includes('F')) {
-                        isFlying = true;
-                        stVal = -stVal; // フライングはスリット線を飛び出す
+            function setSimulationCombo(combo) {
+                currentCombo = combo;
+                const predictedNums = combo.replace(/[^1-6]/g, '').split('').map(Number);
+                fullOrder = [...predictedNums];
+                for (let b = 1; b <= 6; b++) {
+                    if (!fullOrder.includes(b)) {
+                        fullOrder.push(b);
                     }
                 }
-
-                const course = parseInt(r.st_course) || lane;
-                const exTime = parseFloat(r.ex_time) || 6.80;
-                const rate = parseFloat(r.rate) || 5.00;
-
-                // 旋回半径: インコースほど狭く、アウトコースほど広い同心円
-                const baseRadius = 16 + (course - 1) * 9.5; 
+                rankMap = {};
+                fullOrder.forEach((lane, idx) => {
+                    rankMap[lane] = idx + 1;
+                });
+                winnerLane = fullOrder[0];
+                tacticLabel = getTacticLabel(winnerLane);
                 
-                return {
-                    lane: lane,
-                    name: r.name,
-                    course: course,
-                    rank: rank,
-                    st: stVal,
-                    isFlying: isFlying,
-                    exTime: exTime,
-                    rate: rate,
-                    baseRadius: baseRadius,
-                    x: 0,
-                    y: 0,
-                    angle: Math.PI,
-                    history: [],
-                    speed: 0
-                };
-            });
-
-            let frame = 0;
-            const maxFrames = 260; // 約4.3秒のシミュレーション
-            let waveOffset = 0;
-
-            const winnerLane = fullOrder[0];
-            let tacticLabel = "";
-            if (winnerLane === 1) {
-                tacticLabel = "1号艇 イン逃げ快勝パターン";
-            } else if (winnerLane === 2) {
-                tacticLabel = "2号艇 鋭い差し抜けパターン";
-            } else if (winnerLane === 3) {
-                tacticLabel = "3号艇 まくり/まくり差し炸裂";
-            } else if (winnerLane === 4) {
-                tacticLabel = "4号艇 カドからの一撃まくり";
-            } else if (winnerLane === 5) {
-                tacticLabel = "5号艇 展開を突くまくり差し";
-            } else if (winnerLane === 6) {
-                tacticLabel = "6号艇 大外から最内差し急浮上";
+                // シミュレーション内のボタンのアクティブ表示状態を更新する
+                const allBtns = document.querySelectorAll('#sim-controls-container button');
+                allBtns.forEach(b => {
+                    const isBUt = b.parentElement.id === 'sim-controls-upset';
+                    const bCombo = b.innerText.match(/\(([^)]+)\)/)?.[1];
+                    if (bCombo === combo) {
+                        b.className = isBUt
+                            ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500 bg-purple-500/20 text-purple-300 font-black scale-[1.03] shadow-sm shadow-purple-500/10 cursor-pointer'
+                            : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500 bg-indigo-500/20 text-indigo-300 font-black scale-[1.03] shadow-sm shadow-indigo-500/10 cursor-pointer';
+                    } else {
+                        b.className = isBUt
+                            ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-400 font-bold hover:bg-purple-500/10 active:scale-95 transition-all cursor-pointer'
+                            : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 font-bold hover:bg-indigo-500/10 active:scale-95 transition-all cursor-pointer';
+                    }
+                });
             }
 
-            // 二重バインド防止（Replayボタンの再バインド）
+            window.setSimCombo = function(combo) {
+                setSimulationCombo(combo);
+                startSim();
+            };
+
+            setSimulationCombo(currentCombo);
+
+            // Replayボタンのイベント設定
             const replayBtn = document.getElementById('replay-sim-btn');
             if (replayBtn) {
                 const newReplayBtn = replayBtn.cloneNode(true);
@@ -2005,6 +1995,416 @@
                 newReplayBtn.addEventListener('click', () => {
                     startSim();
                 });
+            }
+
+            function initRacerPositions() {
+                simRacers = racers.map(r => {
+                    const laneNum = parseInt(r.lane) || 1;
+                    const rank = rankMap[laneNum] || 6;
+                    
+                    let stVal = 0.15;
+                    let isFlying = false;
+                    if (r.st_val && r.st_val !== "N/A" && r.st_val !== "") {
+                        const clean = r.st_val.replace('F', '');
+                        stVal = parseFloat(clean) || 0.15;
+                        if (r.st_val.includes('F')) {
+                            isFlying = true;
+                            stVal = -stVal;
+                        }
+                    }
+
+                    const course = parseInt(r.st_course) || laneNum;
+                    const exTime = parseFloat(r.ex_time) || 6.80;
+                    const rate = parseFloat(r.rate) || 5.00;
+
+                    // Speed parameters based on rank and exTime
+                    let straightSpeed = 2.3 + (rate * 0.02) - (exTime - 6.70) * 0.8;
+                    if (rank === 1) {
+                        if (winnerLane >= 3) {
+                            straightSpeed += 0.35;
+                        } else {
+                            straightSpeed += 0.08;
+                        }
+                    }
+
+                    const baseRadius = 16 + (course - 1) * 9.5; 
+                    let radius = baseRadius;
+                    if (laneNum === winnerLane) {
+                        if (winnerLane === 1) {
+                            radius = baseRadius - 3.0;
+                        } else if (winnerLane === 2) {
+                            radius = baseRadius - 2.5;
+                        } else {
+                            radius = baseRadius + 1.0;
+                        }
+                    } else if (rank >= 5) {
+                        radius = baseRadius + 3.0;
+                    }
+
+                    const turnSpeed = straightSpeed * (0.80 - (rank - 1) * 0.05);
+                    const exitSpeed = 1.6 + (6 - rank) * 0.4;
+                    const stOffset = (0.15 - stVal) * 110; 
+
+                    return {
+                        lane: laneNum,
+                        name: r.name,
+                        course: course,
+                        rank: rank,
+                        st: stVal,
+                        isFlying: isFlying,
+                        exTime: exTime,
+                        rate: rate,
+                        baseRadius: baseRadius,
+                        radius: radius,
+                        straightSpeed: straightSpeed,
+                        turnSpeed: turnSpeed,
+                        exitSpeed: exitSpeed,
+                        x: 40 + stOffset - (course * 5),
+                        y: 96 + baseRadius,
+                        angle: 0,
+                        phi: Math.PI * 0.5,
+                        phase: 1,
+                        speed: straightSpeed
+                    };
+                });
+            }
+
+            function updatePhysics() {
+                const markX = viewWidth - 110;
+                const markY = 96;
+
+                simRacers.forEach(sr => {
+                    const laneNum = sr.lane;
+                    if (sr.phase === 1) {
+                        const targetSpeed = sr.straightSpeed;
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
+                        sr.x += sr.speed;
+                        sr.angle = 0;
+
+                        if (sr.x >= markX) {
+                            sr.phase = 2;
+                            sr.phi = Math.PI * 0.5;
+                        }
+                    } 
+                    else if (sr.phase === 2) {
+                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI;
+                        
+                        if (winnerLane >= 2 && winnerLane <= 3 && laneNum === 1) {
+                            sr.radius = sr.baseRadius + 14.0 * Math.sin(turnProgress * Math.PI);
+                        }
+                        
+                        if (winnerLane >= 3 && laneNum < winnerLane && turnProgress > 0.2 && turnProgress < 0.8) {
+                            sr.speed *= 0.95;
+                        }
+
+                        const speedFactor = 1.0 - 0.40 * Math.sin(turnProgress * Math.PI);
+                        let targetSpeed = sr.turnSpeed * speedFactor;
+                        
+                        if (laneNum === winnerLane && winnerLane >= 3) {
+                            targetSpeed *= 1.15;
+                        }
+                        
+                        sr.speed += (targetSpeed - sr.speed) * 0.10;
+
+                        const dPhi = sr.speed / sr.radius;
+                        sr.phi -= dPhi;
+
+                        sr.x = markX + sr.radius * Math.cos(sr.phi);
+                        sr.y = markY + sr.radius * Math.sin(sr.phi);
+                        
+                        sr.angle = sr.phi - Math.PI * 0.5;
+
+                        if (sr.phi <= -Math.PI * 0.5) {
+                            sr.phase = 3;
+                            sr.y = markY - sr.radius;
+                        }
+                    } 
+                    else if (sr.phase === 3) {
+                        const targetSpeed = sr.exitSpeed;
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
+                        sr.x -= sr.speed;
+                        sr.angle = Math.PI;
+                    }
+                });
+            }
+
+            function draw() {
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, viewWidth, viewHeight);
+                
+                const markX = viewWidth - 110;
+                const markY = 96;
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.arc(markX, markY, 20, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ef4444'; 
+                ctx.beginPath();
+                ctx.arc(markX, markY, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff'; 
+                ctx.beginPath();
+                ctx.arc(markX, markY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ef4444'; 
+                ctx.beginPath();
+                ctx.arc(markX, markY, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.beginPath();
+                ctx.moveTo(110, 80);
+                ctx.lineTo(110, viewHeight);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.font = 'bold 8px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('1マーク', markX, markY - 14);
+
+                simRacers.forEach(sr => {
+                    if (sr.x < -30 || sr.x > viewWidth + 30) return;
+
+                    ctx.save();
+                    ctx.translate(sr.x, sr.y);
+                    ctx.rotate(sr.angle);
+
+                    ctx.beginPath();
+                    ctx.moveTo(10, 0); 
+                    ctx.lineTo(-6, -5.5); 
+                    ctx.lineTo(-3, 0); 
+                    ctx.lineTo(-6, 5.5); 
+                    ctx.closePath();
+
+                    let fillColor = '#ffffff';
+                    let textColor = '#1e293b';
+                    let strokeColor = 'transparent';
+                    const drawLaneNum = sr.lane;
+
+                    if (drawLaneNum === 1) { fillColor = '#ffffff'; textColor = '#1e293b'; strokeColor = '#cbd5e1'; }
+                    else if (drawLaneNum === 2) { fillColor = '#1e293b'; textColor = '#ffffff'; strokeColor = '#475569'; }
+                    else if (drawLaneNum === 3) { fillColor = '#ef4444'; textColor = '#ffffff'; }
+                    else if (drawLaneNum === 4) { fillColor = '#3b82f6'; textColor = '#ffffff'; }
+                    else if (drawLaneNum === 5) { fillColor = '#eab308'; textColor = '#1e293b'; }
+                    else if (drawLaneNum === 6) { fillColor = '#10b981'; textColor = '#ffffff'; }
+
+                    ctx.fillStyle = fillColor;
+                    ctx.fill();
+                    if (strokeColor !== 'transparent') {
+                        ctx.strokeStyle = strokeColor;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+
+                    ctx.rotate(-sr.angle); 
+                    ctx.fillStyle = textColor;
+                    ctx.font = '900 8px Outfit';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(drawLaneNum, -1, 0.5);
+
+                    ctx.restore();
+
+                    if (frame > 95 && frame < 155 && sr.lane === winnerLane) {
+                        let badgeText = "逃げ";
+                        let badgeBg = "rgba(16, 185, 129, 0.85)";
+                        if (winnerLane === 2) {
+                            badgeText = "差し";
+                            badgeBg = "rgba(239, 68, 68, 0.85)";
+                        } else if (winnerLane === 3) {
+                            badgeText = "まくり";
+                            badgeBg = "rgba(245, 158, 11, 0.85)";
+                        } else if (winnerLane === 4) {
+                            badgeText = "まくり";
+                            badgeBg = "rgba(59, 130, 246, 0.85)";
+                        } else if (winnerLane === 5) {
+                            badgeText = "まくり差し";
+                            badgeBg = "rgba(234, 179, 8, 0.85)";
+                        } else if (winnerLane === 6) {
+                            badgeText = "差し";
+                            badgeBg = "rgba(139, 92, 246, 0.85)";
+                        }
+
+                        ctx.save();
+                        ctx.fillStyle = badgeBg;
+                        const badgeW = badgeText.length * 6 + 10;
+                        ctx.beginPath();
+                        if (typeof ctx.roundRect === 'function') {
+                            ctx.roundRect(sr.x - badgeW/2, sr.y - 18, badgeW, 10, 3);
+                        } else {
+                            ctx.rect(sr.x - badgeW/2, sr.y - 18, badgeW, 10);
+                        }
+                        ctx.fill();
+
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = 'bold 7px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(badgeText, sr.x, sr.y - 13);
+                        ctx.restore();
+                    }
+                    
+                    if (frame > 180 && sr.rank <= 3) {
+                        ctx.font = '8px Outfit';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(sr.rank === 1 ? '🥇' : (sr.rank === 2 ? '🥈' : '🥉'), sr.x, sr.y - 11);
+                    }
+                });
+
+                let hudStatus = "";
+                let hudColor = "rgba(255, 255, 255, 0.4)";
+                if (frame < 80) {
+                    hudStatus = "ホームストレッチ - スリット通過";
+                } else if (frame >= 80 && frame < 165) {
+                    hudStatus = "第1ターンマーク - 旋回攻防";
+                    hudColor = "#f43f5e";
+                } else {
+                    hudStatus = "バックストレッチ - AI判定着順";
+                    hudColor = "#10b981";
+                }
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+                ctx.fillRect(8, 6, 120, 16);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.strokeRect(8, 6, 120, 16);
+                ctx.fillStyle = hudColor;
+                ctx.font = 'bold 8px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText("📡 " + hudStatus, 14, 14);
+
+                if (frame > 90 && frame < 225) {
+                    let descText = "";
+                    if (frame < 145) {
+                        if (winnerLane === 1) descText = "1号艇がインから先マイ逃げ体制！";
+                        else if (winnerLane === 2) descText = "2号艇が内を狙って鋭く切り込む！";
+                        else if (winnerLane === 3) descText = "3号艇が全速で外から握ってまわる！";
+                        else if (winnerLane === 4) descText = "4号艇がカドから一気にしぼってまくる！";
+                        else if (winnerLane === 5) descText = "5号艇が連動してまくり差しを狙う！";
+                        else if (winnerLane === 6) descText = "6号艇が大外から最内へ差しに入る！";
+                    } else {
+                        descText = tacticLabel;
+                    }
+
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+                    ctx.fillRect(viewWidth / 2 - 95, 8, 190, 20);
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                    ctx.strokeRect(viewWidth / 2 - 95, 8, 190, 20);
+
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.font = 'bold 9px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(descText, viewWidth / 2, 21);
+                }
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.fillRect(0, viewHeight - 2, viewWidth, 2);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.6)';
+                ctx.fillRect(0, viewHeight - 2, viewWidth * (frame / maxFrames), 2);
+            }
+
+            function buildControls() {
+                const solidContainer = document.getElementById('sim-controls-solid');
+                const upsetContainer = document.getElementById('sim-controls-upset');
+                if (solidContainer) solidContainer.innerHTML = '';
+                if (upsetContainer) upsetContainer.innerHTML = '';
+
+                function createSimBtn(combo, isUpt, index) {
+                    const btn = document.createElement('button');
+                    let label = '抑え';
+                    if (!isUpt) {
+                        if (index === 0) label = '大本線';
+                        else if (index === 1) label = '本線';
+                    } else {
+                        if (index === 0) label = '中穴';
+                        else if (index === 1) label = '穴狙い';
+                    }
+                    
+                    const baseClass = isUpt 
+                        ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-400 font-bold hover:bg-purple-500/10 active:scale-95 transition-all cursor-pointer'
+                        : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 font-bold hover:bg-indigo-500/10 active:scale-95 transition-all cursor-pointer';
+                    
+                    const activeClass = isUpt
+                        ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500 bg-purple-500/20 text-purple-300 font-black scale-[1.03] shadow-sm shadow-purple-500/10 cursor-pointer'
+                        : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500 bg-indigo-500/20 text-indigo-300 font-black scale-[1.03] shadow-sm shadow-indigo-500/10 cursor-pointer';
+                    
+                    btn.className = (combo === currentCombo) ? activeClass : baseClass;
+                    btn.innerText = `${label} (${combo})`;
+                    
+                    btn.addEventListener('click', () => {
+                        const allBtns = document.querySelectorAll('#sim-controls-container button');
+                        allBtns.forEach(b => {
+                            const isBUt = b.parentElement.id === 'sim-controls-upset';
+                            b.className = isBUt
+                                ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-400 font-bold hover:bg-purple-500/10 active:scale-95 transition-all cursor-pointer'
+                                : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 font-bold hover:bg-indigo-500/10 active:scale-95 transition-all cursor-pointer';
+                        });
+                        btn.className = activeClass;
+
+                        setSimulationCombo(combo);
+                        startSim();
+                    });
+
+                    return btn;
+                }
+
+                if (solidContainer && solidFocus) {
+                    solidFocus.forEach((combo, idx) => {
+                        solidContainer.appendChild(createSimBtn(combo, false, idx));
+                    });
+                }
+                if (upsetContainer && upsetFocus) {
+                    upsetFocus.forEach((combo, idx) => {
+                        const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
+                                         window.location.hostname.indexOf('googleusercontent') !== -1;
+                        if (idx >= 2 && !isGasApp) {
+                            const lockSpan = document.createElement('span');
+                            lockSpan.className = 'px-2 py-1 text-[9px] rounded-lg border border-slate-800 bg-slate-950/40 text-slate-500 font-medium cursor-not-allowed select-none';
+                            lockSpan.innerText = `🔒 穴予想ロック中 (${combo})`;
+                            upsetContainer.appendChild(lockSpan);
+                        } else {
+                            upsetContainer.appendChild(createSimBtn(combo, true, idx));
+                        }
+                    });
+                }
+            }
+
+            function animate() {
+                updatePhysics();
+                draw();
+
+                frame++;
+                if (frame < maxFrames) {
+                    window.activeTurnSimId = requestAnimationFrame(animate);
+                } else {
+                    window.activeTurnSimTimeout = setTimeout(() => {
+                        if (document.getElementById('turn-sim-canvas') === canvas) {
+                            startSim();
+                        }
+                    }, 2500);
+                }
+            }
+
+            function startSim() {
+                if (window.activeTurnSimId) {
+                    cancelAnimationFrame(window.activeTurnSimId);
+                    window.activeTurnSimId = null;
+                }
+                if (window.activeTurnSimTimeout) {
+                    clearTimeout(window.activeTurnSimTimeout);
+                    window.activeTurnSimTimeout = null;
+                }
+                frame = 0;
+                initRacerPositions();
+                animate();
+            }
+
+            buildControls();
+            startSim();
+        });
             }
 
             function initRacerPositions() {
