@@ -1085,7 +1085,10 @@
                     const focusBadgeWrapper = createPremiumFocusElement(f);
                     focusBadgeWrapper.className = 'flex items-center gap-1 w-full justify-start transition-all duration-500';
 
-                    if (index >= 2) {
+                    const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
+                                     window.location.hostname.indexOf('googleusercontent') !== -1;
+
+                    if (index >= 2 && !isGasApp) {
                         focusBadgeWrapper.classList.add('premium-blur');
                         
                         const lockOverlay = document.createElement('div');
