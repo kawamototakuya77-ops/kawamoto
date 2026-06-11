@@ -390,6 +390,15 @@
                     <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
                     <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
                 </div>
+                <!-- SIMULATOR CONTROLLER -->
+                <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>👁️ 展開シミュレーション切り替え</span>
+                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
+                    </div>
+                    <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
+                    <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
+                </div>
             </section>
 
             <!-- MERGED RACER TABLE -->
@@ -566,46 +575,6 @@
             renderVenueGrid(["14", "10", "07", "12"]);
         }
 
-        function findClosestUpcomingVenue(activeJcds) {
-            if (!activeJcds || activeJcds.length === 0) return "14";
-
-            const now = new Date();
-            let closestJcd = activeJcds[0];
-            let minDiffMs = Infinity;
-            let latestPastDiffMs = -Infinity;
-            let latestPastJcd = activeJcds[0];
-
-            activeJcds.forEach(jcd => {
-                const times = window.cutoffTimesMap[jcd];
-                if (!times) return;
-
-                for (let rno = 1; rno <= 12; rno++) {
-                    const timeStr = times[rno.toString()];
-                    if (!timeStr) continue;
-
-                    const parts = timeStr.split(":");
-                    const cutoffDate = new Date();
-                    cutoffDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-
-                    const diffMs = cutoffDate - now;
-
-                    if (diffMs > 0) {
-                        if (diffMs < minDiffMs) {
-                            minDiffMs = diffMs;
-                            closestJcd = jcd;
-                        }
-                    } else {
-                        if (diffMs > latestPastDiffMs) {
-                            latestPastDiffMs = diffMs;
-                            latestPastJcd = jcd;
-                        }
-                    }
-                }
-            });
-
-            return minDiffMs !== Infinity ? closestJcd : latestPastJcd;
-        }
-
         function renderVenueGrid(activeJcds) {
             const gridContainer = document.getElementById('venue-grid');
             gridContainer.innerHTML = '';
@@ -630,7 +599,16 @@
                 gridContainer.appendChild(btn);
             }
             
-            const initialJcd = findClosestUpcomingVenue(activeJcds);
+            let initialJcd = "14";
+            if (activeJcds.length > 0) {
+                if (activeJcds.includes("14")) {
+                    initialJcd = "14";
+                } else if (activeJcds.includes("10")) {
+                    initialJcd = "10";
+                } else {
+                    initialJcd = activeJcds[0];
+                }
+            }
             
             selectVenue(initialJcd, true);
         }
@@ -639,12 +617,6 @@
             const previousValue = JCD_SELECT.value;
             const targetJcd = String(jcd).padStart(2, '0');
             JCD_SELECT.value = targetJcd;
-
-            // ユーザーが別の場をクリックした時は、手動選択されたレース番号(currentRno)をリセットして
-            // その場の一番出走が近いレースを自動選択させる
-            if (!isInitial && targetJcd !== previousValue) {
-                window.currentRno = "";
-            }
             
             const gridContainer = document.getElementById('venue-grid');
             if (gridContainer) {
@@ -1211,7 +1183,6 @@
                         // 物理シミュレータをこの展開(f)で即座に再起動
                         try {
                             initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
-                            // もしシミュレータ側で直接 combo を切り替えられるように、シミュレータの setSimulationCombo もしくは 再起動処理を呼び出す
                             if (window.setSimCombo) {
                                 window.setSimCombo(f);
                             }
@@ -1229,18 +1200,15 @@
                 return groupWrapper;
             }
 
-            const hasRealPrediction = (solidFocus.length > 0 && solidFocus[0] !== "-") || (upsetFocus.length > 0 && upsetFocus[0] !== "-");
-
-            if (hasRealPrediction && (solidFocus.length > 0 || upsetFocus.length > 0)) {
+            if (solidFocus.length > 0 || upsetFocus.length > 0) {
                 focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
                 focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
             } else {
-                focusContainer.className = 'flex flex-col items-center justify-center p-4 text-slate-500 gap-1 text-center py-6 w-full';
-                focusContainer.innerHTML = `
-                    <span class="text-base">🤖</span>
-                    <span class="text-[11px] font-bold text-slate-400">AI予想の生成を待機中...</span>
-                    <span class="text-[9px] text-slate-600">直前情報取得後にAI展開予想と買い目が自動表示されます</span>
-                `;
+                focusContainer.className = 'flex flex-wrap gap-2 w-full';
+                const emptySpan = document.createElement('span');
+                emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
+                emptySpan.innerText = '待機中...';
+                focusContainer.appendChild(emptySpan);
             }
 
             // Populate Confidence Stars
@@ -1962,28 +1930,7 @@
                 });
                 winnerLane = fullOrder[0];
                 tacticLabel = getTacticLabel(winnerLane);
-                
-                // シミュレーション内のボタンのアクティブ表示状態を更新する
-                const allBtns = document.querySelectorAll('#sim-controls-container button');
-                allBtns.forEach(b => {
-                    const isBUt = b.parentElement.id === 'sim-controls-upset';
-                    const bCombo = b.innerText.match(/\(([^)]+)\)/)?.[1];
-                    if (bCombo === combo) {
-                        b.className = isBUt
-                            ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500 bg-purple-500/20 text-purple-300 font-black scale-[1.03] shadow-sm shadow-purple-500/10 cursor-pointer'
-                            : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500 bg-indigo-500/20 text-indigo-300 font-black scale-[1.03] shadow-sm shadow-indigo-500/10 cursor-pointer';
-                    } else {
-                        b.className = isBUt
-                            ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-400 font-bold hover:bg-purple-500/10 active:scale-95 transition-all cursor-pointer'
-                            : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 font-bold hover:bg-indigo-500/10 active:scale-95 transition-all cursor-pointer';
-                    }
-                });
             }
-
-            window.setSimCombo = function(combo) {
-                setSimulationCombo(combo);
-                startSim();
-            };
 
             setSimulationCombo(currentCombo);
 
@@ -2232,6 +2179,8 @@
                         ctx.save();
                         ctx.fillStyle = badgeBg;
                         const badgeW = badgeText.length * 6 + 10;
+                        const matchResult = currentCombo.match(/\(([^)]+)\)/);
+                        const bCombo = matchResult ? matchResult[1] : null;
                         ctx.beginPath();
                         if (typeof ctx.roundRect === 'function') {
                             ctx.roundRect(sr.x - badgeW/2, sr.y - 18, badgeW, 10, 3);
@@ -2404,9 +2353,7 @@
 
             buildControls();
             startSim();
-        });
-            }
-
+            
             function initRacerPositions() {
                 simRacers.forEach(sr => {
                     const stOffset = (0.15 - sr.st) * 110; 
