@@ -841,7 +841,31 @@
                 
                 const progressText = document.getElementById('loading-progress-text');
                 if (progressText) {
-                    progressText.innerText = "出走情報・AI予想の取得を待機中...";
+                    // 締切時刻を取得して残り時間を計算
+                    const cutoffStr = window.cutoffTimesMap?.[jcd]?.[rno];
+                    if (cutoffStr) {
+                        const now = new Date();
+                        const [ch, cm] = cutoffStr.split(':').map(Number);
+                        const cutoff = new Date(now);
+                        cutoff.setHours(ch, cm, 0, 0);
+                        const diffMs = cutoff - now;
+                        const diffMin = Math.floor(diffMs / 60000);
+                        const diffHr = Math.floor(diffMin / 60);
+                        const remMin = diffMin % 60;
+                        if (diffMs > 0) {
+                            if (diffHr > 0) {
+                                progressText.innerText = `⏰ 出走表公開まで約 ${diffHr}時間${remMin}分 | 締切 ${cutoffStr} | データは締切1時間前ごろ取得可能です`;
+                            } else if (diffMin > 30) {
+                                progressText.innerText = `⏰ 出走表公開まで約 ${diffMin}分 | データ準備中... しばらくお待ちください`;
+                            } else {
+                                progressText.innerText = `🔄 出走情報・AI予想の取得を待機中... (残り約${diffMin}分)`;
+                            }
+                        } else {
+                            progressText.innerText = `⚠️ データ取得中 — バックグラウンド処理中です。しばらくお待ちください`;
+                        }
+                    } else {
+                        progressText.innerText = "出走情報・AI予想の取得を待機中...";
+                    }
                 }
                 return;
             }
