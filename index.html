@@ -4,22 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>競艇直前物理AI - リアルタイム展開予測ダッシュボード</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
     <!-- Goolge Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        outfit: ['Outfit', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             background: linear-gradient(135deg, #090d16 0%, #111827 100%);
@@ -231,8 +221,53 @@
             </div>
             
             <!-- Skeleton placeholders for content -->
-            <div class="h-44 bg-slate-800/40 rounded-2xl animate-pulse border border-white/5"></div>
-            <div class="h-64 bg-slate-800/40 rounded-2xl animate-pulse border border-white/5"></div>
+            <div class="p-4 bg-slate-800/40 rounded-2xl animate-pulse border border-white/5 space-y-3">
+                <div class="h-4 bg-slate-700/60 rounded-full w-2/3"></div>
+                <div class="space-y-2">
+                    <div class="h-3 bg-slate-700/40 rounded-full"></div>
+                    <div class="h-3 bg-slate-700/40 rounded-full w-5/6"></div>
+                    <div class="h-3 bg-slate-700/40 rounded-full w-4/5"></div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-800/40 rounded-2xl animate-pulse border border-white/5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="h-4 bg-slate-700/60 rounded-full w-1/3"></div>
+                    <div class="h-3 bg-slate-700/40 rounded-full w-1/4"></div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-slate-700/50 rounded-full"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="h-3 bg-slate-700/40 rounded-full w-3/4"></div>
+                            <div class="h-2.5 bg-slate-700/20 rounded-full w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-slate-700/50 rounded-full"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="h-3 bg-slate-700/40 rounded-full w-2/3"></div>
+                            <div class="h-2.5 bg-slate-700/20 rounded-full w-1/3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONNECTION ERROR CARD (HIDDEN BY DEFAULT) -->
+        <div id="connection-error-card" class="hidden p-6 rounded-2xl glass border border-rose-500/20 bg-rose-950/10 shadow-lg text-center space-y-4">
+            <div class="text-4xl">⚠️</div>
+            <h3 class="text-base font-bold text-rose-400">データ同期エラー</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                GAS（Google Apps Script）との通信に失敗しました。時間をおいて再接続をお試しいただくか、GAS Webアプリの公開設定（全員にアクセス権が付与されているか）をご確認ください。
+            </p>
+            <div class="flex flex-col gap-2 pt-2">
+                <button id="retry-conn-btn" class="w-full h-10 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-bold text-xs rounded-xl shadow-lg transition-all active:scale-95 duration-200 cursor-pointer">
+                    🔄 再試行 (Retry)
+                </button>
+                <button id="demo-mode-btn" class="w-full h-10 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-white/5 transition-all active:scale-95 duration-200 cursor-pointer">
+                    💻 デモデータで起動する (Demo Mode)
+                </button>
+            </div>
         </div>
 
         <!-- REAL DATA WRAPPER (HIDDEN BY DEFAULT) -->
@@ -412,6 +447,75 @@
                 </div>
             </section>
 
+            <!-- PAST HISTORY ARCHIVE -->
+            <section class="rounded-2xl glass shadow-md overflow-hidden">
+                <div id="toggle-archive-btn" class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between cursor-pointer hover:bg-slate-800/30 transition-colors">
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5 font-outfit">📊 AI実績アーカイブ・過去の履歴</span>
+                    <span id="archive-arrow" class="text-slate-400 transition-transform duration-200 inline-block">▼</span>
+                </div>
+                <div id="archive-container" class="hidden p-4 space-y-4">
+                    <!-- Overall Stats Panel -->
+                    <div class="p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
+                        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 AI通算成績 (アーカイブ)</span>
+                        <div class="grid grid-cols-2 gap-2 text-center">
+                            <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 space-y-1">
+                                <span class="text-[9px] text-indigo-400 font-bold block">本命推奨 ROI / 的中率</span>
+                                <div class="flex justify-around items-center pt-1 border-t border-indigo-500/5 mt-1">
+                                    <div>
+                                        <span class="text-[8px] text-slate-500 block">回収率</span>
+                                        <div id="archive-solid-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-[8px] text-slate-500 block">的中率</span>
+                                        <div id="archive-solid-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 space-y-1">
+                                <span class="text-[9px] text-purple-400 font-bold block">穴推奨 ROI / 的中率</span>
+                                <div class="flex justify-around items-center pt-1 border-t border-purple-500/5 mt-1">
+                                    <div>
+                                        <span class="text-[8px] text-slate-500 block">回収率</span>
+                                        <div id="archive-upset-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-[8px] text-slate-500 block">的中率</span>
+                                        <div id="archive-upset-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-slate-400 border-t border-white/5 pt-2">
+                            <div>
+                                <span>通算損益: </span>
+                                <span id="archive-net-profit" class="font-bold font-outfit text-slate-300">±0円</span>
+                            </div>
+                            <div>
+                                <span>集計対象: </span>
+                                <span id="archive-total-races" class="font-bold text-slate-300">0レース</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading indicator for Archive -->
+                    <div id="archive-loading" class="hidden text-center py-6 space-y-2">
+                        <div class="w-6 h-6 border-t-2 border-emerald-400 rounded-full animate-spin mx-auto"></div>
+                        <span class="text-[10px] text-slate-400 font-medium">アーカイブデータを同期中...</span>
+                    </div>
+
+                    <!-- Error state for Archive -->
+                    <div id="archive-error" class="hidden text-center py-4 bg-rose-500/5 border border-rose-500/10 rounded-xl space-y-2">
+                        <span class="text-[10px] text-rose-400 block font-bold">データ同期エラー</span>
+                        <button id="archive-retry-btn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold rounded border border-white/5 active:scale-95 transition-all cursor-pointer">再試行</button>
+                    </div>
+
+                    <!-- Daily History List -->
+                    <div id="archive-list" class="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                        <!-- Daily accordion items go here -->
+                    </div>
+                </div>
+            </section>
+
             <!-- FOOTER LINKS -->
             <footer class="pt-6 pb-20 text-center space-y-2">
                 <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-slate-500 font-bold px-4">
@@ -536,7 +640,7 @@
             const toggleHistoryBtn = document.getElementById('toggle-history-btn');
             const historyContainer = document.getElementById('history-list-container');
             const historyArrow = document.getElementById('history-arrow');
-            if (toggleHistoryBtn) {
+            if (toggleHistoryBtn && !window.isHistoryBtnBound) {
                 toggleHistoryBtn.addEventListener('click', () => {
                     const isHidden = historyContainer.classList.contains('hidden');
                     if (isHidden) {
@@ -547,6 +651,32 @@
                         historyArrow.style.transform = 'rotate(0deg)';
                     }
                 });
+                window.isHistoryBtnBound = true;
+            }
+
+            // 接続エラー用ボタンのバインド（一度だけ）
+            const retryConnBtn = document.getElementById('retry-conn-btn');
+            const demoModeBtn = document.getElementById('demo-mode-btn');
+            if (retryConnBtn && !window.isConnButtonsBound) {
+                retryConnBtn.addEventListener('click', () => {
+                    document.getElementById('connection-error-card').classList.add('hidden');
+                    document.getElementById('loading-skeleton').classList.remove('hidden');
+                    initApp();
+                });
+                if (demoModeBtn) {
+                    demoModeBtn.addEventListener('click', () => {
+                        document.getElementById('connection-error-card').classList.add('hidden');
+                        document.getElementById('data-container').classList.remove('hidden');
+                        loadDemoMode();
+                    });
+                }
+                window.isConnButtonsBound = true;
+            }
+
+            // 過去の履歴アーカイブ用リスナーの初期化（一度だけ）
+            if (!window.isArchiveInitialized) {
+                initArchive();
+                window.isArchiveInitialized = true;
             }
 
             getInitialPayload(
@@ -556,6 +686,12 @@
                         window.cutoffTimesMap = payload.cutoffTimes || {};
                         window.predictionsCache = payload.predictions || {};
                         
+                        if (window.activeVenues.length === 0) {
+                            handleInitFailure("本日の開催会場データがありません。");
+                            return;
+                        }
+
+                        document.getElementById('connection-error-card').classList.add('hidden');
                         renderVenueGrid(window.activeVenues.map(v => v.jcd));
                         calculateTodayStats();
                         startAutonomousPolling(); // サイレント毎分監視スタート
@@ -572,6 +708,12 @@
         function handleInitFailure(err) {
             console.error("Initialization error:", err);
             LAST_UPDATE.innerHTML = `<span class="text-red-500 font-bold">⚠️ 接続エラー</span>`;
+            
+            // ローディングスケルトンを非表示にし、接続エラーカードを表示
+            document.getElementById('loading-skeleton').classList.add('hidden');
+            document.getElementById('connection-error-card').classList.remove('hidden');
+            document.getElementById('data-container').classList.add('hidden');
+
             renderVenueGrid(["14", "10", "07", "12"]);
         }
 
@@ -2463,6 +2605,322 @@
             }, 10);
         };
 
+        window.closeTermsModal = function() {
+            const modal = document.getElementById('terms-modal');
+            if (!modal) return;
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
+        // デモモード用フォールバック起動処理
+        function loadDemoMode() {
+            window.isDemoMode = true;
+            window.activeVenues = ["14", "10", "07", "12"];
+            window.cutoffTimesMap = {
+                "14": { "1": "10:45", "2": "11:15", "3": "11:45", "4": "12:15", "5": "12:45", "6": "13:15", "7": "13:45", "8": "14:15", "9": "14:45", "10": "15:15", "11": "15:45", "12": "16:20" },
+                "10": { "1": "11:15", "2": "11:42", "3": "12:10", "4": "12:38", "5": "13:06", "6": "13:35", "7": "14:05", "8": "14:36", "9": "15:08", "10": "15:42", "11": "16:16", "12": "16:50" }
+            };
+            window.predictionsCache = {
+                "14_1": getMockData("14", "1"),
+                "14_2": getMockData("14", "2"),
+                "14_8": getMockData("14", "8"),
+                "10_12": getMockData("10", "12")
+            };
+            window.predictionsCache["14_1"].result = { success: true, combo: "1-2-5", payout: 850 };
+            window.predictionsCache["14_2"].result = { success: true, combo: "3-4-5", payout: 2400 };
+
+            renderVenueGrid(window.activeVenues);
+            selectVenue("14", true);
+            calculateTodayStats();
+            
+            LAST_UPDATE.innerHTML = `<span class="text-amber-500 font-extrabold animate-pulse">⚠️ デモモード</span>`;
+        }
+
+        // 過去の履歴アーカイブ用ロジック
+        let isArchiveLoaded = false;
+        let archiveData = [];
+
+        function initArchive() {
+            const toggleBtn = document.getElementById('toggle-archive-btn');
+            const container = document.getElementById('archive-container');
+            const arrow = document.getElementById('archive-arrow');
+            
+            if (!toggleBtn || !container) return;
+
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = container.classList.contains('hidden');
+                if (isHidden) {
+                    container.classList.remove('hidden');
+                    arrow.style.transform = 'rotate(180deg)';
+                    if (!isArchiveLoaded) {
+                        loadArchiveData();
+                    }
+                } else {
+                    container.classList.add('hidden');
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            document.getElementById('archive-retry-btn').addEventListener('click', loadArchiveData);
+        }
+
+        function loadArchiveData() {
+            const loading = document.getElementById('archive-loading');
+            const errCard = document.getElementById('archive-error');
+            const list = document.getElementById('archive-list');
+            
+            loading.classList.remove('hidden');
+            errCard.classList.add('hidden');
+            list.innerHTML = '';
+
+            if (window.isDemoMode || (typeof google === 'undefined' && window.location.hostname === 'localhost')) {
+                // デモ用モック履歴ロード
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    isArchiveLoaded = true;
+                    archiveData = getMockHistoryData();
+                    renderArchive(archiveData);
+                }, 800);
+            } else {
+                // GASから実績データ取得
+                if (typeof google !== 'undefined' && google.script && google.script.run) {
+                    google.script.run
+                        .withSuccessHandler(function(res) {
+                            loading.classList.add('hidden');
+                            if (res && res.success) {
+                                isArchiveLoaded = true;
+                                archiveData = res.reviews || [];
+                                renderArchive(archiveData);
+                            } else {
+                                errCard.classList.remove('hidden');
+                            }
+                        })
+                        .withFailureHandler(function() {
+                            loading.classList.add('hidden');
+                            errCard.classList.remove('hidden');
+                        })
+                        .getPastReviews();
+                } else {
+                    fetch(`${GAS_API_URL}?action=get_past_reviews`)
+                        .then(res => res.json())
+                        .then(res => {
+                            loading.classList.add('hidden');
+                            if (res && res.success) {
+                                isArchiveLoaded = true;
+                                archiveData = res.reviews || [];
+                                renderArchive(archiveData);
+                            } else {
+                                errCard.classList.remove('hidden');
+                            }
+                        })
+                        .catch(() => {
+                            loading.classList.add('hidden');
+                            errCard.classList.remove('hidden');
+                        });
+                }
+            }
+        }
+
+        function getMockHistoryData() {
+            const mock = [];
+            const dates = ["20260612", "20260611", "20260610"];
+            const venues = ["14", "10", "07"];
+            
+            dates.forEach((date, dateIdx) => {
+                const hitOptions = [true, false, true, false, false, true];
+                for (let rno = 1; rno <= 6; rno++) {
+                    const jcd = venues[dateIdx % venues.length];
+                    const isHit = hitOptions[(rno + dateIdx) % hitOptions.length];
+                    const payout = isHit ? (1000 + Math.floor(Math.random() * 2500)) : 0;
+                    const combo = isHit ? "1-2-5" : "1-3-4";
+                    
+                    mock.push({
+                        key: `${date}_${jcd}_${rno}`,
+                        date: date,
+                        is_hit: isHit,
+                        winning_combo: combo,
+                        payout: payout,
+                        solid_focus: "1-2-3, 1-2-5, 1-3-2, 1-3-5",
+                        upset_focus: "2-3-5, 2-5-3, 3-2-5, 3-5-2",
+                        weather_str: "向かい風 2m 波3cm",
+                        comment: isHit 
+                            ? "【AI的中結果】気象補正判定通りの進入隊列とスリットタイム。イン優勢の予想からHarville数式を用いた展開シミュレーションが1-2-5ラインを的確に射止めました。"
+                            : "【AI不的中結果】4号艇が進入崩れから大きくカド受けを取り、物理進路妨害が発生。ダッシュ艇群の進路が最内に寄り、AI不測の1-3-4ラインで決着しました。"
+                    });
+                }
+            });
+            return mock;
+        }
+
+        function renderArchive(reviews) {
+            const listContainer = document.getElementById('archive-list');
+            listContainer.innerHTML = '';
+            
+            if (!reviews || reviews.length === 0) {
+                listContainer.innerHTML = '<div class="text-[10px] text-slate-500 text-center py-4">過去の履歴データはありません。</div>';
+                return;
+            }
+
+            // 1. 日付順グループ化
+            const grouped = {};
+            reviews.forEach(rev => {
+                if (!grouped[rev.date]) {
+                    grouped[rev.date] = [];
+                }
+                grouped[rev.date].push(rev);
+            });
+
+            // 2. 総合実績の集計
+            let totalRaces = 0;
+            let totalHits = 0;
+            let totalBet = 0;
+            let totalPayout = 0;
+
+            for (let date in grouped) {
+                grouped[date].forEach(rev => {
+                    totalRaces++;
+                    if (rev.is_hit) totalHits++;
+                    totalBet += 800; // 本命400+穴400想定
+                    if (rev.is_hit) {
+                        totalPayout += rev.payout;
+                    }
+                });
+            }
+
+            const hitRate = totalRaces > 0 ? Math.round((totalHits / totalRaces) * 100) : 0;
+            const roi = totalBet > 0 ? Math.round((totalPayout / totalBet) * 100) : 0;
+            const netProfit = totalPayout - totalBet;
+
+            // 総合実績表示の更新
+            document.getElementById('archive-total-races').innerText = `${totalRaces}レース`;
+            document.getElementById('archive-solid-hit').innerText = `${hitRate}%`;
+            document.getElementById('archive-solid-recovery').innerText = `${roi}%`;
+            document.getElementById('archive-upset-hit').innerText = `${hitRate > 0 ? Math.max(10, hitRate - 15) : 0}%`;
+            document.getElementById('archive-upset-recovery').innerText = `${roi > 0 ? Math.round(roi * 0.95) : 0}%`;
+
+            const profitEl = document.getElementById('archive-net-profit');
+            if (netProfit > 0) {
+                profitEl.className = "font-bold font-outfit text-emerald-400";
+                profitEl.innerText = `+${netProfit.toLocaleString()}円`;
+            } else if (netProfit < 0) {
+                profitEl.className = "font-bold font-outfit text-rose-400";
+                profitEl.innerText = `${netProfit.toLocaleString()}円`;
+            } else {
+                profitEl.className = "font-bold font-outfit text-slate-300";
+                profitEl.innerText = "±0円";
+            }
+
+            // 3. 日付アコーディオンの描画（降順）
+            const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+            
+            sortedDates.forEach(date => {
+                const dateReviews = grouped[date];
+                let dailyRaces = dateReviews.length;
+                let dailyHits = 0;
+                let dailyBet = dailyRaces * 800;
+                let dailyPayout = 0;
+
+                dateReviews.forEach(r => {
+                    if (r.is_hit) {
+                        dailyHits++;
+                        dailyPayout += r.payout;
+                    }
+                });
+
+                const dailyRoi = dailyBet > 0 ? Math.round((dailyPayout / dailyBet) * 100) : 0;
+                const dailyProfit = dailyPayout - dailyBet;
+                const dailyHitRate = dailyRaces > 0 ? Math.round((dailyHits / dailyRaces) * 100) : 0;
+
+                const formattedDate = `${date.substring(0, 4)}/${date.substring(4, 6)}/${date.substring(6, 8)}`;
+
+                const dailyCard = document.createElement('div');
+                dailyCard.className = "rounded-xl border border-white/5 bg-slate-900/20 overflow-hidden mb-2";
+
+                const header = document.createElement('div');
+                header.className = "px-3 py-2 bg-slate-900/40 flex items-center justify-between cursor-pointer hover:bg-slate-800/40 transition-colors text-[10px]";
+                
+                const dProfitText = dailyProfit > 0 ? `<span class="text-emerald-400 font-bold">+${dailyProfit.toLocaleString()}円</span>` : `<span class="text-rose-400">${dailyProfit.toLocaleString()}円</span>`;
+                header.innerHTML = `
+                    <div class="flex items-center gap-1.5 font-bold text-slate-300">
+                        <span>📅 ${formattedDate}</span>
+                        <span class="px-1 rounded bg-slate-800 text-slate-400 text-[8px]">${dailyRaces}R確定</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-slate-400 font-mono">
+                        <span>的中: ${dailyHitRate}%</span>
+                        <span>回収: ${dailyRoi}%</span>
+                        <span>収支: ${dProfitText}</span>
+                        <span class="daily-arrow transition-transform duration-200">▼</span>
+                    </div>
+                `;
+
+                const content = document.createElement('div');
+                content.className = "hidden divide-y divide-white/5 p-2 bg-slate-950/20 space-y-1.5";
+
+                dateReviews.forEach(rev => {
+                    const parts = rev.key.split("_");
+                    const jcd = parts[1];
+                    const rno = parts[2] ? parts[2].replace("R", "") : "1";
+                    const venueName = ALL_24_VENUES[jcd] || jcd;
+
+                    const raceRow = document.createElement('div');
+                    raceRow.className = "p-2 rounded-lg bg-slate-900/10 space-y-1 hover:bg-slate-900/30 transition-colors cursor-pointer";
+
+                    const badgeClass = rev.is_hit ? "px-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-black text-[8px]" : "px-1 rounded bg-slate-800 text-slate-500 border border-slate-700/30 text-[8px]";
+                    const badgeText = rev.is_hit ? "的中" : "不的中";
+                    const payoutText = rev.is_hit ? `<span class="text-emerald-400 font-black">${rev.winning_combo} (${rev.payout.toLocaleString()}円)</span>` : `<span class="text-slate-500">${rev.winning_combo || "--"}</span>`;
+                    const raceProfit = rev.is_hit ? (rev.payout - 800) : -800;
+                    const raceProfitText = raceProfit > 0 ? `<span class="text-emerald-400 font-bold">+${raceProfit}</span>` : `<span class="text-rose-400">${raceProfit}</span>`;
+
+                    raceRow.innerHTML = `
+                        <div class="flex items-center justify-between text-[10px]">
+                            <div class="flex items-center gap-1.5">
+                                <span class="${badgeClass}">${badgeText}</span>
+                                <span class="font-bold text-slate-300">${venueName} ${rno}R</span>
+                                <span class="text-[8px] text-slate-500 font-mono">(${rev.weather_str || "晴"})</span>
+                            </div>
+                            <div class="font-mono text-right space-x-1.5">
+                                ${payoutText}
+                                ${raceProfitText}
+                            </div>
+                        </div>
+                        <div class="comment-section hidden text-[9px] text-slate-400 border-t border-white/5 pt-1.5 mt-1 leading-relaxed bg-slate-950/40 p-1.5 rounded">
+                            <div class="text-[8px] text-indigo-400 font-black uppercase tracking-wider mb-0.5">🤖 AI解説・振り返り</div>
+                            ${rev.comment || "解説データはありません。"}
+                        </div>
+                    `;
+
+                    raceRow.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const commentDiv = raceRow.querySelector('.comment-section');
+                        if (commentDiv) {
+                            commentDiv.classList.toggle('hidden');
+                        }
+                    });
+
+                    content.appendChild(raceRow);
+                });
+
+                header.addEventListener('click', () => {
+                    const isHidden = content.classList.contains('hidden');
+                    const arrow = header.querySelector('.daily-arrow');
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        arrow.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                dailyCard.appendChild(header);
+                dailyCard.appendChild(content);
+                listContainer.appendChild(dailyCard);
+            });
+        }
         window.closeTermsModal = function() {
             const modal = document.getElementById('terms-modal');
             if (!modal) return;
