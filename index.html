@@ -252,6 +252,14 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ローディング中バナー広告枠 -->
+            <div class="w-full flex justify-center py-2 min-h-[60px] bg-slate-900/40 rounded-xl border border-white/5 items-center relative">
+                <span class="absolute top-0.5 left-1.5 text-[7px] text-slate-600">Sponsored</span>
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/s/b4b8bf335cd1cf7ce012ef5a8eb6cd24"></script>
+                <!-- admax -->
+            </div>
         </div>
 
         <!-- CONNECTION ERROR CARD (HIDDEN BY DEFAULT) -->
@@ -1106,6 +1114,7 @@
             const ai = result.ai;
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
+            window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
             const aiCard = document.getElementById('ai-card');
             const aiModeAlert = document.getElementById('ai-mode-alert');
@@ -1308,7 +1317,7 @@
                     const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
                                      window.location.hostname.indexOf('googleusercontent') !== -1;
 
-                    if (index >= 2 && !isGasApp) {
+                    if (index >= 1 && !isGasApp) {
                         focusBadgeWrapper.classList.add('premium-blur');
                         
                         const lockOverlay = document.createElement('div');
@@ -2557,11 +2566,22 @@
                 modal.classList.add('opacity-100');
             }, 10);
 
-            // カウントダウン開始
-            let timeLeft = 5;
+            // フェーズに応じてカウントダウン秒数を決定（第一次=5秒、第二次/三次=15秒）
+            const phase = window.currentPhase || 1;
+            let timeLeft = (phase >= 2) ? 15 : 5;
+            const phaseLabel = phase >= 3 ? '第三次予想' : phase === 2 ? '第二次予想' : '第一次予想';
+
             btn.disabled = true;
             btn.className = "w-full py-2.5 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed border border-white/5 transition-all";
             btn.innerText = `あと ${timeLeft} 秒お待ちください...`;
+
+            // モーダルのタイトルにフェーズを反映
+            const modalTitle = modal.querySelector('h3');
+            if (modalTitle) modalTitle.textContent = `🔒 ${phaseLabel}ロック解除`;
+            const modalDesc = modal.querySelector('p');
+            if (modalDesc) modalDesc.textContent = phase >= 2
+                ? '第二次予想（直前展示反映）は価値が高いため15秒の広告視聴が必要です。'
+                : '広告を視聴して第一次予想の買い目を開示します（5秒）。';
 
             const interval = setInterval(() => {
                 timeLeft--;
