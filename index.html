@@ -831,8 +831,18 @@
 
             let result = window.predictionsCache[cacheKey];
 
-            // プレースホルダー（「号艇選手」などが入っている、あるいはキャッシュが無い場合）は読み込み中（SKELETON）として扱う
-            const isPlaceholder = !result || (result.data && result.data.length > 0 && result.data[0].name.includes("号艇選手"));
+            // AI予想が実データかどうか判定（フォーカスが "-" でなく、待機コメントでもない）
+            const hasRealAI = result && result.ai &&
+                result.ai.focus && result.ai.focus.length > 0 &&
+                result.ai.focus[0] !== "-" &&
+                !(result.ai.comment || "").includes("自律解析待機中");
+
+            // 名前がプレースホルダー（出走表未公開）かどうか
+            const hasPlaceholderNames = result && result.data && result.data.length > 0 &&
+                result.data[0].name.includes("号艇選手");
+
+            // 完全にデータなし = 真のプレースホルダー（AI予想も未生成）
+            const isPlaceholder = !result || (!hasRealAI && hasPlaceholderNames);
 
             if (isPlaceholder) {
                 WELCOME_MSG.classList.add('hidden');
