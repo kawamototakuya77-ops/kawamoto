@@ -840,9 +840,11 @@
             let result = window.predictionsCache[cacheKey];
 
             // AI予想が実データかどうか判定（フォーカスが "-" でなく、待機コメントでもない）
-            const hasRealAI = result && result.ai &&
-                result.ai.focus && result.ai.focus.length > 0 &&
-                result.ai.focus[0] !== "-" &&
+            const _aiFocus = result && result.ai && (
+                (result.ai.solid_focus && result.ai.solid_focus.length > 0 && result.ai.solid_focus[0] !== "-") ||
+                (result.ai.focus && result.ai.focus.length > 0 && result.ai.focus[0] !== "-")
+            );
+            const hasRealAI = result && result.ai && _aiFocus &&
                 !(result.ai.comment || "").includes("自律解析待機中");
 
             // 名前がプレースホルダー（出走表未公開）かどうか
@@ -1086,7 +1088,9 @@
             if (!pred || !pred.ai) return [];
             let finalFocus = [];
             const ai = pred.ai;
-            if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
+            if (ai.solid_focus && ai.solid_focus.length > 0 && ai.solid_focus[0] !== "-") {
+                finalFocus = ai.solid_focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
+            } else if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
                 finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
             }
             
