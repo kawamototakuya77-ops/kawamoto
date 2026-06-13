@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>遶ｶ濶・峩蜑咲黄逅・I - 繝ｪ繧｢繝ｫ繧ｿ繧､繝�螻暮幕莠域ｸｬ繝繝・す繝･繝懊・繝・/title>
+    <title>競艇直前物理AI - リアルタイム展開予測ダッシュボード</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Goolge Fonts -->
@@ -77,50 +77,50 @@
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse glow-green"></div>
-                <h1 class="text-lg font-bold font-outfit tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">遶ｶ濶・峩蜑咲黄逅・I</h1>
+                <h1 class="text-lg font-bold font-outfit tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">競艇直前物理AI</h1>
             </div>
             
             <!-- Quick Info -->
-            <div id="last-update" class="text-[10px] text-slate-400 font-mono">譛ｪ謗･邯・/div>
+            <div id="last-update" class="text-[10px] text-slate-400 font-mono">未接続</div>
         </div>
     </header>
 
     <main class="max-w-md mx-auto px-4 mt-4 space-y-4">
 
-        <!-- SELECTOR PANEL (STATION & RACE) - 蜈ｨ蝗ｽ24蝣ｴ謚慕･ｨ逕ｻ髱｢鬚ｨ繧ｰ繝ｪ繝・ラ -->
+        <!-- SELECTOR PANEL (STATION & RACE) - 全国24場投票画面風グリッド -->
         <section class="p-4 rounded-2xl glass space-y-4 shadow-md">
             <!-- TODAY'S STATS CARD (GLOBAL RECOVERY & HIT RATE) - MOVED TO TOP -->
             <div id="today-stats-card" class="hidden p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2.5 mb-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">�醇 譛ｬ譌･縺ｮAI繝医・繧ｿ繝ｫ謌千ｸｾ</span>
-                    <span id="stats-progress-badge" class="px-2 py-0.5 rounded text-[9px] font-black bg-slate-900 text-slate-400">0 / 0 繝ｬ繝ｼ繧ｹ遒ｺ螳・/span>
+                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAIトータル成績</span>
+                    <span id="stats-progress-badge" class="px-2 py-0.5 rounded text-[9px] font-black bg-slate-900 text-slate-400">0 / 0 レース確定</span>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <!-- 譛ｬ蜻ｽ謌千ｸｾ -->
+                    <!-- 本命成績 -->
                     <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 text-center space-y-1">
-                        <span class="text-[9px] text-indigo-400 font-bold block">�櫨 譛ｬ蜻ｽ謗ｨ螂ｨ</span>
+                        <span class="text-[9px] text-indigo-400 font-bold block">🔥 本命推奨</span>
                         <div class="grid grid-cols-2 gap-1 border-t border-indigo-500/5 pt-1 mt-1">
                             <div>
-                                <span class="text-[8px] text-slate-500 block">蝗槫庶邇・/span>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
                                 <div id="stats-solid-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
                             </div>
                             <div>
-                                <span class="text-[8px] text-slate-500 block">逧・ｸｭ邇・/span>
+                                <span class="text-[8px] text-slate-500 block">的中率</span>
                                 <div id="stats-solid-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
                             </div>
                         </div>
                     </div>
-                    <!-- 遨ｴ謌千ｸｾ -->
+                    <!-- 穴成績 -->
                     <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 text-center space-y-1">
-                        <span class="text-[9px] text-purple-400 font-bold block">笞｡ 遨ｴ謗ｨ螂ｨ</span>
+                        <span class="text-[9px] text-purple-400 font-bold block">⚡ 穴推奨</span>
                         <div class="grid grid-cols-2 gap-1 border-t border-purple-500/5 pt-1 mt-1">
                             <div>
-                                <span class="text-[8px] text-slate-500 block">蝗槫庶邇・/span>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
                                 <div id="stats-upset-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
                             </div>
                             <div>
-                                <span class="text-[8px] text-slate-500 block">逧・ｸｭ邇・/span>
+                                <span class="text-[8px] text-slate-500 block">的中率</span>
                                 <div id="stats-upset-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
                             </div>
                         </div>
@@ -129,38 +129,38 @@
 
                 <div class="flex items-center justify-between text-[9px] text-slate-400 border-t border-white/5 pt-2">
                     <div class="flex items-center gap-1">
-                        <span>繝医・繧ｿ繝ｫ蜿取髪:</span>
-                        <span id="stats-net-profit" class="font-bold font-outfit text-slate-300">ﾂｱ0蜀・/span>
+                        <span>トータル収支:</span>
+                        <span id="stats-net-profit" class="font-bold font-outfit text-slate-300">±0円</span>
                     </div>
                     <button id="toggle-history-btn" class="flex items-center gap-1 font-bold hover:text-slate-200 transition-colors focus:outline-none">
-                        <span>隧ｳ邏ｰ螻･豁ｴ</span>
-                        <span id="history-arrow" class="transition-transform duration-200 inline-block">笆ｼ</span>
+                        <span>詳細履歴</span>
+                        <span id="history-arrow" class="transition-transform duration-200 inline-block">▼</span>
                     </button>
                 </div>
                 
                 <div id="history-list-container" class="hidden mt-1 max-h-32 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
-                    <div class="text-[9px] text-slate-500 text-center py-2">遒ｺ螳夂ｵ先棡縺ｯ縺ｾ縺�縺ゅｊ縺ｾ縺帙ｓ縲・/div>
+                    <div class="text-[9px] text-slate-500 text-center py-2">確定結果はまだありません。</div>
                 </div>
             </div>
 
-            <!-- 蜈ｨ蝗ｽ24蝣ｴ繧ｰ繝ｪ繝・ラ -->
+            <!-- 全国24場グリッド -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        �潤 蜈ｨ蝗ｽ24蝣ｴ 髢句ぎ迥ｶ豕・
+                        🏁 全国24場 開催状況
                     </label>
-                    <span class="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/10">邱第棧・壽悽譌･髢句ぎ</span>
+                    <span class="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/10">緑枠：本日開催</span>
                 </div>
                 <div id="venue-grid" class="grid grid-cols-4 gap-1 p-2 bg-slate-950/50 rounded-xl border border-white/5 text-center">
-                    <!-- 24蝣ｴ縺繰avaScript縺ｧ蜍慕噪縺ｫ逕滓・縺輔ｌ縺ｾ縺・-->
+                    <!-- 24場がJavaScriptで動的に生成されます -->
                 </div>
-                <!-- 譌｢蟄労S繝ｭ繧ｸ繝・け莠呈鋤逕ｨ縺ｮ髫�縺怜・蜉・-->
+                <!-- 既存JSロジック互換用の隠し入力 -->
                 <input type="hidden" id="jcd-select" value="14">
             </div>
 
             <div class="grid grid-cols-1">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">繝ｬ繝ｼ繧ｹ逡ｪ蜿ｷ驕ｸ謚・/label>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">レース番号選択</label>
                     <select id="rno-select" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2.5 text-sm font-black text-white focus:outline-none focus:border-emerald-500/50 transition-colors">
                         <option value="1" selected>1 R</option>
                         <option value="2">2 R</option>
@@ -184,16 +184,16 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span id="btn-text">�売 譛譁ｰ繝・・繧ｿ繧定｡ｨ遉ｺ</span>
+                <span id="btn-text">🔄 最新データを表示</span>
             </button>
         </section>
 
 
         <!-- MAIN SCREEN (INITIAL STATE - HIDDEN BY DEFAULT FOR AUTO-LOAD UX) -->
         <div id="welcome-message" class="hidden p-8 rounded-2xl glass text-center space-y-3">
-            <div class="text-4xl">�潤</div>
-            <h3 class="text-base font-bold text-white">繝・・繧ｿ繧偵Ο繝ｼ繝峨＠縺ｦ縺上□縺輔＞</h3>
-            <p class="text-xs text-slate-400">荳翫・譖ｴ譁ｰ繝懊ち繝ｳ繧呈款縺吶→縲√く繝｣繝・す繝･縺輔ｌ縺溽峩蜑榊ｱ慕､ｺ繝・・繧ｿ縺ｨ逡ｪ邨・渕譛ｬ繝・・繧ｿ縺悟・閾ｪ蜍輔〒繝槭・繧ｸ縺輔ｌ縺ｾ縺吶・/p>
+            <div class="text-4xl">🏁</div>
+            <h3 class="text-base font-bold text-white">データをロードしてください</h3>
+            <p class="text-xs text-slate-400">上の更新ボタンを押すと、キャッシュされた直前展示データと番組基本データが全自動でマージされます。</p>
         </div>
 
         <!-- PREMIUM AI LOADING STATE (ACTIVE BY DEFAULT) -->
@@ -211,7 +211,7 @@
                     
                     <div class="text-center space-y-1">
                         <h3 class="text-sm font-bold text-emerald-400 tracking-widest uppercase">Deep Data Analysis</h3>
-                        <p id="loading-progress-text" class="text-[10px] text-slate-300 font-mono h-4">[1/4] 驕主悉180譌･縺ｮ譚｡莉ｶ蜷郁・DB縺ｨ辣ｧ蜷井ｸｭ...</p>
+                        <p id="loading-progress-text" class="text-[10px] text-slate-300 font-mono h-4">[1/4] 過去180日の条件合致DBと照合中...</p>
                     </div>
                     
                     <!-- Progress Bar -->
@@ -253,7 +253,7 @@
                 </div>
             </div>
 
-            <!-- 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ荳ｭ繝舌リ繝ｼ蠎・相譫� -->
+            <!-- ローディング中バナー広告枠 -->
             <div class="w-full flex justify-center py-2 min-h-[60px] bg-slate-900/40 rounded-xl border border-white/5 items-center relative">
                 <span class="absolute top-0.5 left-1.5 text-[7px] text-slate-600">Sponsored</span>
                 <!-- admax -->
@@ -264,17 +264,17 @@
 
         <!-- CONNECTION ERROR CARD (HIDDEN BY DEFAULT) -->
         <div id="connection-error-card" class="hidden p-6 rounded-2xl glass border border-rose-500/20 bg-rose-950/10 shadow-lg text-center space-y-4">
-            <div class="text-4xl">笞�・・/div>
-            <h3 class="text-base font-bold text-rose-400">繝・・繧ｿ蜷梧悄繧ｨ繝ｩ繝ｼ</h3>
+            <div class="text-4xl">⚠️</div>
+            <h3 class="text-base font-bold text-rose-400">データ同期エラー</h3>
             <p class="text-xs text-slate-300 leading-relaxed">
-                GAS・・oogle Apps Script・峨→縺ｮ騾壻ｿ｡縺ｫ螟ｱ謨励＠縺ｾ縺励◆縲よ凾髢薙ｒ縺翫＞縺ｦ蜀肴磁邯壹ｒ縺願ｩｦ縺励＞縺溘□縺上°縲；AS Web繧｢繝励Μ縺ｮ蜈ｬ髢玖ｨｭ螳夲ｼ亥・蜩｡縺ｫ繧｢繧ｯ繧ｻ繧ｹ讓ｩ縺御ｻ倅ｸ弱＆繧後※縺・ｋ縺具ｼ峨ｒ縺皮｢ｺ隱阪￥縺�縺輔＞縲・
+                GAS（Google Apps Script）との通信に失敗しました。時間をおいて再接続をお試しいただくか、GAS Webアプリの公開設定（全員にアクセス権が付与されているか）をご確認ください。
             </p>
             <div class="flex flex-col gap-2 pt-2">
                 <button id="retry-conn-btn" class="w-full h-10 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-bold text-xs rounded-xl shadow-lg transition-all active:scale-95 duration-200 cursor-pointer">
-                    �売 蜀崎ｩｦ陦・(Retry)
+                    🔄 再試行 (Retry)
                 </button>
                 <button id="demo-mode-btn" class="w-full h-10 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-white/5 transition-all active:scale-95 duration-200 cursor-pointer">
-                    �捗 繝・Δ繝・・繧ｿ縺ｧ襍ｷ蜍輔☆繧・(Demo Mode)
+                    💻 デモデータで起動する (Demo Mode)
                 </button>
             </div>
         </div>
@@ -290,20 +290,20 @@
                 <!-- Conclusion & Accuracy -->
                 <div class="flex items-center justify-between gap-2 bg-slate-950/50 p-3 rounded-xl border border-white/5">
                     <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">繧､繝ｳ騾・￡譛溷ｾ・｢ｺ蠎ｦ</span>
-                        <div id="ai-accuracy" class="text-lg font-black font-outfit text-indigo-300 tracking-tight">繧､繝ｳ騾・￡遒ｺ蠎ｦ: --%</div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">イン逃げ期待確度</span>
+                        <div id="ai-accuracy" class="text-lg font-black font-outfit text-indigo-300 tracking-tight">イン逃げ確度: --%</div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">AI莠域Φ菫｡鬆ｼ蠎ｦ</span>
-                        <div id="ai-confidence-stars" class="text-xs text-amber-400 font-extrabold font-mono">笘・・笘・・笘・/div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">AI予想信頼度</span>
+                        <div id="ai-confidence-stars" class="text-xs text-amber-400 font-extrabold font-mono">★★★☆☆</div>
                     </div>
                 </div>
 
                 <!-- Recommended Focus -->
                 <div class="bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">謨ｰ蟄ｦ逧・耳螂ｨ繝輔か繝ｼ繧ｫ繧ｹ (3騾｣蜊・</span>
-                        <span class="text-[9px] text-emerald-400 font-bold animate-pulse">�争 繧ｿ繝・・縺ｧ螻暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ騾｣蜍包ｼ・/span>
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                        <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
                     </div>
                     <div id="ai-focus" class="flex flex-wrap gap-2">
                         <!-- Focus badges here -->
@@ -313,21 +313,21 @@
 
             <!-- AI DETAILED COMMENT CARD (EXPLANATION RIGHT AFTER CONCLUSION) -->
             <section class="p-4 rounded-2xl glass border border-white/5 shadow-md space-y-2.5">
-                <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit block">繝励ΟAI迚ｩ逅・ｱ暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ隗｣隱ｬ</span>
+                <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit block">プロAI物理展開シミュレーション解説</span>
                 <p id="ai-comment" class="text-xs leading-relaxed text-slate-200">
-                    繝・・繧ｿ繧定ｪｭ縺ｿ霎ｼ縺ｿ荳ｭ...
+                    データを読み込み中...
                 </p>
             </section>
 
             <!-- SPONSOR BANNERS (RAKUTEN TRAVEL & GOLF) -->
             <div class="w-full flex flex-col items-center gap-2 py-2">
                 <div class="bg-slate-900/60 border border-white/5 rounded-xl w-full p-4 flex flex-col items-center gap-3 relative shadow-inner">
-                    <span class="text-[9px] text-slate-500 font-bold self-start">縺翫☆縺吶ａ謠先声繝ｪ繝ｳ繧ｯ</span>
+                    <span class="text-[9px] text-slate-500 font-bold self-start">おすすめ提携リンク</span>
                     <div class="flex items-center justify-center gap-4 flex-wrap">
                         <!-- Rakuten Travel -->
                         <div class="overflow-hidden rounded-lg border border-white/5 shadow-md hover:border-slate-500 transition-all duration-200">
                             <a href="https://rpx.a8.net/svt/ejp?a8mat=4B5RS6+94NAPE+2HOM+6I9N5&rakuten=y&a8ejpredirect=http%3A%2F%2Fhb.afl.rakuten.co.jp%2Fhgc%2F0eb4779e.5d30c5ba.0eb4779f.b871e4e3%2Fa26060923471_4B5RS6_94NAPE_2HOM_6I9N5%3Fpc%3Dhttp%253A%252F%252Ftravel.rakuten.co.jp%252F%26m%3Dhttp%253A%252F%252Ftravel.rakuten.co.jp%252F" rel="nofollow" target="_blank">
-                                <img src="https://hbb.afl.rakuten.co.jp/hsb/0ea7f9a4.79280dcb.0ea7f99d.1ac92fca/153145/" border="0" alt="讌ｽ螟ｩ繝医Λ繝吶Ν">
+                                <img src="https://hbb.afl.rakuten.co.jp/hsb/0ea7f9a4.79280dcb.0ea7f99d.1ac92fca/153145/" border="0" alt="楽天トラベル">
                             </a>
                             <img border="0" width="1" height="1" src="https://www11.a8.net/0.gif?a8mat=4B5RS6+94NAPE+2HOM+6I9N5" alt="">
                         </div>
@@ -335,7 +335,7 @@
                         <!-- Rakuten GORA -->
                         <div class="overflow-hidden rounded-lg border border-white/5 shadow-md hover:border-slate-500 transition-all duration-200">
                             <a href="https://rpx.a8.net/svt/ejp?a8mat=4B5RS6+94NAPE+2HOM+7MZOX&rakuten=y&a8ejpredirect=http%3A%2F%2Fhb.afl.rakuten.co.jp%2Fhgc%2F0eb4cf04.fd65a65c.0eb4cf05.fa3f041c%2Fa26060923471_4B5RS6_94NAPE_2HOM_7MZOX%3Fpc%3Dhttp%253A%252F%252Fgora.golf.rakuten.co.jp%252F%26m%3Dhttp%253A%252F%252Fwww.rakuten.co.jp%252F" rel="nofollow" target="_blank">
-                                <img src="https://hbb.afl.rakuten.co.jp/hsb/0eb47da0.3efe4ac2.0eb47d8d.fb51150d/" border="0" alt="讌ｽ螟ｩGORA">
+                                <img src="https://hbb.afl.rakuten.co.jp/hsb/0eb47da0.3efe4ac2.0eb47d8d.fb51150d/" border="0" alt="楽天GORA">
                             </a>
                             <img border="0" width="1" height="1" src="https://www11.a8.net/0.gif?a8mat=4B5RS6+94NAPE+2HOM+7MZOX" alt="">
                         </div>
@@ -346,45 +346,45 @@
             <!-- REALTIME WEATHER CARD -->
             <section id="weather-card" class="p-4 rounded-2xl glass shadow-md space-y-3 transition-all duration-300">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">逶ｴ蜑咲黄逅・ｰ苓ｱ｡迥ｶ豕・/span>
-                    <span id="weather-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">繝ｪ繧｢繝ｫ繧ｿ繧､繝�</span>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">直前物理気象状況</span>
+                    <span id="weather-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">リアルタイム</span>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-2">
                     <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center">
-                        <span class="text-[10px] text-slate-400 font-bold block mb-1">螟ｩ蛟・/ 豌玲ｸｩ</span>
+                        <span class="text-[10px] text-slate-400 font-bold block mb-1">天候 / 気温</span>
                         <div class="flex items-center justify-center gap-1">
                             <span id="weather-txt" class="text-xs font-black text-white">--</span>
-                            <span id="temp-txt" class="text-xs font-bold text-slate-300">--邃・/span>
+                            <span id="temp-txt" class="text-xs font-bold text-slate-300">--℃</span>
                         </div>
                     </div>
                     <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center relative overflow-hidden">
-                        <span class="text-[10px] text-slate-400 font-bold block mb-1">鬚ｨ蜷・/ 鬚ｨ騾・/span>
+                        <span class="text-[10px] text-slate-400 font-bold block mb-1">風向 / 風速</span>
                         <div class="flex items-center justify-center gap-1">
-                            <span id="wind-dir-arrow" class="text-[9px] font-black text-emerald-400 inline-block transition-transform duration-500" style="transform: rotate(0deg);">竊・/span>
+                            <span id="wind-dir-arrow" class="text-[9px] font-black text-emerald-400 inline-block transition-transform duration-500" style="transform: rotate(0deg);">↑</span>
                             <span id="wind-dir-txt" class="text-[10px] font-black text-white">--</span>
                             <span id="wind-speed-txt" class="text-xs font-bold text-slate-300">--m</span>
                         </div>
                     </div>
                     <div class="bg-slate-900/50 p-2.5 rounded-xl border border-white/5 text-center">
-                        <span class="text-[10px] text-slate-400 font-bold block mb-1">豕｢鬮・/ 豌ｴ貂ｩ</span>
+                        <span class="text-[10px] text-slate-400 font-bold block mb-1">波高 / 水温</span>
                         <div class="flex items-center justify-center gap-1">
                             <span id="wave-txt" class="text-xs font-black text-white">--cm</span>
-                            <span id="water-temp-txt" class="text-xs font-bold text-slate-300">--邃・/span>
+                            <span id="water-temp-txt" class="text-xs font-bold text-slate-300">--℃</span>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Physical modifier effect -->
                 <div id="wind-effect-banner" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center text-[10px] font-bold text-emerald-400 leading-normal">
-                    迚ｩ逅・｣懈ｭ｣蛻､螳・ --
+                    物理補正判定: --
                 </div>
             </section>
 
             <!-- START EXHIBITION SLIT SIMULATOR -->
             <section class="p-4 rounded-2xl glass shadow-md space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">繧ｹ繧ｿ繝ｼ繝亥ｱ慕､ｺ繧ｹ繝ｪ繝・ヨ蜀咲樟</span>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">スタート展示スリット再現</span>
                     <span id="slit-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold"></span>
                 </div>
                 
@@ -399,8 +399,8 @@
                     </div>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 px-1 font-mono">
-                    <span>竊・繝繝・す繝･繝ｻ繧ｹ繝ｭ繝ｼ</span>
-                    <span>繧ｹ繝ｪ繝・ヨ繝ｩ繧､繝ｳ 筐・/span>
+                    <span>← ダッシュ・スロー</span>
+                    <span>スリットライン ➔</span>
                 </div>
             </section>
 
@@ -408,11 +408,11 @@
             <section id="tactical-sim-card" class="p-4 rounded-2xl glass shadow-md space-y-3 overflow-hidden transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">AI 1繝槭・繧ｯ謌ｦ陦灘ｱ暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ</span>
-                        <span class="px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-extrabold text-[8px] rounded uppercase">API豸郁ｲｻ繧ｼ繝ｭ</span>
+                        <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">AI 1マーク戦術展開シミュレータ</span>
+                        <span class="px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-extrabold text-[8px] rounded uppercase">API消費ゼロ</span>
                     </div>
                     <button id="replay-sim-btn" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-1 rounded border border-white/5 transition-colors">
-                        �売 蜀咲函
+                        🔄 再生
                     </button>
                 </div>
                 
@@ -421,15 +421,15 @@
                     
                     <!-- Tactical overlay indicators -->
                     <div class="absolute bottom-2 left-3 text-[8px] text-slate-500 font-bold leading-normal font-mono flex gap-2">
-                        <span>笳・襍､逋ｽ繧ｳ繝ｼ繝ｳ: 1繝槭・繧ｯ</span>
-                        <span>笳・轤ｹ邱・ 譌句屓闊ｪ霍｡</span>
+                        <span>● 赤白コーン: 1マーク</span>
+                        <span>● 点線: 旋回航跡</span>
                     </div>
                 </div>
                 <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
                     <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                        <span>�早・・螻暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ蛻・ｊ譖ｿ縺・/span>
-                        <span class="text-[8px] text-slate-500">雋ｷ縺・岼驕ｸ謚槭〒螻暮幕縺悟・繧頑崛繧上ｊ縺ｾ縺・/span>
+                        <span>👁️ 展開シミュレーション切り替え</span>
+                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
                     </div>
                     <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
                     <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
@@ -437,8 +437,8 @@
                 <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
                     <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                        <span>�早・・螻暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ蛻・ｊ譖ｿ縺・/span>
-                        <span class="text-[8px] text-slate-500">雋ｷ縺・岼驕ｸ謚槭〒螻暮幕縺悟・繧頑崛繧上ｊ縺ｾ縺・/span>
+                        <span>👁️ 展開シミュレーション切り替え</span>
+                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
                     </div>
                     <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
                     <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
@@ -448,7 +448,7 @@
             <!-- MERGED RACER TABLE -->
             <section class="rounded-2xl glass shadow-md overflow-hidden">
                 <div class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between">
-                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">螻慕､ｺ繝槭・繧ｸ隧ｳ邏ｰ繝・・繧ｿ</span>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">展示マージ詳細データ</span>
                     <span id="detail-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold"></span>
                 </div>
                 <div id="racer-list" class="divide-y divide-white/5">
@@ -459,36 +459,36 @@
             <!-- PAST HISTORY ARCHIVE -->
             <section class="rounded-2xl glass shadow-md overflow-hidden">
                 <div id="toggle-archive-btn" class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between cursor-pointer hover:bg-slate-800/30 transition-colors">
-                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5 font-outfit">�投 AI螳溽ｸｾ繧｢繝ｼ繧ｫ繧､繝悶・驕主悉縺ｮ螻･豁ｴ</span>
-                    <span id="archive-arrow" class="text-slate-400 transition-transform duration-200 inline-block">笆ｼ</span>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5 font-outfit">📊 AI実績アーカイブ・過去の履歴</span>
+                    <span id="archive-arrow" class="text-slate-400 transition-transform duration-200 inline-block">▼</span>
                 </div>
                 <div id="archive-container" class="hidden p-4 space-y-4">
                     <!-- Overall Stats Panel -->
                     <div class="p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
-                        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">�醇 AI騾夂ｮ玲・邵ｾ (繧｢繝ｼ繧ｫ繧､繝・</span>
+                        <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 AI通算成績 (アーカイブ)</span>
                         <div class="grid grid-cols-2 gap-2 text-center">
                             <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 space-y-1">
-                                <span class="text-[9px] text-indigo-400 font-bold block">譛ｬ蜻ｽ謗ｨ螂ｨ ROI / 逧・ｸｭ邇・/span>
+                                <span class="text-[9px] text-indigo-400 font-bold block">本命推奨 ROI / 的中率</span>
                                 <div class="flex justify-around items-center pt-1 border-t border-indigo-500/5 mt-1">
                                     <div>
-                                        <span class="text-[8px] text-slate-500 block">蝗槫庶邇・/span>
+                                        <span class="text-[8px] text-slate-500 block">回収率</span>
                                         <div id="archive-solid-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
                                     </div>
                                     <div>
-                                        <span class="text-[8px] text-slate-500 block">逧・ｸｭ邇・/span>
+                                        <span class="text-[8px] text-slate-500 block">的中率</span>
                                         <div id="archive-solid-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 space-y-1">
-                                <span class="text-[9px] text-purple-400 font-bold block">遨ｴ謗ｨ螂ｨ ROI / 逧・ｸｭ邇・/span>
+                                <span class="text-[9px] text-purple-400 font-bold block">穴推奨 ROI / 的中率</span>
                                 <div class="flex justify-around items-center pt-1 border-t border-purple-500/5 mt-1">
                                     <div>
-                                        <span class="text-[8px] text-slate-500 block">蝗槫庶邇・/span>
+                                        <span class="text-[8px] text-slate-500 block">回収率</span>
                                         <div id="archive-upset-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
                                     </div>
                                     <div>
-                                        <span class="text-[8px] text-slate-500 block">逧・ｸｭ邇・/span>
+                                        <span class="text-[8px] text-slate-500 block">的中率</span>
                                         <div id="archive-upset-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
                                     </div>
                                 </div>
@@ -496,12 +496,12 @@
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-slate-400 border-t border-white/5 pt-2">
                             <div>
-                                <span>騾夂ｮ玲錐逶・ </span>
-                                <span id="archive-net-profit" class="font-bold font-outfit text-slate-300">ﾂｱ0蜀・/span>
+                                <span>通算損益: </span>
+                                <span id="archive-net-profit" class="font-bold font-outfit text-slate-300">±0円</span>
                             </div>
                             <div>
-                                <span>髮・ｨ亥ｯｾ雎｡: </span>
-                                <span id="archive-total-races" class="font-bold text-slate-300">0繝ｬ繝ｼ繧ｹ</span>
+                                <span>集計対象: </span>
+                                <span id="archive-total-races" class="font-bold text-slate-300">0レース</span>
                             </div>
                         </div>
                     </div>
@@ -509,13 +509,13 @@
                     <!-- Loading indicator for Archive -->
                     <div id="archive-loading" class="hidden text-center py-6 space-y-2">
                         <div class="w-6 h-6 border-t-2 border-emerald-400 rounded-full animate-spin mx-auto"></div>
-                        <span class="text-[10px] text-slate-400 font-medium">繧｢繝ｼ繧ｫ繧､繝悶ョ繝ｼ繧ｿ繧貞酔譛滉ｸｭ...</span>
+                        <span class="text-[10px] text-slate-400 font-medium">アーカイブデータを同期中...</span>
                     </div>
 
                     <!-- Error state for Archive -->
                     <div id="archive-error" class="hidden text-center py-4 bg-rose-500/5 border border-rose-500/10 rounded-xl space-y-2">
-                        <span class="text-[10px] text-rose-400 block font-bold">繝・・繧ｿ蜷梧悄繧ｨ繝ｩ繝ｼ</span>
-                        <button id="archive-retry-btn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold rounded border border-white/5 active:scale-95 transition-all cursor-pointer">蜀崎ｩｦ陦・/button>
+                        <span class="text-[10px] text-rose-400 block font-bold">データ同期エラー</span>
+                        <button id="archive-retry-btn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold rounded border border-white/5 active:scale-95 transition-all cursor-pointer">再試行</button>
                     </div>
 
                     <!-- Daily History List -->
@@ -528,15 +528,15 @@
             <!-- FOOTER LINKS -->
             <footer class="pt-6 pb-20 text-center space-y-2">
                 <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-slate-500 font-bold px-4">
-                    <button onclick="window.showTermsModal('about')" class="hover:text-slate-400 transition-colors">縺薙・繧ｵ繧､繝医↓縺､縺・※</button>
-                    <span>窶｢</span>
-                    <button onclick="window.showTermsModal('help')" class="hover:text-slate-400 transition-colors">莠域Φ縺ｮ隕区婿繝ｻ菴ｿ縺・婿</button>
-                    <span>窶｢</span>
-                    <button onclick="window.showTermsModal('disclaimer')" class="hover:text-slate-400 transition-colors">蜈崎ｲｬ莠矩�・/button>
-                    <span>窶｢</span>
-                    <button onclick="window.showTermsModal('privacy')" class="hover:text-slate-400 transition-colors">繝励Λ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ</button>
+                    <button onclick="window.showTermsModal('about')" class="hover:text-slate-400 transition-colors">このサイトについて</button>
+                    <span>•</span>
+                    <button onclick="window.showTermsModal('help')" class="hover:text-slate-400 transition-colors">予想の見方・使い方</button>
+                    <span>•</span>
+                    <button onclick="window.showTermsModal('disclaimer')" class="hover:text-slate-400 transition-colors">免責事項</button>
+                    <span>•</span>
+                    <button onclick="window.showTermsModal('privacy')" class="hover:text-slate-400 transition-colors">プライバシーポリシー</button>
                 </div>
-                <p class="text-[9px] text-slate-600 font-mono">ﾂｩ 2026 Antigravity AI. All Rights Reserved.</p>
+                <p class="text-[9px] text-slate-600 font-mono">© 2026 Antigravity AI. All Rights Reserved.</p>
             </footer>
 
         </div>
@@ -548,7 +548,7 @@
     <div class="fixed bottom-0 left-0 w-full z-[100] flex justify-center bg-slate-950/80 backdrop-blur border-t border-white/10 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
         <div class="w-full max-w-md h-[50px] flex items-center justify-center text-[10px] text-slate-500 relative">
             <span class="absolute top-0.5 left-1 text-[7px] text-slate-500">Sponsored</span>
-            <!-- 竊・蠢崎・dMax縺ｮ繧｢繝ｳ繧ｫ繝ｼ繝舌リ繝ｼ・医せ繝槭・荳矩Κ蝗ｺ螳夲ｼ臥畑繧ｹ繧ｯ繝ｪ繝励ヨ繧偵％縺薙↓雋ｼ繧贋ｻ倥￠縺ｾ縺・竊・-->
+            <!-- ↓ 忍者AdMaxのアンカーバナー（スマホ下部固定）用スクリプトをここに貼り付けます ↓ -->
             <!-- admax -->
             <script src="https://adm.shinobi.jp/s/b4b8bf335cd1cf7ce012ef5a8eb6cd24"></script>
             <!-- admax -->
@@ -568,21 +568,21 @@
         const DATA_CONTAINER = document.getElementById('data-container');
         const LAST_UPDATE = document.getElementById('last-update');
 
-        // 繧ｰ繝ｭ繝ｼ繝舌Ν縺ｪ繧ｯ繝ｩ繧､繧｢繝ｳ繝医し繧､繝峨く繝｣繝・す繝･
+        // グローバルなクライアントサイドキャッシュ
         window.activeVenues = [];
         window.cutoffTimesMap = {};
         window.predictionsCache = {};
-        window.currentRno = ""; // 謇句虚驕ｸ謚槭＆繧後◆繝ｬ繝ｼ繧ｹ
+        window.currentRno = ""; // 手動選択されたレース
 
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzYijAhOUJamFkAHakS5axVUs1e5ncxYUELbmvEclgz7MfWbsN_w7wPRv1M7YRZ8CAl/exec";
 
         const ALL_24_VENUES = {
-            "01": "譯千函", "02": "謌ｸ逕ｰ", "03": "豎滓虻蟾・, "04": "蟷ｳ蜥悟ｳｶ",
-            "05": "螟壽束蟾・, "06": "豬懷錐貉・, "07": "闥ｲ驛｡", "08": "蟶ｸ貊・,
-            "09": "豢･", "10": "荳牙嵜", "11": "縺ｳ繧上％", "12": "菴丈ｹ区ｱ・,
-            "13": "蟆ｼ蟠・, "14": "魑ｴ髢", "15": "荳ｸ莠", "16": "蜈仙ｳｶ",
-            "17": "螳ｮ蟲ｶ", "18": "蠕ｳ螻ｱ", "19": "荳矩未", "20": "闍･譚ｾ",
-            "21": "闃ｦ螻・, "22": "遖丞ｲ｡", "23": "蜚先ｴ･", "24": "螟ｧ譚・
+            "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島",
+            "05": "多摩川", "06": "浜名湖", "07": "蒲郡", "08": "常滑",
+            "09": "津", "10": "三国", "11": "びわこ", "12": "住之江",
+            "13": "尼崎", "14": "鳴門", "15": "丸亀", "16": "児島",
+            "17": "宮島", "18": "徳山", "19": "下関", "20": "若松",
+            "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村"
         };
 
         function getInitialPayload(onSuccess, onFailure) {
@@ -617,9 +617,9 @@
             }
         }
 
-        // 繧｢繝励Μ襍ｷ蜍墓凾縺ｮ蛻晄悄荳諡ｬ繝ｭ繝ｼ繝・
+        // アプリ起動時の初期一括ロード
         function initApp() {
-            // 繝医げ繝ｫ螻･豁ｴ陦ｨ遉ｺ繝ｪ繧ｹ繝翫・繧剃ｸ蠎ｦ縺�縺代ヰ繧､繝ｳ繝・
+            // トグル履歴表示リスナーを一度だけバインド
             const toggleHistoryBtn = document.getElementById('toggle-history-btn');
             const historyContainer = document.getElementById('history-list-container');
             const historyArrow = document.getElementById('history-arrow');
@@ -637,7 +637,7 @@
                 window.isHistoryBtnBound = true;
             }
 
-            // 謗･邯壹お繝ｩ繝ｼ逕ｨ繝懊ち繝ｳ縺ｮ繝舌う繝ｳ繝会ｼ井ｸ蠎ｦ縺�縺托ｼ・
+            // 接続エラー用ボタンのバインド（一度だけ）
             const retryConnBtn = document.getElementById('retry-conn-btn');
             const demoModeBtn = document.getElementById('demo-mode-btn');
             if (retryConnBtn && !window.isConnButtonsBound) {
@@ -656,7 +656,7 @@
                 window.isConnButtonsBound = true;
             }
 
-            // 驕主悉縺ｮ螻･豁ｴ繧｢繝ｼ繧ｫ繧､繝也畑繝ｪ繧ｹ繝翫・縺ｮ蛻晄悄蛹厄ｼ井ｸ蠎ｦ縺�縺托ｼ・
+            // 過去の履歴アーカイブ用リスナーの初期化（一度だけ）
             if (!window.isArchiveInitialized) {
                 initArchive();
                 window.isArchiveInitialized = true;
@@ -668,25 +668,18 @@
                         window.activeVenues = payload.venues || [];
                         window.cutoffTimesMap = payload.cutoffTimes || {};
                         window.predictionsCache = payload.predictions || {};
-
-                        // GASが番組表取得に失敗しても、Pythonから予測が届いていれば venues を復元するフォールバック
-                        if (window.activeVenues.length === 0 && Object.keys(window.predictionsCache).length > 0) {
-                            window.activeVenues = Object.keys(window.predictionsCache).map(jcd => {
-                                return { jcd: String(jcd).padStart(2, '0'), name: ALL_24_VENUES[String(jcd).padStart(2, '0')] || String(jcd) };
-                            });
-                        }
                         
                         if (window.activeVenues.length === 0) {
-                            handleInitFailure("譛ｬ譌･縺ｮ髢句ぎ莨壼�ｴ繝・・繧ｿ縺後≠繧翫∪縺帙ｓ縲・);
+                            handleInitFailure("本日の開催会場データがありません。");
                             return;
                         }
 
                         document.getElementById('connection-error-card').classList.add('hidden');
                         renderVenueGrid(window.activeVenues.map(v => v.jcd));
                         calculateTodayStats();
-                        startAutonomousPolling(); // 繧ｵ繧､繝ｬ繝ｳ繝域ｯ主・逶｣隕悶せ繧ｿ繝ｼ繝・
+                        startAutonomousPolling(); // サイレント毎分監視スタート
                     } else {
-                        handleInitFailure("荳諡ｬ繝ｭ繝ｼ繝牙､ｱ謨・ " + (payload ? payload.error : ""));
+                        handleInitFailure("一括ロード失敗: " + (payload ? payload.error : ""));
                     }
                 },
                 function(err) {
@@ -697,9 +690,9 @@
 
         function handleInitFailure(err) {
             console.error("Initialization error:", err);
-            LAST_UPDATE.innerHTML = `<span class="text-red-500 font-bold">笞�・・謗･邯壹お繝ｩ繝ｼ</span>`;
+            LAST_UPDATE.innerHTML = `<span class="text-red-500 font-bold">⚠️ 接続エラー</span>`;
             
-            // 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧ｹ繧ｱ繝ｫ繝医Φ繧帝撼陦ｨ遉ｺ縺ｫ縺励∵磁邯壹お繝ｩ繝ｼ繧ｫ繝ｼ繝峨ｒ陦ｨ遉ｺ
+            // ローディングスケルトンを非表示にし、接続エラーカードを表示
             document.getElementById('loading-skeleton').classList.add('hidden');
             document.getElementById('connection-error-card').classList.remove('hidden');
             document.getElementById('data-container').classList.add('hidden');
@@ -781,7 +774,7 @@
                 const option = RNO_SELECT.querySelector(`option[value="${rno}"]`);
                 if (option) {
                     const time = times[rno.toString()] || "--:--";
-                    option.innerText = `${rno} R (${time} 邱�蛻・`;
+                    option.innerText = `${rno} R (${time} 締切)`;
                 }
             }
 
@@ -820,19 +813,19 @@
 
             let result = window.predictionsCache[cacheKey];
 
-            // AI莠域Φ縺悟ｮ溘ョ繝ｼ繧ｿ縺九←縺・°蛻､螳夲ｼ医ヵ繧ｩ繝ｼ繧ｫ繧ｹ縺・"-" 縺ｧ縺ｪ縺上∝ｾ・ｩ溘さ繝｡繝ｳ繝医〒繧ゅ↑縺・ｼ・
+            // AI予想が実データかどうか判定（フォーカスが "-" でなく、待機コメントでもない）
             const _aiFocus = result && result.ai && (
                 (result.ai.solid_focus && result.ai.solid_focus.length > 0 && result.ai.solid_focus[0] !== "-") ||
                 (result.ai.focus && result.ai.focus.length > 0 && result.ai.focus[0] !== "-")
             );
             const hasRealAI = result && result.ai && _aiFocus &&
-                !(result.ai.comment || "").includes("閾ｪ蠕玖ｧ｣譫仙ｾ・ｩ滉ｸｭ");
+                !(result.ai.comment || "").includes("自律解析待機中");
 
-            // 蜷榊燕縺後・繝ｬ繝ｼ繧ｹ繝帙Ν繝繝ｼ・亥・襍ｰ陦ｨ譛ｪ蜈ｬ髢具ｼ峨°縺ｩ縺・°
+            // 名前がプレースホルダー（出走表未公開）かどうか
             const hasPlaceholderNames = result && result.data && result.data.length > 0 &&
-                result.data[0].name.includes("蜿ｷ濶・∈謇・);
+                result.data[0].name.includes("号艇選手");
 
-            // 螳悟・縺ｫ繝・・繧ｿ縺ｪ縺・= 逵溘・繝励Ξ繝ｼ繧ｹ繝帙Ν繝繝ｼ・・I莠域Φ繧よ悴逕滓・・・
+            // 完全にデータなし = 真のプレースホルダー（AI予想も未生成）
             const isPlaceholder = !result || (!hasRealAI && hasPlaceholderNames);
 
             if (isPlaceholder) {
@@ -842,7 +835,7 @@
                 
                 const progressText = document.getElementById('loading-progress-text');
                 if (progressText) {
-                    // 邱�蛻・凾蛻ｻ繧貞叙蠕励＠縺ｦ谿九ｊ譎る俣繧定ｨ育ｮ・
+                    // 締切時刻を取得して残り時間を計算
                     const cutoffStr = window.cutoffTimesMap?.[jcd]?.[rno];
                     if (cutoffStr) {
                         const now = new Date();
@@ -855,17 +848,17 @@
                         const remMin = diffMin % 60;
                         if (diffMs > 0) {
                             if (diffHr > 0) {
-                                progressText.innerText = `竢ｰ 蜃ｺ襍ｰ陦ｨ蜈ｬ髢九∪縺ｧ邏・${diffHr}譎る俣${remMin}蛻・| 邱�蛻・${cutoffStr} | 繝・・繧ｿ縺ｯ邱�蛻・譎る俣蜑阪＃繧榊叙蠕怜庄閭ｽ縺ｧ縺兪;
+                                progressText.innerText = `⏰ 出走表公開まで約 ${diffHr}時間${remMin}分 | 締切 ${cutoffStr} | データは締切1時間前ごろ取得可能です`;
                             } else if (diffMin > 30) {
-                                progressText.innerText = `竢ｰ 蜃ｺ襍ｰ陦ｨ蜈ｬ髢九∪縺ｧ邏・${diffMin}蛻・| 繝・・繧ｿ貅門ｙ荳ｭ... 縺励・繧峨￥縺雁ｾ・■縺上□縺輔＞`;
+                                progressText.innerText = `⏰ 出走表公開まで約 ${diffMin}分 | データ準備中... しばらくお待ちください`;
                             } else {
-                                progressText.innerText = `�売 蜃ｺ襍ｰ諠・�ｱ繝ｻAI莠域Φ縺ｮ蜿門ｾ励ｒ蠕・ｩ滉ｸｭ... (谿九ｊ邏・{diffMin}蛻・`;
+                                progressText.innerText = `🔄 出走情報・AI予想の取得を待機中... (残り約${diffMin}分)`;
                             }
                         } else {
-                            progressText.innerText = `笞�・・繝・・繧ｿ蜿門ｾ嶺ｸｭ 窶・繝舌ャ繧ｯ繧ｰ繝ｩ繧ｦ繝ｳ繝牙・逅・ｸｭ縺ｧ縺吶ゅ＠縺ｰ繧峨￥縺雁ｾ・■縺上□縺輔＞`;
+                            progressText.innerText = `⚠️ データ取得中 — バックグラウンド処理中です。しばらくお待ちください`;
                         }
                     } else {
-                        progressText.innerText = "蜃ｺ襍ｰ諠・�ｱ繝ｻAI莠域Φ縺ｮ蜿門ｾ励ｒ蠕・ｩ滉ｸｭ...";
+                        progressText.innerText = "出走情報・AI予想の取得を待機中...";
                     }
                 }
                 return;
@@ -875,14 +868,14 @@
             SKELETON.classList.add('hidden');
             DATA_CONTAINER.classList.remove('hidden');
             
-            // 蛻・ｊ譖ｿ縺医ヨ繝ｩ繝ｳ繧ｸ繧ｷ繝ｧ繝ｳ逕ｨ繧ｹ繧ｿ繧､繝ｫ驕ｩ逕ｨ・井ｽ捺─繝ｬ繧ｹ繝昴Φ繧ｹ辷・溷喧・・
+            // 切り替えトランジション用スタイル適用（体感レスポンス爆速化）
             DATA_CONTAINER.style.transition = 'opacity 0.1s ease-out, transform 0.1s ease-out';
             DATA_CONTAINER.style.opacity = '0.4';
             DATA_CONTAINER.style.transform = 'scale(0.99)';
 
             renderDashboard(result);
 
-            // 繝医Λ繝ｳ繧ｸ繧ｷ繝ｧ繝ｳ謌ｻ縺・
+            // トランジション戻し
             setTimeout(() => {
                 DATA_CONTAINER.style.opacity = '1';
                 DATA_CONTAINER.style.transform = 'scale(1)';
@@ -892,9 +885,9 @@
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             let statusHtml = '';
             if (result.is_mock) {
-                statusHtml = `<span class="text-amber-500 font-extrabold animate-pulse">笞�・・繝・Δ繝｢繝ｼ繝・/span>`;
+                statusHtml = `<span class="text-amber-500 font-extrabold animate-pulse">⚠️ デモモード</span>`;
             } else {
-                statusHtml = `<span class="text-emerald-400 font-extrabold">�泙 繝ｩ繧､繝匁磁邯壻ｸｭ</span> <span class="text-[9px] text-slate-400">(${timeStr}蜷梧悄)</span>`;
+                statusHtml = `<span class="text-emerald-400 font-extrabold">🟢 ライブ接続中</span> <span class="text-[9px] text-slate-400">(${timeStr}同期)</span>`;
             }
             LAST_UPDATE.innerHTML = statusHtml;
             calculateTodayStats();
@@ -905,7 +898,7 @@
             for (let b = 1; b <= 6; b++) {
                 racers.push({
                     lane: b,
-                    name: `${b}蜿ｷ濶・∈謇義,
+                    name: `${b}号艇選手`,
                     cls: "B1",
                     rate: "5.00",
                     motor_rate: "30.0",
@@ -920,12 +913,12 @@
                 data: racers,
                 exhibition_completed: false,
                 phase: 1,
-                weather: { temp: 20.0, weather: "譖・ｊ", wind_speed: 1, wind_dir_num: 1, wind_dir_name: "蛹・, water_temp: 18.0, wave_height: 1, wind_effect: "陬懈ｭ｣縺ｪ縺・ },
-                confidence: { level: "B", stars: "笘・・笘・・笘・ },
-                predictions: [{ combo: "1-2-3", prob: 0.15, badge: "譎ｮ騾・ }],
+                weather: { temp: 20.0, weather: "曇り", wind_speed: 1, wind_dir_num: 1, wind_dir_name: "北", water_temp: 18.0, wave_height: 1, wind_effect: "補正なし" },
+                confidence: { level: "B", stars: "★★★☆☆" },
+                predictions: [{ combo: "1-2-3", prob: 0.15, badge: "普通" }],
                 ai: {
                     escape_rate: 55,
-                    comment: "縲占・蠕玖ｧ｣譫仙ｾ・ｩ滉ｸｭ...�劇縲曾n縺薙・繝ｬ繝ｼ繧ｹ縺ｮ莠域ｸｬ繝・・繧ｿ縺ｯ繝舌ャ繧ｯ繧ｰ繝ｩ繧ｦ繝ｳ繝芽・蠕狗屮隕悶お繝ｳ繧ｸ繝ｳ縺檎ｮ｡逅・＠縺ｦ縺・∪縺吶・n豺ｱ螟懶ｼ井ｸ谺｡莠域Φ・峨∫峩蜑榊ｱ慕､ｺ蜈ｬ髢区凾・井ｺ梧ｬ｡莠域Φ・峨√♀繧医・豌苓ｱ｡諤･螟画凾・井ｸ画ｬ｡莠域Φ・峨↓縲∬｣丞・縺ｧ蜈ｨ閾ｪ蜍輔〒AI隗｣隱ｬ縺檎函謌舌＆繧後∪縺吶ゅ＠縺ｰ繧峨￥縺昴・縺ｾ縺ｾ縺雁ｾ・■縺上□縺輔＞・・TML蛛ｴ縺九ｉ縺ｮAI謇句虚襍ｷ蜍輔・陦後＞縺ｾ縺帙ｓ・峨・,
+                    comment: "【自律解析待機中...🌀】\nこのレースの予測データはバックグラウンド自律監視エンジンが管理しています。\n深夜（一次予想）、直前展示公開時（二次予想）、および気象急変時（三次予想）に、裏側で全自動でAI解説が生成されます。しばらくそのままお待ちください（HTML側からのAI手動起動は行いません）。",
                     focus: ["-"]
                 }
             };
@@ -976,14 +969,14 @@
         REFRESH_BTN.addEventListener('click', () => {
             REFRESH_BTN.disabled = true;
             SPINNER.classList.remove('hidden');
-            BTN_TEXT.innerText = '�売 譛譁ｰ繝・・繧ｿ繧偵ヵ繧ｧ繝・メ荳ｭ...';
+            BTN_TEXT.innerText = '🔄 最新データをフェッチ中...';
             
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(function(result) {
                         REFRESH_BTN.disabled = false;
                         SPINNER.classList.add('hidden');
-                        BTN_TEXT.innerText = '�売 譛譁ｰ繝・・繧ｿ繧定｡ｨ遉ｺ';
+                        BTN_TEXT.innerText = '🔄 最新データを表示';
                         
                         if (result && result.success && result.predictions) {
                             window.predictionsCache = result.predictions;
@@ -998,14 +991,14 @@
                     .withFailureHandler(function() {
                         REFRESH_BTN.disabled = false;
                         SPINNER.classList.add('hidden');
-                        BTN_TEXT.innerText = '�売 譛譁ｰ繝・・繧ｿ繧定｡ｨ遉ｺ';
+                        BTN_TEXT.innerText = '🔄 最新データを表示';
                     })
                     .getTodayPredictionsOnly();
             } else {
                 setTimeout(() => {
                     REFRESH_BTN.disabled = false;
                     SPINNER.classList.add('hidden');
-                    BTN_TEXT.innerText = '�売 譛譁ｰ繝・・繧ｿ繧定｡ｨ遉ｺ';
+                    BTN_TEXT.innerText = '🔄 最新データを表示';
                 }, 800);
             }
         });
@@ -1040,7 +1033,7 @@
                 winRates[b] = scores[b] / sumScores;
             }
             
-            // Run Harville formula for 3-騾｣蜊・combinations
+            // Run Harville formula for 3-連単 combinations
             let combos = [];
             for (let i = 1; i <= 6; i++) {
                 const p1 = winRates[i];
@@ -1070,12 +1063,12 @@
             let finalFocus = [];
             const ai = pred.ai;
             if (ai.solid_focus && ai.solid_focus.length > 0 && ai.solid_focus[0] !== "-") {
-                finalFocus = ai.solid_focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|筐・[1-6](-|=|>|筐・[1-6]/.test(f));
+                finalFocus = ai.solid_focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
             } else if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
-                finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|筐・[1-6](-|=|>|筐・[1-6]/.test(f));
+                finalFocus = ai.focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
             }
             
-            // 4騾壹ｊ縺ｫ貅縺溘↑縺・�ｴ蜷医・陬懷ｮ後↓縲∝・襍ｰ繝｡繝ｳ繝舌・縺ｮ蜍晉紫繧貞渚譏�縺励◆蜍慕噪莠域ｸｬ繧剃ｽｿ逕ｨ縺吶ｋ・・
+            // 4通りに満たない場合の補完に、出走メンバーの勝率を反映した動的予測を使用する！
             if (finalFocus.length < 4 && pred.data && pred.data.length >= 6) {
                 const dynamicCombos = getDynamicPredictions(pred.data);
                 for (let i = 0; i < dynamicCombos.length; i++) {
@@ -1096,11 +1089,11 @@
         function renderDashboard(result) {
             try {
             const racers = result.data;
-            const isPlaceholder = racers.length > 0 && racers[0].name.includes("蜿ｷ濶・∈謇・);
-            const ai = result.ai || { "escape_rate": 55, "comment": "縲舌ョ繝ｼ繧ｿ貅門ｙ荳ｭ縲曾n迴ｾ蝨ｨ縲∽ｺ域Φ繧ｨ繝ｳ繧ｸ繝ｳ縺後ョ繝ｼ繧ｿ繧貞・逅・＠縺ｦ縺・∪縺・..", "focus": ["-"] };
+            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
+            const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
-            window.currentPhase = phase; // 繝輔ぉ繝ｼ繧ｺ蛻･繧ｫ繧ｦ繝ｳ繝医ム繧ｦ繝ｳ逕ｨ縺ｫ繧ｰ繝ｭ繝ｼ繝舌Ν菫晄戟
+            window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
             const aiCard = document.getElementById('ai-card');
             const aiModeAlert = document.getElementById('ai-mode-alert');
@@ -1119,15 +1112,15 @@
                 if (isHit) {
                     raceResultAlert.innerHTML = `
                         <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm animate-pulse">
-                            <span>�脂 逧・ｸｭ・・遒ｺ螳夂ｵ先棡: ${combo}</span>
-                            <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">謇墓綾驥・ ${payout.toLocaleString()}蜀・/span>
+                            <span>🎉 的中！ 確定結果: ${combo}</span>
+                            <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
                     `;
                 } else {
                     raceResultAlert.innerHTML = `
                         <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-bold shadow-sm">
-                            <span>笶・荳咲噪荳ｭ (遒ｺ螳夂ｵ先棡: ${combo})</span>
-                            <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">謇墓綾驥・ ${payout.toLocaleString()}蜀・/span>
+                            <span>❌ 不的中 (確定結果: ${combo})</span>
+                            <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
                     `;
                 }
@@ -1141,69 +1134,69 @@
                 aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/60 border border-purple-500/40 shadow-xl shadow-purple-500/5 space-y-3 transition-all duration-300";
                 aiModeAlert.innerHTML = `
                     <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold leading-normal shadow-sm animate-pulse">
-                        <span class="text-sm">笞｡</span>
+                        <span class="text-sm">⚡</span>
                         <div>
-                            <strong class="font-outfit text-xs tracking-wide">隨ｬ荳画ｬ｡莠域Φ・夂峩蜑肴ｰ苓ｱ｡諤･螟牙ｯｾ蠢懊Δ繝・Ν</strong>
-                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">螻慕､ｺ蜈ｬ髢句ｾ後∵悽逡ｪ逶ｴ蜑阪↓縲宣｢ｨ騾・m莉･荳翫・鬚ｨ蜷代・螟ｩ蛟吶代↓螟ｧ縺阪↑螟牙虚繧呈､懃衍縺励◆縺溘ａ縲、I縺檎黄逅・ｱ暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧堤ｷ頑･譖ｴ譁ｰ縺励◆譛邨らｵ占ｫ悶〒縺吶・/span>
+                            <strong class="font-outfit text-xs tracking-wide">第三次予想：直前気象急変対応モデル</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">展示公開後、本番直前に【風速2m以上・風向・天候】に大きな変動を検知したため、AIが物理展開シミュレーションを緊急更新した最終結論です。</span>
                         </div>
                     </div>
                 `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
-                slitStatus.innerText = "笞｡ 豌苓ｱ｡諤･螟牙渚譏�";
+                slitStatus.innerText = "⚡ 気象急変反映";
                 
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
-                detailStatus.innerText = "笞｡ 豌苓ｱ｡諤･螟牙渚譏�";
+                detailStatus.innerText = "⚡ 気象急変反映";
             } else if (phase === 2) {
                 // Phase 2: Exhibition merge (Emerald/Green styled)
                 aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-emerald-950/25 to-slate-900/60 border border-emerald-500/30 shadow-xl space-y-3 transition-all duration-300";
                 aiModeAlert.innerHTML = `
                     <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold leading-normal shadow-sm">
-                        <span class="text-sm">�泙</span>
+                        <span class="text-sm">🟢</span>
                         <div>
-                            <strong class="font-outfit text-xs tracking-wide">隨ｬ莠梧ｬ｡莠域Φ・夂峩蜑榊ｱ慕､ｺ縺吶ｊ蜷医ｏ縺帛ｮ御ｺ・/strong>
-                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">逶ｴ蜑榊ｱ慕､ｺ繧ｿ繧､繝�縲√せ繧ｿ繝ｼ繝亥ｱ慕､ｺ繧ｹ繝ｪ繝・ヨ縲√メ繝ｫ繝郁ｪｿ謨ｴ縺ｮ豌鈴・繧偵・繝ｼ繧ｸ縺励◆譛邨らｵ占ｫ悶〒縺吶・/span>
+                            <strong class="font-outfit text-xs tracking-wide">第二次予想：直前展示すり合わせ完了</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示タイム、スタート展示スリット、チルト調整の気配をマージした最終結論です。</span>
                         </div>
                     </div>
                 `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
-                slitStatus.innerText = "�泙 螻慕､ｺ蜿肴丐貂・;
+                slitStatus.innerText = "🟢 展示反映済";
                 
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
-                detailStatus.innerText = "�泙 螻慕､ｺ蜿肴丐貂・;
+                detailStatus.innerText = "🟢 展示反映済";
             } else {
                 // Phase 1: Pre-race (Amber/Gold styled)
                 aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-amber-950/20 to-slate-900/60 border border-amber-500/20 shadow-xl space-y-3 transition-all duration-300";
                 aiModeAlert.innerHTML = `
                     <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold leading-normal shadow-sm">
-                        <span class="text-sm">�桁</span>
+                        <span class="text-sm">🌅</span>
                         <div>
-                            <strong class="font-outfit text-xs tracking-wide">隨ｬ荳谺｡莠域Φ・壽悃繧､繝∽ｺ句燕莠域Φ</strong>
-                            <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">逶ｴ蜑榊ｱ慕､ｺ縺ｯ譛ｪ螳滓命縺ｧ縺吶る∈謇句享邇・→繝｢繝ｼ繧ｿ繝ｼ諤ｧ閭ｽ縺ｮ縺ｿ縺ｫ繧医ｋ蜑肴ュ蝣ｱ莠域Φ縺ｧ縺吶よ悽逡ｪ15蛻・燕縺ｮ繧｢繝ｩ繝ｼ繝�蟾｡蝗槫ｾ後↓閾ｪ蜍輔〒隨ｬ莠梧ｬ｡・育峩蜑榊ｱ慕､ｺ・峨↓荳頑嶌縺肴峩譁ｰ縺輔ｌ縺ｾ縺吶・/span>
+                            <strong class="font-outfit text-xs tracking-wide">第一次予想：朝イチ事前予想</strong>
+                            <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示は未実施です。選手勝率とモーター性能のみによる前情報予想です。本番15分前のアラーム巡回後に自動で第二次（直前展示）に上書き更新されます。</span>
                         </div>
                     </div>
                 `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
-                slitStatus.innerText = "笞�・・蠕・ｩ滉ｸｭ・亥燕諠・�ｱ・・;
+                slitStatus.innerText = "⚠️ 待機中（前情報）";
                 
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
-                detailStatus.innerText = "笞�・・螻慕､ｺ譛ｪ螳滓命";
+                detailStatus.innerText = "⚠️ 展示未実施";
             }
 
             let modeBadge = '';
             if (phase === 3) {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">笞｡ 隨ｬ荳画ｬ｡・壽ｰ苓ｱ｡諤･螟牙ｯｾ蠢・/span>';
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">⚡ 第三次：気象急変対応</span>';
             } else if (phase === 2) {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">�泙 隨ｬ莠梧ｬ｡・夂峩蜑榊ｱ慕､ｺ</span>';
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">🟢 第二次：直前展示</span>';
             } else {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">�桁 隨ｬ荳谺｡・壽悃繧､繝∽ｺ句燕</span>';
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">🌅 第一次：朝イチ事前</span>';
             }
                 
-            document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">繧､繝ｳ騾・￡遒ｺ蠎ｦ: ${ai.escape_rate}%</span>`;
+            document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">イン逃げ確度: ${ai.escape_rate}%</span>`;
             const parsedComment = (ai.comment || '')
-                .replace(/\*\*/g, '') // 螟ｪ蟄礼畑縺ｮ繧｢繧ｹ繧ｿ繝ｪ繧ｹ繧ｯ繧貞炎髯､
+                .replace(/\*\*/g, '') // 太字用のアスタリスクを削除
                 .replace(/\n/g, '<br>');
             document.getElementById('ai-comment').innerHTML = parsedComment;
             
@@ -1261,34 +1254,34 @@
                     const itemWrapper = document.createElement('div');
                     itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
                     
-                    let labelText = '謚代∴';
+                    let labelText = '抑え';
                     let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
                     if (!isUpset) {
                         if (index === 0) {
-                            labelText = '螟ｧ譛ｬ邱・;
+                            labelText = '大本線';
                             labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
                         } else if (index === 1) {
-                            labelText = '譛ｬ邱・;
+                            labelText = '本線';
                             labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
                         } else if (index === 2) {
-                            labelText = '謚代∴1';
+                            labelText = '抑え1';
                             labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
                         } else if (index === 3) {
-                            labelText = '謚代∴2';
+                            labelText = '抑え2';
                             labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
                         }
                     } else {
                         if (index === 0) {
-                            labelText = '荳ｭ遨ｴ';
+                            labelText = '中穴';
                             labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
                         } else if (index === 1) {
-                            labelText = '遨ｴ迢吶＞';
+                            labelText = '穴狙い';
                             labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
                         } else if (index === 2) {
-                            labelText = '螟ｧ遨ｴ1';
+                            labelText = '大穴1';
                             labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
                         } else if (index === 3) {
-                            labelText = '螟ｧ遨ｴ2';
+                            labelText = '大穴2';
                             labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
                         }
                     }
@@ -1308,7 +1301,7 @@
                         
                         const lockOverlay = document.createElement('div');
                         lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
-                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">�白 蠎・相繧定ｦ九※莠域Φ繧定ｦ九ｋ</span>';
+                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
                         
                         itemWrapper.classList.add('relative');
                         itemWrapper.appendChild(lockOverlay);
@@ -1328,31 +1321,31 @@
                         });
                     }
 
-                    // 蛻晄悄迥ｶ諷九〒譛ｬ蜻ｽ縺ｮ1逡ｪ逶ｮ(螟ｧ譛ｬ邱・繧偵ワ繧､繝ｩ繧､繝・
+                    // 初期状態で本命の1番目(大本線)をハイライト
                     if (!isUpset && index === 0) {
                         itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
                     }
 
-                    // 雋ｷ縺・岼繧ｯ繝ｪ繝・け縺ｧ繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ襍ｷ蜍・
+                    // 買い目クリックでシミュレーション起動
                     itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
                     itemWrapper.addEventListener('click', function() {
                         if (focusBadgeWrapper.classList.contains('premium-blur')) {
                             return; 
                         }
 
-                        // 縺吶∋縺ｦ縺ｮ雋ｷ縺・岼縺ｮ繝上う繝ｩ繧､繝域棧繧帝勁蜴ｻ
+                        // すべての買い目のハイライト枠を除去
                         document.querySelectorAll('.focus-item-active').forEach(el => {
                             el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
                         });
 
-                        // 驕ｸ謚槭＆繧後◆繧ゅ・繧偵ワ繧､繝ｩ繧､繝・
+                        // 選択されたものをハイライト
                         if (isUpset) {
                             itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
                         } else {
                             itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
                         }
 
-                        // 迚ｩ逅・す繝溘Η繝ｬ繝ｼ繧ｿ繧偵％縺ｮ螻暮幕(f)縺ｧ蜊ｳ蠎ｧ縺ｫ蜀崎ｵｷ蜍・
+                        // 物理シミュレータをこの展開(f)で即座に再起動
                         try {
                             initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
                             if (window.setSimCombo) {
@@ -1373,20 +1366,20 @@
             }
 
             if (solidFocus.length > 0 || upsetFocus.length > 0) {
-                focusContainer.appendChild(renderFocusGroup('譛ｬ蜻ｽ謗ｨ螂ｨ繝輔か繝ｼ繧ｫ繧ｹ (3騾｣蜊・', solidFocus, false));
-                focusContainer.appendChild(renderFocusGroup('遨ｴ謗ｨ螂ｨ繝輔か繝ｼ繧ｫ繧ｹ (3騾｣蜊・', upsetFocus, true));
+                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
+                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
             } else {
                 focusContainer.className = 'flex flex-wrap gap-2 w-full';
                 const emptySpan = document.createElement('span');
                 emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
-                emptySpan.innerText = '蠕・ｩ滉ｸｭ...';
+                emptySpan.innerText = '待機中...';
                 focusContainer.appendChild(emptySpan);
             }
 
             // Populate Confidence Stars
             const confidenceStarsEl = document.getElementById('ai-confidence-stars');
             if (confidenceStarsEl && result.confidence) {
-                confidenceStarsEl.innerText = result.confidence.stars || '笘・・笘・・笘・;
+                confidenceStarsEl.innerText = result.confidence.stars || '★★★☆☆';
             }
 
             // Populate Weather Details
@@ -1394,27 +1387,27 @@
                 const w = result.weather;
                 const showRealWeather = exhibitionCompleted;
                 
-                document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '譖・ｊ') : '險域ｸｬ荳ｭ...';
-                document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '邃・) : '--邃・;
+                document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '曇り') : '計測中...';
+                document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '℃') : '--℃';
                 document.getElementById('wind-dir-txt').innerText = showRealWeather ? (w.wind_dir_name || '--') : '--';
                 document.getElementById('wind-speed-txt').innerText = showRealWeather ? ((w.wind_speed !== undefined ? w.wind_speed : '--') + 'm') : '--m';
                 document.getElementById('wave-txt').innerText = showRealWeather ? ((w.wave_height !== undefined ? w.wave_height : '--') + 'cm') : '--cm';
-                document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '邃・) : '--邃・;
+                document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '℃') : '--℃';
                 
                 const windEffectBanner = document.getElementById('wind-effect-banner');
                 if (windEffectBanner) {
-                    windEffectBanner.innerText = showRealWeather ? `迚ｩ逅・｣懈ｭ｣蛻､螳・ ${w.wind_effect || '陬懈ｭ｣縺ｪ縺・}` : '迚ｩ逅・｣懈ｭ｣蛻､螳・ 螻慕､ｺ蜈ｬ髢区凾縺ｫ繝ｪ繧｢繝ｫ繧ｿ繧､繝�險育ｮ・;
+                    windEffectBanner.innerText = showRealWeather ? `物理補正判定: ${w.wind_effect || '補正なし'}` : '物理補正判定: 展示公開時にリアルタイム計算';
                 }
 
-                // 豌苓ｱ｡繝・・繧ｿ縺ｮ蜿門ｾ玲凾蛻ｻ繧定｡ｨ遉ｺ
+                // 気象データの取得時刻を表示
                 const weatherStatusBadge = document.getElementById('weather-status-badge');
                 if (weatherStatusBadge) {
                     if (showRealWeather) {
                         const now = new Date();
                         const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                        weatherStatusBadge.innerText = `${timeStr} 蜿門ｾ輿;
+                        weatherStatusBadge.innerText = `${timeStr} 取得`;
                     } else {
-                        weatherStatusBadge.innerText = `蠕・ｩ滉ｸｭ`;
+                        weatherStatusBadge.innerText = `待機中`;
                     }
                 }
 
@@ -1432,7 +1425,7 @@
                 }
             }
 
-            // 螻慕､ｺ諠・�ｱ譛ｪ蜈ｬ髢区凾縺ｮ繧ｫ繝ｼ繝峨げ繝ｬ繝ｼ繧｢繧ｦ繝郁｡ｨ遉ｺ
+            // 展示情報未公開時のカードグレーアウト表示
             const weatherCard = document.getElementById('weather-card');
             if (weatherCard) {
                 if (exhibitionCompleted) {
@@ -1460,7 +1453,7 @@
                 }
             }
 
-            // 2. Render Slit Simulator (騾ｲ蜈･蟠ｩ繧瑚・蜍墓､懃衍・・･ｽST蠑ｷ隱ｿ繝ｻ繝舌げ螳悟・謗帝勁迚・
+            // 2. Render Slit Simulator (進入崩れ自動検知＆好ST強調・バグ完全排除版)
             const slitContainer = document.getElementById('slit-rows');
             slitContainer.innerHTML = '';
             
@@ -1469,9 +1462,9 @@
             if (!hasExhibition) {
                 slitContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-full w-full text-slate-500 gap-1 text-center py-8">
-                        <span class="text-lg">�白</span>
-                        <span class="text-[11px] font-bold">逶ｴ蜑榊ｱ慕､ｺ繝・・繧ｿ蜈ｬ髢九∪縺ｧ繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ蠕・ｩ滉ｸｭ</span>
-                        <span class="text-[9px] text-slate-600">譛ｬ逡ｪ邏・5蛻・燕縺ｮ螻慕､ｺ諠・�ｱ蜿門ｾ怜ｾ後↓繧ｹ繧ｿ繝ｼ繝亥・迴ｾ縺瑚｡ｨ遉ｺ縺輔ｌ縺ｾ縺・/span>
+                        <span class="text-lg">🔒</span>
+                        <span class="text-[11px] font-bold">直前展示データ公開までシミュレーション待機中</span>
+                        <span class="text-[9px] text-slate-600">本番約15分前の展示情報取得後にスタート再現が表示されます</span>
                     </div>
                 `;
             } else {
@@ -1479,29 +1472,29 @@
                     const isNA = r.st_val === "N/A" || r.st_val === "";
                     return {
                         lane: r.lane,
-                        st: isNA ? "蠕・ｩ滉ｸｭ" : r.st_val,
+                        st: isNA ? "待機中" : r.st_val,
                         course: isNA ? r.lane.toString() : r.st_course,
                         is_flying: isNA ? false : r.st_val.includes('F'),
                         val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
                     };
                 });
 
-                // 騾ｲ蜈･繧ｳ繝ｼ繧ｹ・・ourse・峨・譏・�・〒繧ｽ繝ｼ繝茨ｼ亥燕縺･縺第凾縺ｫ繧ら樟螳溘↓蜑・＠縺溘さ繝ｼ繧ｹ鬆・↓荳ｦ縺ｳ譖ｿ繧上ｊ縺ｾ縺呻ｼ・
+                // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
                 slitItems.sort((a, b) => {
                     const cA = parseFloat(a.course) || 99;
                     const cB = parseFloat(b.course) || 99;
                     return cA - cB;
                 });
 
-                // 騾ｲ蜈･蟠ｩ繧鯉ｼ域棧縺ｪ繧雁ｴｩ繧鯉ｼ峨ｒ閾ｪ蜍墓､懷・
+                // 進入崩れ（枠なり崩れ）を自動検出
                 const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
                 
-                // 騾ｲ蜈･蟠ｩ繧後′縺ゅｋ蝣ｴ蜷医√せ繝・・繧ｿ繧ｹ繝舌ャ繧ｸ縺ｮ讓ｪ縺ｫ縲碁ｲ蜈･蟠ｩ繧後阪・隴ｦ蜻翫ヰ繝・ず繧定ｿｽ蜉�陦ｨ遉ｺ
+                // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
                 if (isWakunariKuzure) {
                     const currentText = slitStatus.innerText;
-                    if (!currentText.includes("騾ｲ蜈･蟠ｩ繧・)) {
+                    if (!currentText.includes("進入崩れ")) {
                         slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
-                        slitStatus.innerText = currentText + " 笞�・城ｲ蜈･蟠ｩ繧・;
+                        slitStatus.innerText = currentText + " ⚠️進入崩れ";
                     }
                 }
 
@@ -1514,26 +1507,26 @@
                     courseLabel.innerText = `C${item.course}`;
                     row.appendChild(courseLabel);
 
-                    // 繧ｹ繧ｿ繝ｼ繝医ち繧､繝溘Φ繧ｰ縺ｨ騾ｲ蜈･迥ｶ諷九↓蠢懊§縺溯援繝舌ャ繧ｸ縺ｮ諡｡蠑ｵ繧ｯ繝ｩ繧ｹ
+                    // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
                     let badgeClass = `w-4.5 h-4.5 rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
                     if (item.is_flying) {
-                        badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F濶・・襍､繝代Ν繧ｹ縺ｧ譏取ｻ・
+                        badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
                     } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
-                        badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 螂ｽ繧ｹ繧ｿ繝ｼ繝・0.10譛ｪ貅)縺ｯ繧ｴ繝ｼ繝ｫ繝峨Μ繝ｳ繧ｰ
+                        badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
                     }
 
                     const boatBadge = document.createElement('span');
                     boatBadge.className = badgeClass;
                     boatBadge.innerText = item.lane;
                     
-                    let leftPercent = 66; // 繧ｹ繝ｪ繝・ヨ繝ｩ繧､繝ｳ(襍､轤ｹ邱・縺ｮ菴咲ｽｮ
+                    let leftPercent = 66; // スリットライン(赤点線)の位置
                     if (!hasExhibition) {
-                        leftPercent = 48; // 螻慕､ｺ譛ｪ螳滓命譎ゅ・荳ｭ螟ｮ莉倩ｿ代↓謨ｴ蛻・
+                        leftPercent = 48; // 展示未実施時は中央付近に整列
                     } else if (item.is_flying) {
-                        leftPercent += (item.val * 100); // 繝輔Λ繧､繝ｳ繧ｰ縺ｯ蜿ｳ縺ｫ遯√″謚懊￠
+                        leftPercent += (item.val * 100); // フライングは右に突き抜け
                         if (leftPercent > 92) leftPercent = 92;
                     } else {
-                        leftPercent -= (item.val * 100); // 騾壼ｸｸST縺ｯ縲√ち繧､繝溘Φ繧ｰ蛟､縺悟､ｧ縺阪＞(驕・＞)縺ｻ縺ｩ蟾ｦ縺ｸ縲∝ｰ上＆縺・譌ｩ縺・縺ｻ縺ｩ繧ｹ繝ｪ繝・ヨ縺ｫ謗･霑・
+                        leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
                         if (leftPercent < 20) leftPercent = 20;
                     }
 
@@ -1541,7 +1534,7 @@
                     boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
                     boatWrapper.style.left = `${leftPercent}%`;
                     
-                    // 繧ｹ繧ｿ繝ｼ繝医ち繧､繝溘Φ繧ｰ・医ち繧､繝溘Φ繧ｰ繝・く繧ｹ繝茨ｼ峨・繧ｯ繝ｩ繧ｹ縺ｨ譁・ｭ励・諡｡蠑ｵ
+                    // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
                     let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
                     let timingTextContent = item.st;
                     
@@ -1549,10 +1542,10 @@
                         timingTextClass += 'text-slate-500 bg-slate-900/30';
                     } else if (item.is_flying) {
                         timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
-                        timingTextContent = '�櫨 F' + item.st.replace('F', '');
+                        timingTextContent = '🔥 F' + item.st.replace('F', '');
                     } else if (item.val < 0.10) {
                         timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
-                        timingTextContent = '笞｡ ' + item.st;
+                        timingTextContent = '⚡ ' + item.st;
                     } else {
                         timingTextClass += 'text-slate-300 bg-slate-900/40';
                     }
@@ -1579,15 +1572,15 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-xs font-bold mt-2 text-slate-400">蜃ｺ襍ｰ陦ｨ繝・・繧ｿ繧貞叙蠕嶺ｸｭ...</span>
-                        <span class="text-[9px] text-slate-600">繝舌ャ繧ｯ繧ｰ繝ｩ繧ｦ繝ｳ繝峨〒蜃ｺ襍ｰ繝｡繝ｳ繝舌・諠・�ｱ繧定・蜍募庶髮・＠縺ｦ縺・∪縺・/span>
+                        <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
+                        <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
                     </div>
                 `;
             } else {
                 const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
             const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
 
-            // 蜷・が繝ｪ繧ｸ繝翫Ν螻慕､ｺ繧ｿ繧､繝�縺ｮ譛騾溷､・域怙蟆丞､・峨ｒ縺ゅｉ縺九§繧∫ｮ怜・
+            // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
             const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
             const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
 
@@ -1608,7 +1601,7 @@
                 badge.className = `w-7 h-7 rounded-xl flex items-center justify-center font-black font-outfit text-sm shadow-sm boat-${r.lane} flex-shrink-0`;
                 badge.innerText = r.lane;
                 
-                // 繧ｪ繝ｪ繧ｸ繝翫Ν螻慕､ｺ繧ｿ繧､繝�縺後≠繧句�ｴ・磯ｳｴ髢繝ｻ荳牙嵜縺ｪ縺ｩ・峨・霑ｽ蜉�HTML逕滓・
+                // オリジナル展示タイムがある場（鳴門・三国など）の追加HTML生成
                 let originalHtml = '';
                 const hasOriginalTimes = (r.loop_time && r.loop_time !== "N/A" && r.loop_time !== "");
                 if (hasOriginalTimes) {
@@ -1620,15 +1613,15 @@
                     const tColor = (tVal === minTurn) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
                     const sColor = (sVal === minStraight) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
 
-                    const lBadge = (lVal === minLoop) ? '�荘' : '';
-                    const tBadge = (tVal === minTurn) ? '�荘' : '';
-                    const sBadge = (sVal === minStraight) ? '�荘' : '';
+                    const lBadge = (lVal === minLoop) ? '👑' : '';
+                    const tBadge = (tVal === minTurn) ? '👑' : '';
+                    const sBadge = (sVal === minStraight) ? '👑' : '';
 
                     originalHtml = `
                         <div class="flex gap-2.5 mt-1.5 text-[9px] bg-slate-950/50 px-2 py-0.5 rounded-lg border border-white/5 w-fit">
-                            <span class="text-slate-400 font-medium">荳蜻ｨ: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
-                            <span class="text-slate-400 font-medium">縺ｾ繧上ｊ: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
-                            <span class="text-slate-400 font-medium">逶ｴ邱・ <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">一周: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">まわり: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">直線: <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
                         </div>
                     `;
                 }
@@ -1641,7 +1634,7 @@
                         <span class="text-[8px] px-1 py-0.2 bg-slate-800 text-slate-400 font-bold rounded">${r.cls}</span>
                     </div>
                     <div class="text-[10px] text-slate-400 font-medium">
-                        蜍晉紫:${parseFloat(r.rate).toFixed(2)} | 繝｢繝ｼ繧ｿ繝ｼ:${parseFloat(r.motor_rate).toFixed(1)}%
+                        勝率:${parseFloat(r.rate).toFixed(2)} | モーター:${parseFloat(r.motor_rate).toFixed(1)}%
                     </div>
                     ${originalHtml}
                 `;
@@ -1658,13 +1651,13 @@
                 const offset = (exTimeVal - minTime).toFixed(2);
                 
                 let gaugeColor = 'bg-emerald-500';
-                let offsetText = `ﾂｱ0.00`;
+                let offsetText = `±0.00`;
                 let displayTimeText = r.ex_time;
                 let gaugeWidth = 100;
 
                 if (isNA) {
                     gaugeColor = 'bg-slate-700/50';
-                    offsetText = '譛ｪ螳滓命';
+                    offsetText = '未実施';
                     displayTimeText = '--.--';
                     gaugeWidth = 50; 
                 } else if (offset > 0) {
@@ -1690,7 +1683,7 @@
             });
             }
             
-            // 繝励Ξ繝溘い繝�2D迚ｩ逅・ｱ暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ縺ｮ襍ｷ蜍包ｼ・PI豸郁ｲｻ繧ｼ繝ｭ・・
+            // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
             try {
                 initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
@@ -1701,9 +1694,9 @@
             } catch (err) {
                 console.error("Dashboard render error:", err);
                 const commentEl = document.getElementById('ai-comment');
-                if (commentEl) commentEl.innerText = "謠冗判繧ｨ繝ｩ繝ｼ縺檎匱逕溘＠縺ｾ縺励◆: " + err.message;
+                if (commentEl) commentEl.innerText = "描画エラーが発生しました: " + err.message;
             } finally {
-                // 邨ｶ蟇ｾ縺ｫ騾乗・蠎ｦ繧貞・縺ｫ謌ｻ縺・
+                // 絶対に透明度を元に戻す
                 setTimeout(() => {
                     const dc = document.getElementById('data-container');
                     if (dc) {
@@ -1827,7 +1820,7 @@
             if (finishedCount > 0) {
                 if (statsCard) statsCard.classList.remove('hidden');
                 if (progressBadge) {
-                    progressBadge.innerText = `${finishedCount} 繝ｬ繝ｼ繧ｹ遒ｺ螳啻;
+                    progressBadge.innerText = `${finishedCount} レース確定`;
                 }
                 
                 // Solid metrics
@@ -1872,13 +1865,13 @@
 
                 if (netProfit > 0) {
                     netProfitEl.className = "font-black font-outfit text-emerald-400";
-                    netProfitEl.innerText = `+${netProfit.toLocaleString()}蜀・;
+                    netProfitEl.innerText = `+${netProfit.toLocaleString()}円`;
                 } else if (netProfit < 0) {
                     netProfitEl.className = "font-black font-outfit text-rose-400";
-                    netProfitEl.innerText = `${netProfit.toLocaleString()}蜀・;
+                    netProfitEl.innerText = `${netProfit.toLocaleString()}円`;
                 } else {
                     netProfitEl.className = "font-black font-outfit text-slate-300";
-                    netProfitEl.innerText = "ﾂｱ0蜀・;
+                    netProfitEl.innerText = "±0円";
                 }
 
                 // Sort history by JCD and RNO
@@ -1915,10 +1908,10 @@
                     const badge = document.createElement('span');
                     if (item.isHit) {
                         badge.className = "px-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-black text-[8px]";
-                        badge.innerText = "逧・ｸｭ";
+                        badge.innerText = "的中";
                     } else {
                         badge.className = "px-1 rounded bg-slate-800 text-slate-400 border border-slate-700/50 text-[8px]";
-                        badge.innerText = "荳咲噪荳ｭ";
+                        badge.innerText = "不的中";
                     }
 
                     const label = document.createElement('span');
@@ -1931,7 +1924,7 @@
                     const rightDiv = document.createElement('div');
                     rightDiv.className = "font-mono flex items-center gap-2";
                     
-                    const payoutText = item.isHit ? `<span class="text-emerald-400 font-bold">${item.combo} (${item.payout.toLocaleString()}蜀・</span>` : `<span class="text-slate-500">${item.combo}</span>`;
+                    const payoutText = item.isHit ? `<span class="text-emerald-400 font-bold">${item.combo} (${item.payout.toLocaleString()}円)</span>` : `<span class="text-slate-500">${item.combo}</span>`;
                     const profitText = item.netProfit > 0 ? `<span class="text-emerald-400 font-bold">+${item.netProfit}</span>` : `<span class="text-rose-400">${item.netProfit}</span>`;
                     
                     rightDiv.innerHTML = `${payoutText} ${profitText}`;
@@ -1950,31 +1943,31 @@
             return {
                 success: true,
                 data: [
-                    { lane: 1, name: "驥主哨 蜍晏ｼ・, cls: "A2", rate: 6.44, motor_rate: 34.95, ex_time: "6.68", tilt: "-0.5", st_course: "1", st_val: "F.04" },
-                    { lane: 2, name: "蜴・蜉�螟ｮ逅・, cls: "B1", rate: 5.75, motor_rate: 26.21, ex_time: "6.70", tilt: "0.0", st_course: "2", st_val: "F.02" },
-                    { lane: 3, name: "蟾晄ｷｻ 闍ｱ豁｣", cls: "B1", rate: 5.18, motor_rate: 16.46, ex_time: "6.81", tilt: "-0.5", st_course: "3", st_val: ".03" },
-                    { lane: 4, name: "蜀ｨ蜷崎・ 譯・, cls: "B1", rate: 4.08, motor_rate: 39.62, ex_time: "6.76", tilt: "-0.5", st_course: "4", st_val: "F.06" },
-                    { lane: 5, name: "蠎・昇 讓ｹ濶ｯ縲・, cls: "A2", rate: 6.07, motor_rate: 23.66, ex_time: "6.75", tilt: "0.0", st_course: "5", st_val: "F.14" },
-                    { lane: 6, name: "蟶ょｷ・鄒主ｮ・, cls: "B1", rate: 3.77, motor_rate: 34.19, ex_time: "6.84", tilt: "-0.5", st_course: "6", st_val: "F.13" }
+                    { lane: 1, name: "野口 勝弘", cls: "A2", rate: 6.44, motor_rate: 34.95, ex_time: "6.68", tilt: "-0.5", st_course: "1", st_val: "F.04" },
+                    { lane: 2, name: "原 加央理", cls: "B1", rate: 5.75, motor_rate: 26.21, ex_time: "6.70", tilt: "0.0", st_course: "2", st_val: "F.02" },
+                    { lane: 3, name: "川添 英正", cls: "B1", rate: 5.18, motor_rate: 16.46, ex_time: "6.81", tilt: "-0.5", st_course: "3", st_val: ".03" },
+                    { lane: 4, name: "冨名腰 桃", cls: "B1", rate: 4.08, motor_rate: 39.62, ex_time: "6.76", tilt: "-0.5", st_course: "4", st_val: "F.06" },
+                    { lane: 5, name: "庄司 樹良々", cls: "A2", rate: 6.07, motor_rate: 23.66, ex_time: "6.75", tilt: "0.0", st_course: "5", st_val: "F.14" },
+                    { lane: 6, name: "市川 美宏", cls: "B1", rate: 3.77, motor_rate: 34.19, ex_time: "6.84", tilt: "-0.5", st_course: "6", st_val: "F.13" }
                 ],
                 ai: {
                     escape_rate: 88,
-                    comment: "縲舌う繝ｳ騾・￡逶､遏ｳ・夐㍽蜿｣縺ｮ蠢ｫ騾溘ｒ菫｡鬆ｼ縲曾n1蜿ｷ濶・・驥主哨蜍晏ｼ倥・蜈ｨ蝗ｽ蜍晉紫6.44縺ｫ蜉�縺医∝ｱ慕､ｺ繧ｿ繧､繝�縺ｧ縲・.68縲阪・繝｡繝ｳ繝舌・縺ｶ縺｣縺｡縺弱ｊ縺ｮ繝医ャ繝励ち繧､繝�繧定ｨ域ｸｬ・∵ｩ溷鴨繝ｻ螳溷鴨縺ｨ繧ゅ↓謚懊￠縺ｦ縺・∪縺吶・蜿ｷ濶・・蟾晄ｷｻ縺悟ｱ慕､ｺ6.81縺ｨ閾ｴ蜻ｽ逧・↓莨ｸ縺ｳ繧呈ｬ�縺・※縺・ｋ縺溘ａ縲∵悽逡ｪ縺ｯ4繧ｳ繝ｼ繧ｹ蜀ｨ蜷崎・繧・繧ｳ繝ｼ繧ｹ蠎・昇縺ｫ螟悶°繧臥ｵ槭ｉ繧後ｋ螻暮幕縺ｫ縺ｪ繧翫∪縺吶′縲・㍽蜿｣縺ｮ陦後″雜ｳ縺後≠繧後・縺ｾ縺上ｉ縺帙★縺ｫ1繝槭・繧ｯ繧貞・繝槭う騾・￡蛻・ｊ縺ｾ縺吶ら嶌謇九・蟾ｮ縺玲ｮ九ｋ2蜿ｷ濶・・蜴溘∝ｱ暮幕繧堤ｪ√￥螳溷鴨閠・蜿ｷ濶・・蠎・昇繧貞字繧√↓謗ｨ螂ｨ縺励∪縺吶・,
+                    comment: "【イン逃げ盤石：野口の快速を信頼】\n1号艇・野口勝弘は全国勝率6.44に加え、展示タイムで「6.68」のメンバーぶっちぎりのトップタイムを計測！機力・実力ともに抜けています。3号艇・川添が展示6.81と致命的に伸びを欠いているため、本番は4コース冨名腰や5コース庄司に外から絞られる展開になりますが、野口の行き足があればまくらせずに1マークを先マイ逃げ切ります。相手は差し残る2号艇・原、展開を突く実力者5号艇・庄司を厚めに推奨します。",
                     focus: ["1-2-5", "1-5-2", "1-2-4", "1-5-4"]
                 },
                 weather: {
                     temp: 22.0,
-                    weather: "譎ｴ繧・,
+                    weather: "晴れ",
                     wind_speed: 3,
                     wind_dir_num: 11,
-                    wind_dir_name: "蜊苓･ｿ",
+                    wind_dir_name: "南西",
                     water_temp: 21.0,
                     wave_height: 1,
-                    wind_effect: "霑ｽ縺・｢ｨ"
+                    wind_effect: "追い風"
                 },
                 confidence: {
                     level: "A",
-                    stars: "笘・・笘・・笘・
+                    stars: "★★★★☆"
                 },
                 exhibition_completed: true
             };
@@ -1988,7 +1981,7 @@
             let currentToken = '';
             
             for (let char of focusStr) {
-                if (char === '-' || char === '=' || char === '筐・ || char === '>') {
+                if (char === '-' || char === '=' || char === '➔' || char === '>') {
                     if (currentToken) {
                         tokens.push(currentToken);
                         currentToken = '';
@@ -2003,10 +1996,10 @@
             }
             
             tokens.forEach(token => {
-                if (['-', '=', '筐・, '>'].includes(token)) {
+                if (['-', '=', '➔', '>'].includes(token)) {
                     const arrow = document.createElement('span');
                     arrow.className = 'text-[9px] font-black text-slate-500 font-mono mx-0.5';
-                    arrow.innerText = token === '=' ? '竍・ : '筐・;
+                    arrow.innerText = token === '=' ? '⇄' : '➔';
                     container.appendChild(arrow);
                 } else {
                     const nums = token.replace(/[^1-6]/g, '').split('');
@@ -2048,7 +2041,7 @@
         }
 
         // ==========================================
-        // 繝励Ξ繝溘い繝�2D 1繝槭・繧ｯ迚ｩ逅・ｱ暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ繝ｼ
+        // プレミアム2D 1マーク物理展開シミュレーター
         // ==========================================
         function initTurnSimulation(racers, solidFocus, upsetFocus, hasExhibitionData) {
             const canvas = document.getElementById('turn-sim-canvas');
@@ -2056,7 +2049,7 @@
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
 
-            // 莠碁㍾襍ｷ蜍暮亟豁｢・壽里蟄倥・繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ縺ｨ繧ｿ繧､繝�繧｢繧ｦ繝医ｒ遐ｴ譽・
+            // 二重起動防止：既存のアニメーションとタイムアウトを破棄
             if (window.activeTurnSimId) {
                 cancelAnimationFrame(window.activeTurnSimId);
                 window.activeTurnSimId = null;
@@ -2074,7 +2067,7 @@
                 if (simCard) simCard.classList.remove('hidden');
             }
 
-            // 鬮魯PI蟇ｾ蠢・
+            // 高DPI対応
             const dpr = window.devicePixelRatio || 1;
             let viewWidth = 0;
             let viewHeight = 0;
@@ -2089,13 +2082,13 @@
             const maxFrames = 260;
 
             function getTacticLabel(wl) {
-                if (wl === 1) return "1蜿ｷ濶・繧､繝ｳ騾・￡蠢ｫ蜍昴ヱ繧ｿ繝ｼ繝ｳ";
-                if (wl === 2) return "2蜿ｷ濶・驪ｭ縺・ｷｮ縺玲栢縺代ヱ繧ｿ繝ｼ繝ｳ";
-                if (wl === 3) return "3蜿ｷ濶・縺ｾ縺上ｊ/縺ｾ縺上ｊ蟾ｮ縺礼ず陬・;
-                if (wl === 4) return "4蜿ｷ濶・繧ｫ繝峨°繧峨・荳謦・∪縺上ｊ";
-                if (wl === 5) return "5蜿ｷ濶・螻暮幕繧堤ｪ√￥縺ｾ縺上ｊ蟾ｮ縺・;
-                if (wl === 6) return "6蜿ｷ濶・螟ｧ螟悶°繧画怙蜀・ｷｮ縺玲･豬ｮ荳・;
-                return "螻暮幕莠域Φ繝代ち繝ｼ繝ｳ";
+                if (wl === 1) return "1号艇 イン逃げ快勝パターン";
+                if (wl === 2) return "2号艇 鋭い差し抜けパターン";
+                if (wl === 3) return "3号艇 まくり/まくり差し炸裂";
+                if (wl === 4) return "4号艇 カドからの一撃まくり";
+                if (wl === 5) return "5号艇 展開を突くまくり差し";
+                if (wl === 6) return "6号艇 大外から最内差し急浮上";
+                return "展開予想パターン";
             }
 
             function setSimulationCombo(combo) {
@@ -2117,7 +2110,7 @@
 
             setSimulationCombo(currentCombo);
 
-            // Replay繝懊ち繝ｳ縺ｮ繧､繝吶Φ繝郁ｨｭ螳・
+            // Replayボタンのイベント設定
             const replayBtn = document.getElementById('replay-sim-btn');
             if (replayBtn) {
                 const newReplayBtn = replayBtn.cloneNode(true);
@@ -2150,12 +2143,12 @@
                     // Speed parameters based on rank and exTime
                     let straightSpeed = 2.3 + (rate * 0.02) - (exTime - 6.70) * 0.8;
                     
-                    // 縺ｾ縺上ｊ蜍昴■縺ｯ逶ｴ邱壹〒荳豌励↓莨ｸ縺ｳ縺ｦ縺上ｋ・・
+                    // まくり勝ちは直線で一気に伸びてくる！
                     if (rank === 1) {
                         if (winnerLane >= 3) {
-                            straightSpeed += 0.35; // 縺ｾ縺上ｊ濶・・逶ｴ邱壻ｼｸ縺ｳ
+                            straightSpeed += 0.35; // まくり艇の直線伸び
                         } else {
-                            straightSpeed += 0.08; // 騾壼ｸｸ
+                            straightSpeed += 0.08; // 通常
                         }
                     }
 
@@ -2163,14 +2156,14 @@
                     let radius = baseRadius;
                     if (laneNum === winnerLane) {
                         if (winnerLane === 1) {
-                            radius = baseRadius - 3.0; // 騾・￡縺ｮ繧､繝ｳ蟆丞屓繧・
+                            radius = baseRadius - 3.0; // 逃げのイン小回り
                         } else if (winnerLane === 2) {
-                            radius = baseRadius - 2.5; // 蟾ｮ縺励・蟆丞屓繧・
+                            radius = baseRadius - 2.5; // 差しの小回り
                         } else {
-                            radius = baseRadius + 1.0; // 縺ｾ縺上ｊ縺ｯ螟悶ｒ蝗槭ｋ
+                            radius = baseRadius + 1.0; // まくりは外を回る
                         }
                     } else if (rank >= 5) {
-                        radius = baseRadius + 3.0; // 荳倶ｽ崎援縺ｯ螟悶↓豬√ｌ繧・
+                        radius = baseRadius + 3.0; // 下位艇は外に流れる
                     }
 
                     const turnSpeed = straightSpeed * (0.80 - (rank - 1) * 0.05);
@@ -2296,7 +2289,7 @@
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.font = 'bold 8px Inter';
                 ctx.textAlign = 'center';
-                ctx.fillText('1繝槭・繧ｯ', markX, markY - 14);
+                ctx.fillText('1マーク', markX, markY - 14);
 
                 simRacers.forEach(sr => {
                     if (sr.x < -30 || sr.x > viewWidth + 30) return;
@@ -2343,22 +2336,22 @@
 
                     const laneNum = parseInt(sr.lane) || 1;
                     if (frame > 95 && frame < 155 && laneNum === winnerLane) {
-                        let badgeText = "騾・￡";
+                        let badgeText = "逃げ";
                         let badgeBg = "rgba(16, 185, 129, 0.85)";
                         if (winnerLane === 2) {
-                            badgeText = "蟾ｮ縺・;
+                            badgeText = "差し";
                             badgeBg = "rgba(239, 68, 68, 0.85)";
                         } else if (winnerLane === 3) {
-                            badgeText = "縺ｾ縺上ｊ";
+                            badgeText = "まくり";
                             badgeBg = "rgba(245, 158, 11, 0.85)";
                         } else if (winnerLane === 4) {
-                            badgeText = "縺ｾ縺上ｊ";
+                            badgeText = "まくり";
                             badgeBg = "rgba(59, 130, 246, 0.85)";
                         } else if (winnerLane === 5) {
-                            badgeText = "縺ｾ縺上ｊ蟾ｮ縺・;
+                            badgeText = "まくり差し";
                             badgeBg = "rgba(234, 179, 8, 0.85)";
                         } else if (winnerLane === 6) {
-                            badgeText = "蟾ｮ縺・;
+                            badgeText = "差し";
                             badgeBg = "rgba(139, 92, 246, 0.85)";
                         }
 
@@ -2384,19 +2377,19 @@
                     if (frame > 180 && sr.rank <= 3) {
                         ctx.font = '8px Outfit';
                         ctx.textAlign = 'center';
-                        ctx.fillText(sr.rank === 1 ? '�･・ : (sr.rank === 2 ? '�･・ : '�･・), sr.x, sr.y - 11);
+                        ctx.fillText(sr.rank === 1 ? '🥇' : (sr.rank === 2 ? '🥈' : '🥉'), sr.x, sr.y - 11);
                     }
                 });
 
                 let hudStatus = "";
                 let hudColor = "rgba(255, 255, 255, 0.4)";
                 if (frame < 80) {
-                    hudStatus = "繝帙・繝�繧ｹ繝医Ξ繝・メ - 繧ｹ繝ｪ繝・ヨ騾夐℃";
+                    hudStatus = "ホームストレッチ - スリット通過";
                 } else if (frame >= 80 && frame < 165) {
-                    hudStatus = "隨ｬ1繧ｿ繝ｼ繝ｳ繝槭・繧ｯ - 譌句屓謾ｻ髦ｲ";
+                    hudStatus = "第1ターンマーク - 旋回攻防";
                     hudColor = "#f43f5e";
                 } else {
-                    hudStatus = "繝舌ャ繧ｯ繧ｹ繝医Ξ繝・メ - AI蛻､螳夂捩鬆・;
+                    hudStatus = "バックストレッチ - AI判定着順";
                     hudColor = "#10b981";
                 }
 
@@ -2407,17 +2400,17 @@
                 ctx.fillStyle = hudColor;
                 ctx.font = 'bold 8px sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText("�藤 " + hudStatus, 14, 14);
+                ctx.fillText("📡 " + hudStatus, 14, 14);
 
                 if (frame > 90 && frame < 225) {
                     let descText = "";
                     if (frame < 145) {
-                        if (winnerLane === 1) descText = "1蜿ｷ濶・′繧､繝ｳ縺九ｉ蜈医・繧､騾・￡菴灘宛・・;
-                        else if (winnerLane === 2) descText = "2蜿ｷ濶・′蜀・ｒ迢吶▲縺ｦ驪ｭ縺丞・繧願ｾｼ繧・・;
-                        else if (winnerLane === 3) descText = "3蜿ｷ濶・′蜈ｨ騾溘〒螟悶°繧画升縺｣縺ｦ縺ｾ繧上ｋ・・;
-                        else if (winnerLane === 4) descText = "4蜿ｷ濶・′繧ｫ繝峨°繧我ｸ豌励↓縺励⊂縺｣縺ｦ縺ｾ縺上ｋ・・;
-                        else if (winnerLane === 5) descText = "5蜿ｷ濶・′騾｣蜍輔＠縺ｦ縺ｾ縺上ｊ蟾ｮ縺励ｒ迢吶≧・・;
-                        else if (winnerLane === 6) descText = "6蜿ｷ濶・′螟ｧ螟悶°繧画怙蜀・∈蟾ｮ縺励↓蜈･繧具ｼ・;
+                        if (winnerLane === 1) descText = "1号艇がインから先マイ逃げ体制！";
+                        else if (winnerLane === 2) descText = "2号艇が内を狙って鋭く切り込む！";
+                        else if (winnerLane === 3) descText = "3号艇が全速で外から握ってまわる！";
+                        else if (winnerLane === 4) descText = "4号艇がカドから一気にしぼってまくる！";
+                        else if (winnerLane === 5) descText = "5号艇が連動してまくり差しを狙う！";
+                        else if (winnerLane === 6) descText = "6号艇が大外から最内へ差しに入る！";
                     } else {
                         descText = tacticLabel;
                     }
@@ -2447,13 +2440,13 @@
 
                 function createSimBtn(combo, isUpt, index) {
                     const btn = document.createElement('button');
-                    let label = '謚代∴';
+                    let label = '抑え';
                     if (!isUpt) {
-                        if (index === 0) label = '螟ｧ譛ｬ邱・;
-                        else if (index === 1) label = '譛ｬ邱・;
+                        if (index === 0) label = '大本線';
+                        else if (index === 1) label = '本線';
                     } else {
-                        if (index === 0) label = '荳ｭ遨ｴ';
-                        else if (index === 1) label = '遨ｴ迢吶＞';
+                        if (index === 0) label = '中穴';
+                        else if (index === 1) label = '穴狙い';
                     }
                     
                     const baseClass = isUpt 
@@ -2496,7 +2489,7 @@
                         if (idx >= 2 && !isGasApp) {
                             const lockSpan = document.createElement('span');
                             lockSpan.className = 'px-2 py-1 text-[9px] rounded-lg border border-slate-800 bg-slate-950/40 text-slate-500 font-medium cursor-not-allowed select-none';
-                            lockSpan.innerText = `�白 遨ｴ莠域Φ繝ｭ繝・け荳ｭ (${combo})`;
+                            lockSpan.innerText = `🔒 穴予想ロック中 (${combo})`;
                             upsetContainer.appendChild(lockSpan);
                         } else {
                             upsetContainer.appendChild(createSimBtn(combo, true, idx));
@@ -2531,11 +2524,11 @@
                     window.activeTurnSimTimeout = null;
                 }
 
-                // Canvas縺ｮ繧ｵ繧､繧ｺ繧偵Μ繧｢繝ｫ繧ｿ繧､繝�險域ｸｬ縺励※繝ｪ繧ｵ繧､繧ｺ
+                // Canvasのサイズをリアルタイム計測してリサイズ
                 const rect = canvas.getBoundingClientRect();
                 canvas.width = rect.width * dpr;
                 canvas.height = rect.height * dpr;
-                ctx.setTransform(1, 0, 0, 1, 0, 0); // 繧ｹ繧ｱ繝ｼ繝ｫ繧偵Μ繧ｻ繝・ヨ
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // スケールをリセット
                 ctx.scale(dpr, dpr);
                 viewWidth = rect.width;
                 viewHeight = rect.height;
@@ -2550,7 +2543,7 @@
         }
 
 
-        // 蠎・相繝ｭ繝・け隗｣髯､逕ｨ繝ｭ繧ｸ繝・け
+        // 広告ロック解除用ロジック
         window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
             const modal = document.getElementById('ad-unlock-modal');
             const btn = document.getElementById('unlock-countdown-btn');
@@ -2561,29 +2554,29 @@
                 return;
             }
 
-            // 繝｢繝ｼ繝繝ｫ繧定｡ｨ遉ｺ
+            // モーダルを表示
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
             }, 10);
 
-            // 繝輔ぉ繝ｼ繧ｺ縺ｫ蠢懊§縺ｦ繧ｫ繧ｦ繝ｳ繝医ム繧ｦ繝ｳ遘呈焚繧呈ｱｺ螳夲ｼ育ｬｬ荳谺｡=5遘偵∫ｬｬ莠梧ｬ｡/荳画ｬ｡=15遘抵ｼ・
+            // フェーズに応じてカウントダウン秒数を決定（第一次=5秒、第二次/三次=15秒）
             const phase = window.currentPhase || 1;
             let timeLeft = (phase >= 2) ? 15 : 5;
-            const phaseLabel = phase >= 3 ? '隨ｬ荳画ｬ｡莠域Φ' : phase === 2 ? '隨ｬ莠梧ｬ｡莠域Φ' : '隨ｬ荳谺｡莠域Φ';
+            const phaseLabel = phase >= 3 ? '第三次予想' : phase === 2 ? '第二次予想' : '第一次予想';
 
             btn.disabled = true;
             btn.className = "w-full py-2.5 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed border border-white/5 transition-all";
-            btn.innerText = `縺ゅ→ ${timeLeft} 遘偵♀蠕・■縺上□縺輔＞...`;
+            btn.innerText = `あと ${timeLeft} 秒お待ちください...`;
 
-            // 繝｢繝ｼ繝繝ｫ縺ｮ繧ｿ繧､繝医Ν縺ｫ繝輔ぉ繝ｼ繧ｺ繧貞渚譏�
+            // モーダルのタイトルにフェーズを反映
             const modalTitle = modal.querySelector('h3');
-            if (modalTitle) modalTitle.textContent = `�白 ${phaseLabel}繝ｭ繝・け隗｣髯､`;
+            if (modalTitle) modalTitle.textContent = `🔒 ${phaseLabel}ロック解除`;
             const modalDesc = modal.querySelector('p');
             if (modalDesc) modalDesc.textContent = phase >= 2
-                ? '隨ｬ莠梧ｬ｡莠域Φ・育峩蜑榊ｱ慕､ｺ蜿肴丐・峨・萓｡蛟､縺碁ｫ倥＞縺溘ａ15遘偵・蠎・相隕冶・縺悟ｿ・ｦ√〒縺吶・
-                : '蠎・相繧定ｦ冶・縺励※隨ｬ荳谺｡莠域Φ縺ｮ雋ｷ縺・岼繧帝幕遉ｺ縺励∪縺呻ｼ・遘抵ｼ峨・;
+                ? '第二次予想（直前展示反映）は価値が高いため15秒の広告視聴が必要です。'
+                : '広告を視聴して第一次予想の買い目を開示します（5秒）。';
 
             const interval = setInterval(() => {
                 timeLeft--;
@@ -2591,23 +2584,23 @@
                     clearInterval(interval);
                     btn.disabled = false;
                     btn.className = "w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-black rounded-xl cursor-pointer shadow-lg transition-all active:scale-95 duration-200";
-                    btn.innerText = "髢峨§縺ｦ莠域Φ繧帝幕遉ｺ縺吶ｋ �箔";
+                    btn.innerText = "閉じて予想を開示する 🔓";
                 } else {
-                    btn.innerText = `縺ゅ→ ${timeLeft} 遘偵♀蠕・■縺上□縺輔＞...`;
+                    btn.innerText = `あと ${timeLeft} 秒お待ちください...`;
                 }
             }, 1000);
 
-            // 繝懊ち繝ｳ繧ｯ繝ｪ繝・け譎ゅ・繧､繝吶Φ繝・
+            // ボタンクリック時のイベント
             const clickHandler = function() {
-                // 繝｢繧ｶ繧､繧ｯ隗｣髯､
+                // モザイク解除
                 targetWrapper.classList.remove('premium-blur');
                 targetWrapper.classList.add('premium-unlocked');
                 
-                // 繝ｭ繝・け陦ｨ遉ｺ蜑企勁
+                // ロック表示削除
                 lockEl.style.opacity = '0';
                 setTimeout(() => lockEl.remove(), 300);
 
-                // 繝｢繝ｼ繝繝ｫ繧帝哩縺倥ｋ
+                // モーダルを閉じる
                 modal.classList.remove('opacity-100');
                 modal.classList.add('opacity-0');
                 setTimeout(() => {
@@ -2624,7 +2617,7 @@
             btn.addEventListener('click', clickHandler);
         };
 
-        // 隕冗ｴ・Δ繝ｼ繝繝ｫ陦ｨ遉ｺ蛻ｶ蠕｡
+        // 規約モーダル表示制御
         window.showTermsModal = function(type) {
             const modal = document.getElementById('terms-modal');
             const disclaimerContent = document.getElementById('terms-content-disclaimer');
@@ -2635,23 +2628,23 @@
             
             if (!modal || !disclaimerContent || !privacyContent || !aboutContent || !helpContent || !title) return;
 
-            // 縺吶∋縺ｦ髫�縺・
+            // すべて隠す
             disclaimerContent.classList.add('hidden');
             privacyContent.classList.add('hidden');
             aboutContent.classList.add('hidden');
             helpContent.classList.add('hidden');
 
             if (type === 'disclaimer') {
-                title.innerText = "笞厄ｸ・蜈崎ｲｬ莠矩�・;
+                title.innerText = "⚖️ 免責事項";
                 disclaimerContent.classList.remove('hidden');
             } else if (type === 'privacy') {
-                title.innerText = "�孱・・繝励Λ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ";
+                title.innerText = "🛡️ プライバシーポリシー";
                 privacyContent.classList.remove('hidden');
             } else if (type === 'about') {
-                title.innerText = "�潤 縺薙・繧ｵ繧､繝医↓縺､縺・※";
+                title.innerText = "🏁 このサイトについて";
                 aboutContent.classList.remove('hidden');
             } else if (type === 'help') {
-                title.innerText = "�庁 莠域Φ縺ｮ隕区婿繝ｻ菴ｿ縺・婿";
+                title.innerText = "💡 予想の見方・使い方";
                 helpContent.classList.remove('hidden');
             }
 
@@ -2673,7 +2666,7 @@
             }, 300);
         };
 
-        // 繝・Δ繝｢繝ｼ繝臥畑繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ襍ｷ蜍募・逅・
+        // デモモード用フォールバック起動処理
         function loadDemoMode() {
             window.isDemoMode = true;
             window.activeVenues = ["14", "10", "07", "12"];
@@ -2694,10 +2687,10 @@
             selectVenue("14", true);
             calculateTodayStats();
             
-            LAST_UPDATE.innerHTML = `<span class="text-amber-500 font-extrabold animate-pulse">笞�・・繝・Δ繝｢繝ｼ繝・/span>`;
+            LAST_UPDATE.innerHTML = `<span class="text-amber-500 font-extrabold animate-pulse">⚠️ デモモード</span>`;
         }
 
-        // 驕主悉縺ｮ螻･豁ｴ繧｢繝ｼ繧ｫ繧､繝也畑繝ｭ繧ｸ繝・け
+        // 過去の履歴アーカイブ用ロジック
         let isArchiveLoaded = false;
         let archiveData = [];
 
@@ -2735,7 +2728,7 @@
             list.innerHTML = '';
 
             if (window.isDemoMode || (typeof google === 'undefined' && window.location.hostname === 'localhost')) {
-                // 繝・Δ逕ｨ繝｢繝・け螻･豁ｴ繝ｭ繝ｼ繝・
+                // デモ用モック履歴ロード
                 setTimeout(() => {
                     loading.classList.add('hidden');
                     isArchiveLoaded = true;
@@ -2743,7 +2736,7 @@
                     renderArchive(archiveData);
                 }, 800);
             } else {
-                // GAS縺九ｉ螳溽ｸｾ繝・・繧ｿ蜿門ｾ・
+                // GASから実績データ取得
                 if (typeof google !== 'undefined' && google.script && google.script.run) {
                     google.script.run
                         .withSuccessHandler(function(res) {
@@ -2803,10 +2796,10 @@
                         payout: payout,
                         solid_focus: "1-2-3, 1-2-5, 1-3-2, 1-3-5",
                         upset_focus: "2-3-5, 2-5-3, 3-2-5, 3-5-2",
-                        weather_str: "蜷代°縺・｢ｨ 2m 豕｢3cm",
+                        weather_str: "向かい風 2m 波3cm",
                         comment: isHit 
-                            ? "縲植I逧・ｸｭ邨先棡縲第ｰ苓ｱ｡陬懈ｭ｣蛻､螳夐壹ｊ縺ｮ騾ｲ蜈･髫雁・縺ｨ繧ｹ繝ｪ繝・ヨ繧ｿ繧､繝�縲ゅう繝ｳ蜆ｪ蜍｢縺ｮ莠域Φ縺九ｉHarville謨ｰ蠑上ｒ逕ｨ縺・◆螻暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ縺・-2-5繝ｩ繧､繝ｳ繧堤噪遒ｺ縺ｫ蟆・ｭ｢繧√∪縺励◆縲・
-                            : "縲植I荳咲噪荳ｭ邨先棡縲・蜿ｷ濶・′騾ｲ蜈･蟠ｩ繧後°繧牙､ｧ縺阪￥繧ｫ繝牙女縺代ｒ蜿悶ｊ縲∫黄逅・ｲ霍ｯ螯ｨ螳ｳ縺檎匱逕溘ゅム繝・す繝･濶・ｾ､縺ｮ騾ｲ霍ｯ縺梧怙蜀・↓蟇・ｊ縲、I荳肴ｸｬ縺ｮ1-3-4繝ｩ繧､繝ｳ縺ｧ豎ｺ逹縺励∪縺励◆縲・
+                            ? "【AI的中結果】気象補正判定通りの進入隊列とスリットタイム。イン優勢の予想からHarville数式を用いた展開シミュレーションが1-2-5ラインを的確に射止めました。"
+                            : "【AI不的中結果】4号艇が進入崩れから大きくカド受けを取り、物理進路妨害が発生。ダッシュ艇群の進路が最内に寄り、AI不測の1-3-4ラインで決着しました。"
                     });
                 }
             });
@@ -2818,11 +2811,11 @@
             listContainer.innerHTML = '';
             
             if (!reviews || reviews.length === 0) {
-                listContainer.innerHTML = '<div class="text-[10px] text-slate-500 text-center py-4">驕主悉縺ｮ螻･豁ｴ繝・・繧ｿ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・/div>';
+                listContainer.innerHTML = '<div class="text-[10px] text-slate-500 text-center py-4">過去の履歴データはありません。</div>';
                 return;
             }
 
-            // 1. 譌･莉倬�・げ繝ｫ繝ｼ繝怜喧
+            // 1. 日付順グループ化
             const grouped = {};
             reviews.forEach(rev => {
                 if (!grouped[rev.date]) {
@@ -2831,7 +2824,7 @@
                 grouped[rev.date].push(rev);
             });
 
-            // 2. 邱丞粋螳溽ｸｾ縺ｮ髮・ｨ・
+            // 2. 総合実績の集計
             let totalRaces = 0;
             let totalHits = 0;
             let totalBet = 0;
@@ -2841,7 +2834,7 @@
                 grouped[date].forEach(rev => {
                     totalRaces++;
                     if (rev.is_hit) totalHits++;
-                    totalBet += 800; // 譛ｬ蜻ｽ400+遨ｴ400諠ｳ螳・
+                    totalBet += 800; // 本命400+穴400想定
                     if (rev.is_hit) {
                         totalPayout += rev.payout;
                     }
@@ -2852,8 +2845,8 @@
             const roi = totalBet > 0 ? Math.round((totalPayout / totalBet) * 100) : 0;
             const netProfit = totalPayout - totalBet;
 
-            // 邱丞粋螳溽ｸｾ陦ｨ遉ｺ縺ｮ譖ｴ譁ｰ
-            document.getElementById('archive-total-races').innerText = `${totalRaces}繝ｬ繝ｼ繧ｹ`;
+            // 総合実績表示の更新
+            document.getElementById('archive-total-races').innerText = `${totalRaces}レース`;
             document.getElementById('archive-solid-hit').innerText = `${hitRate}%`;
             document.getElementById('archive-solid-recovery').innerText = `${roi}%`;
             document.getElementById('archive-upset-hit').innerText = `${hitRate > 0 ? Math.max(10, hitRate - 15) : 0}%`;
@@ -2862,16 +2855,16 @@
             const profitEl = document.getElementById('archive-net-profit');
             if (netProfit > 0) {
                 profitEl.className = "font-bold font-outfit text-emerald-400";
-                profitEl.innerText = `+${netProfit.toLocaleString()}蜀・;
+                profitEl.innerText = `+${netProfit.toLocaleString()}円`;
             } else if (netProfit < 0) {
                 profitEl.className = "font-bold font-outfit text-rose-400";
-                profitEl.innerText = `${netProfit.toLocaleString()}蜀・;
+                profitEl.innerText = `${netProfit.toLocaleString()}円`;
             } else {
                 profitEl.className = "font-bold font-outfit text-slate-300";
-                profitEl.innerText = "ﾂｱ0蜀・;
+                profitEl.innerText = "±0円";
             }
 
-            // 3. 譌･莉倥い繧ｳ繝ｼ繝・ぅ繧ｪ繝ｳ縺ｮ謠冗判・磯剄鬆・ｼ・
+            // 3. 日付アコーディオンの描画（降順）
             const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
             
             sortedDates.forEach(date => {
@@ -2900,17 +2893,17 @@
                 const header = document.createElement('div');
                 header.className = "px-3 py-2 bg-slate-900/40 flex items-center justify-between cursor-pointer hover:bg-slate-800/40 transition-colors text-[10px]";
                 
-                const dProfitText = dailyProfit > 0 ? `<span class="text-emerald-400 font-bold">+${dailyProfit.toLocaleString()}蜀・/span>` : `<span class="text-rose-400">${dailyProfit.toLocaleString()}蜀・/span>`;
+                const dProfitText = dailyProfit > 0 ? `<span class="text-emerald-400 font-bold">+${dailyProfit.toLocaleString()}円</span>` : `<span class="text-rose-400">${dailyProfit.toLocaleString()}円</span>`;
                 header.innerHTML = `
                     <div class="flex items-center gap-1.5 font-bold text-slate-300">
-                        <span>�套 ${formattedDate}</span>
-                        <span class="px-1 rounded bg-slate-800 text-slate-400 text-[8px]">${dailyRaces}R遒ｺ螳・/span>
+                        <span>📅 ${formattedDate}</span>
+                        <span class="px-1 rounded bg-slate-800 text-slate-400 text-[8px]">${dailyRaces}R確定</span>
                     </div>
                     <div class="flex items-center gap-3 text-slate-400 font-mono">
-                        <span>逧・ｸｭ: ${dailyHitRate}%</span>
-                        <span>蝗槫庶: ${dailyRoi}%</span>
-                        <span>蜿取髪: ${dProfitText}</span>
-                        <span class="daily-arrow transition-transform duration-200">笆ｼ</span>
+                        <span>的中: ${dailyHitRate}%</span>
+                        <span>回収: ${dailyRoi}%</span>
+                        <span>収支: ${dProfitText}</span>
+                        <span class="daily-arrow transition-transform duration-200">▼</span>
                     </div>
                 `;
 
@@ -2927,8 +2920,8 @@
                     raceRow.className = "p-2 rounded-lg bg-slate-900/10 space-y-1 hover:bg-slate-900/30 transition-colors cursor-pointer";
 
                     const badgeClass = rev.is_hit ? "px-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-black text-[8px]" : "px-1 rounded bg-slate-800 text-slate-500 border border-slate-700/30 text-[8px]";
-                    const badgeText = rev.is_hit ? "逧・ｸｭ" : "荳咲噪荳ｭ";
-                    const payoutText = rev.is_hit ? `<span class="text-emerald-400 font-black">${rev.winning_combo} (${rev.payout.toLocaleString()}蜀・</span>` : `<span class="text-slate-500">${rev.winning_combo || "--"}</span>`;
+                    const badgeText = rev.is_hit ? "的中" : "不的中";
+                    const payoutText = rev.is_hit ? `<span class="text-emerald-400 font-black">${rev.winning_combo} (${rev.payout.toLocaleString()}円)</span>` : `<span class="text-slate-500">${rev.winning_combo || "--"}</span>`;
                     const raceProfit = rev.is_hit ? (rev.payout - 800) : -800;
                     const raceProfitText = raceProfit > 0 ? `<span class="text-emerald-400 font-bold">+${raceProfit}</span>` : `<span class="text-rose-400">${raceProfit}</span>`;
 
@@ -2937,7 +2930,7 @@
                             <div class="flex items-center gap-1.5">
                                 <span class="${badgeClass}">${badgeText}</span>
                                 <span class="font-bold text-slate-300">${venueName} ${rno}R</span>
-                                <span class="text-[8px] text-slate-500 font-mono">(${rev.weather_str || "譎ｴ"})</span>
+                                <span class="text-[8px] text-slate-500 font-mono">(${rev.weather_str || "晴"})</span>
                             </div>
                             <div class="font-mono text-right space-x-1.5">
                                 ${payoutText}
@@ -2945,8 +2938,8 @@
                             </div>
                         </div>
                         <div class="comment-section hidden text-[9px] text-slate-400 border-t border-white/5 pt-1.5 mt-1 leading-relaxed bg-slate-950/40 p-1.5 rounded">
-                            <div class="text-[8px] text-indigo-400 font-black uppercase tracking-wider mb-0.5">�､・AI隗｣隱ｬ繝ｻ謖ｯ繧願ｿ斐ｊ</div>
-                            ${rev.comment || "隗｣隱ｬ繝・・繧ｿ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・}
+                            <div class="text-[8px] text-indigo-400 font-black uppercase tracking-wider mb-0.5">🤖 AI解説・振り返り</div>
+                            ${rev.comment || "解説データはありません。"}
                         </div>
                     `;
 
@@ -2990,16 +2983,16 @@
         };
     </script>
 
-    <!-- 蠎・相繝ｭ繝・け隗｣髯､逕ｨ縺ｮ繝昴ャ繝励い繝・・繝｢繝ｼ繝繝ｫ -->
+    <!-- 広告ロック解除用のポップアップモーダル -->
     <div id="ad-unlock-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
         <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl text-center space-y-4 relative">
-            <h3 class="text-sm font-bold text-white tracking-wider font-outfit">�白 繝励Ξ繝溘い繝�莠域Φ繝ｭ繝・け隗｣髯､</h3>
-            <p class="text-xs text-slate-400">蠎・相縺後Ο繝ｼ繝峨＆繧後※縺・∪縺吶ゅΟ繝・け隗｣髯､縺ｾ縺ｧ縺雁ｾ・■縺上□縺輔＞縲・/p>
+            <h3 class="text-sm font-bold text-white tracking-wider font-outfit">🔒 プレミアム予想ロック解除</h3>
+            <p class="text-xs text-slate-400">広告がロードされています。ロック解除までお待ちください。</p>
             
             <!-- Ad Container -->
             <div class="w-full flex justify-center py-2 min-h-[250px] bg-slate-900/50 rounded-xl border border-white/5 items-center">
                 <div id="modal-ad-box" class="w-full text-center">
-                    <!-- 竊・縺薙％縺ｫ2縺､逶ｮ縺ｮ蠢崎・dMax繧ｿ繧ｰ・・00x250縺ｪ縺ｩ縺ｮ繧､繝ｳ繝ｩ繧､繝ｳ譫�・峨ｒ雋ｼ繧贋ｻ倥￠縺ｾ縺・竊・-->
+                    <!-- ↓ ここに2つ目の忍者AdMaxタグ（300x250などのインライン枠）を貼り付けます ↓ -->
                     <!-- admax -->
                     <script src="https://adm.shinobi.jp/s/49471adf51751ff10c0264d812ee97ef"></script>
                     <!-- admax -->
@@ -3008,65 +3001,65 @@
 
             <div id="unlock-btn-container" class="w-full">
                 <button id="unlock-countdown-btn" disabled class="w-full py-2.5 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed border border-white/5 transition-all">
-                    縺ゅ→ 5 遘偵♀蠕・■縺上□縺輔＞...
+                    あと 5 秒お待ちください...
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 蜈崎ｲｬ莠矩�・・繝励Λ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ逕ｨ繝｢繝ｼ繝繝ｫ -->
+    <!-- 免責事項・プライバシーポリシー用モーダル -->
     <div id="terms-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
         <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh] relative">
-            <h3 id="terms-title" class="text-sm font-bold text-white tracking-wider font-outfit mb-3">蛻ｩ逕ｨ隕冗ｴ・/h3>
+            <h3 id="terms-title" class="text-sm font-bold text-white tracking-wider font-outfit mb-3">利用規約</h3>
             
             <div class="flex-1 overflow-y-auto text-left text-xs text-slate-300 space-y-3 pr-2 scrollbar-thin">
-                <!-- 縺薙・繧ｵ繧､繝医↓縺､縺・※ -->
+                <!-- このサイトについて -->
                 <div id="terms-content-about" class="hidden space-y-2.5">
-                    <p class="font-bold text-indigo-400">縲植I莠域Φ繝繝・す繝･繝懊・繝峨↓縺､縺・※縲・/p>
-                    <p>蠖薙し繧､繝医・縲∵怙蜈育ｫｯ縺ｮ繝・・繧ｿ蛻・梵縺ｨ迚ｩ逅・す繝溘Η繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ繧定檮蜷医＠縺滓ｬ｡荳紋ｻ｣縺ｮ繝懊・繝医Ξ繝ｼ繧ｹ・育ｫｶ濶・ｼ我ｺ域Φ謾ｯ謠ｴ繧ｵ繝ｼ繝薙せ縺ｧ縺吶・/p>
-                    <p>逶ｴ蜑榊ｱ慕､ｺ諠・�ｱ縲・∈謇九＃縺ｨ縺ｮ驕主悉縺ｮ譫�逡ｪ蛻･蜍晉紫縲√Δ繝ｼ繧ｿ繝ｼ縺ｮ莉穂ｸ翫′繧翫ョ繝ｼ繧ｿ縺ｫ蜉�縺医∝ｽ捺律縺ｮ縲碁｢ｨ蜷代・鬚ｨ騾溘・豌玲ｸｩ繝ｻ豌ｴ貂ｩ繝ｻ豕｢鬮倥阪↑縺ｩ縺ｮ豌苓ｱ｡迥ｶ豕√ｒ螳悟・繝槭・繧ｸ縲・/p>
-                    <p>1繝槭・繧ｯ譌句屓譎ゅ・濶・酔螢ｫ縺ｮ迚ｩ逅・ｹｲ貂会ｼ医∪縺上ｊ縲∝ｷｮ縺励√∪縺上ｊ蟾ｮ縺礼ｭ峨・騾ｲ霍ｯ霆碁％・峨ｒ閾ｪ蠕九お繝ｳ繧ｸ繝ｳ縺御ｽ穂ｸ・屓繧ゅす繝溘Η繝ｬ繝ｼ繝医＠縲∵怙繧よ焚蟄ｦ逧・↓蜷育炊逧・°縺､鬮倡｢ｺ邇・↑螻暮幕縺ｨ3騾｣蜊倩ｲｷ縺・岼繧偵Μ繧｢繝ｫ繧ｿ繧､繝�縺ｫ蜿ｯ隕門喧縺励※謠蝉ｾ帙＠縺ｦ縺・∪縺吶・/p>
+                    <p class="font-bold text-indigo-400">【AI予想ダッシュボードについて】</p>
+                    <p>当サイトは、最先端のデータ分析と物理シミュレーションを融合した次世代のボートレース（競艇）予想支援サービスです。</p>
+                    <p>直前展示情報、選手ごとの過去の枠番別勝率、モーターの仕上がりデータに加え、当日の「風向・風速・気温・水温・波高」などの気象状況を完全マージ。</p>
+                    <p>1マーク旋回時の艇同士の物理干渉（まくり、差し、まくり差し等の進路軌道）を自律エンジンが何万回もシミュレートし、最も数学的に合理的かつ高確率な展開と3連単買い目をリアルタイムに可視化して提供しています。</p>
                 </div>
 
-                <!-- 莠域Φ縺ｮ隕区婿繝ｻ菴ｿ縺・婿 -->
+                <!-- 予想の見方・使い方 -->
                 <div id="terms-content-help" class="hidden space-y-2.5 text-[11px] leading-relaxed">
-                    <p class="font-bold text-teal-400 text-xs">縲仙推讖溯・縺ｮ隗｣隱ｬ縲・/p>
+                    <p class="font-bold text-teal-400 text-xs">【各機能の解説】</p>
                     
-                    <p class="font-bold text-slate-200">竭� 繧､繝ｳ騾・￡譛溷ｾ・｢ｺ蠎ｦ</p>
-                    <p class="pl-2">1蜿ｷ濶・′蜈磯�ｭ縺ｧ1繝槭・繧ｯ繧呈雷蝗槭＠縲√ヰ繝・け繧ｹ繝医Ξ繝・メ縺ｧ騾・￡蛻・ｋ遒ｺ邇・ｒAI縺後ヱ繝ｼ繧ｻ繝ｳ繝・・繧ｸ縺ｧ邂怜・縺励◆繧ゅ・縺ｧ縺吶よ焚蛟､縺碁ｫ倥＞縺ｻ縺ｩ繧､繝ｳ騾・￡縺ｮ菫｡鬆ｼ蠎ｦ縺御ｸ翫′繧翫∪縺吶・/p>
+                    <p class="font-bold text-slate-200">① イン逃げ期待確度</p>
+                    <p class="pl-2">1号艇が先頭で1マークを旋回し、バックストレッチで逃げ切る確率をAIがパーセンテージで算出したものです。数値が高いほどイン逃げの信頼度が上がります。</p>
                     
-                    <p class="font-bold text-slate-200">竭｡ 謗ｨ螂ｨ繝輔か繝ｼ繧ｫ繧ｹ・・騾｣蜊假ｼ・/p>
+                    <p class="font-bold text-slate-200">② 推奨フォーカス（3連単）</p>
                     <ul class="list-disc pl-5 space-y-1">
-                        <li><span class="text-rose-400 font-bold">螟ｧ譛ｬ邱・/span>・壽怙繧ら噪荳ｭ遒ｺ邇・′鬮倥＞縺ｨ邂怜・縺輔ｌ縺滓悽蜻ｽ縺ｮ雋ｷ縺・岼縲・/li>
-                        <li><span class="text-amber-400 font-bold">譛ｬ邱・/span>・壼､ｧ譛ｬ邱壹↓谺｡縺・〒謇句�・＞蟇ｾ謚励・雋ｷ縺・岼縲・/li>
-                        <li><span class="text-emerald-400 font-bold">荳ｭ遨ｴ</span>・夐ｲ蜈･蟠ｩ繧後ｄ蠑ｷ鬚ｨ繝ｻ鬮俶ｳ｢縺ｪ縺ｩ縺ｮ螻暮幕螟牙喧縺ｧ逋ｺ逕溘＠繧・☆縺・･ｽ驟榊ｽ薙・雋ｷ縺・岼・亥ｺ・相隗｣髯､縺ｧ隗｣謾ｾ・峨・/li>
-                        <li><span class="text-purple-400 font-bold">遨ｴ迢吶＞</span>・壻ｸ逋ｺ螟ｧ騾・ｻ｢縺梧悄蠕・〒縺阪ｋ荳・亜蛻ｸ邏壹・豕｢荵ｱ迢吶＞雋ｷ縺・岼・亥ｺ・相隗｣髯､縺ｧ隗｣謾ｾ・峨・/li>
+                        <li><span class="text-rose-400 font-bold">大本線</span>：最も的中確率が高いと算出された本命の買い目。</li>
+                        <li><span class="text-amber-400 font-bold">本線</span>：大本線に次いで手堅い対抗の買い目。</li>
+                        <li><span class="text-emerald-400 font-bold">中穴</span>：進入崩れや強風・高波などの展開変化で発生しやすい好配当の買い目（広告解除で解放）。</li>
+                        <li><span class="text-purple-400 font-bold">穴狙い</span>：一発大逆転が期待できる万舟券級の波乱狙い買い目（広告解除で解放）。</li>
                     </ul>
 
-                    <p class="font-bold text-slate-200">竭｢ 螻慕､ｺ繧ｹ繝ｪ繝・ヨ蜀咲樟</p>
-                    <p class="pl-2">繧ｹ繧ｿ繝ｼ繝亥ｱ慕､ｺ縺ｫ縺翫￠繧句推濶・・繧ｹ繝ｪ繝・ヨ騾夐℃譎ゅ・菴咲ｽｮ髢｢菫ゅｒ繝薙ず繝･繧｢繝ｫ縺ｧ蜀咲樟縲ゅヵ繝ｩ繧､繝ｳ繧ｰ(F)繧・・驕・ｌ縲・ｲ蜈･繧ｳ繝ｼ繧ｹ縺ｮ蟠ｩ繧後ｒ逶ｴ諢溽噪縺ｫ隕区･ｵ繧√ｉ繧後∪縺吶・/p>
+                    <p class="font-bold text-slate-200">③ 展示スリット再現</p>
+                    <p class="pl-2">スタート展示における各艇のスリット通過時の位置関係をビジュアルで再現。フライング(F)や出遅れ、進入コースの崩れを直感的に見極められます。</p>
 
-                    <p class="font-bold text-slate-200">竭｣ 螻暮幕繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ繝ｼ</p>
-                    <p class="pl-2">1繝槭・繧ｯ縺ｧ縺ｮ蜷・援縺ｮ迚ｩ逅・噪縺ｪ譌句屓霆瑚ｷ｡繧偵い繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ縺ｧ蜀咲樟縺励∪縺吶ゅ←縺ｮ濶・′縺ｾ縺上ｊ縲√←縺ｮ濶・′蟾ｮ縺吶・縺九、I縺御ｺ域ｸｬ縺励◆縲梧ｱｺ縺ｾ繧頑焔縲阪・霆碁％繧定ｦ冶ｦ夂噪縺ｫ逅・ｧ｣縺ｧ縺阪∪縺吶・/p>
+                    <p class="font-bold text-slate-200">④ 展開シミュレーター</p>
+                    <p class="pl-2">1マークでの各艇の物理的な旋回軌跡をアニメーションで再現します。どの艇がまくり、どの艇が差すのか、AIが予測した「決まり手」の軌道を視覚的に理解できます。</p>
                 </div>
 
                 <div id="terms-content-disclaimer" class="hidden space-y-2.5">
-                    <p class="font-bold text-rose-400">縲仙・雋ｬ莠矩�・・/p>
-                    <p>蠖薙し繧､繝茨ｼ井ｻ･荳九√悟ｽ薙し繝ｼ繝薙せ縲搾ｼ峨〒謠蝉ｾ帙＆繧後ｋ遶ｶ濶・ｼ医・繝ｼ繝医Ξ繝ｼ繧ｹ・峨・AI莠域Φ縺翫ｈ縺ｳ蜷・ｨｮ蛻・梵繝・・繧ｿ縺ｯ縲・℃蜴ｻ縺ｮ邨ｱ險医ョ繝ｼ繧ｿ縺翫ｈ縺ｳ繝ｪ繧｢繝ｫ繧ｿ繧､繝�諠・�ｱ縺ｫ蝓ｺ縺･縺・※迢ｬ閾ｪ縺ｫ邂怜・縺輔ｌ縺溘ｂ縺ｮ縺ｧ縺ゅｊ縲∫噪荳ｭ繧剃ｿ晁ｨｼ縺吶ｋ繧ゅ・縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・/p>
-                    <p>蠖薙し繝ｼ繝薙せ縺梧署萓帙☆繧区ュ蝣ｱ繧貞盾閠・↓闊溷虻繧定ｳｼ蜈･縺輔ｌ縺溽ｵ先棡縲∵錐螟ｱ縺檎匱逕溘＠縺溷�ｴ蜷医〒繧ゅ∝ｽ薙し繝ｼ繝薙せ縺翫ｈ縺ｳ驕句霧閠・・荳蛻・・雋ｬ莉ｻ繧定ｲ�縺・∪縺帙ｓ縲よ兜逾ｨ縺ｮ縺泌愛譁ｭ縺ｯ縲∝ｿ・★縺碑・霄ｫ縺ｮ雋ｬ莉ｻ縺ｫ縺翫＞縺ｦ陦後▲縺ｦ縺・◆縺�縺上ｈ縺・♀鬘倥＞縺・◆縺励∪縺吶・/p>
-                    <p>縺ｾ縺溘√ョ繝ｼ繧ｿ騾壻ｿ｡縺ｮ驕・ｻｶ繧・囿螳ｳ縲・・菫｡諠・�ｱ縺ｮ隱､繧翫↓繧医▲縺ｦ逕溘§縺滓錐螳ｳ縺ｫ縺､縺・※繧ゅ∝ｽ薙し繝ｼ繝薙せ縺ｯ荳蛻・・雋ｬ莉ｻ繧定ｲ�縺・∪縺帙ｓ縲・/p>
+                    <p class="font-bold text-rose-400">【免責事項】</p>
+                    <p>当サイト（以下、「当サービス」）で提供される競艇（ボートレース）のAI予想および各種分析データは、過去の統計データおよびリアルタイム情報に基づいて独自に算出されたものであり、的中を保証するものではありません。</p>
+                    <p>当サービスが提供する情報を参考に舟券を購入された結果、損失が発生した場合でも、当サービスおよび運営者は一切の責任を負いません。投票のご判断は、必ずご自身の責任において行っていただくようお願いいたします。</p>
+                    <p>また、データ通信の遅延や障害、配信情報の誤りによって生じた損害についても、当サービスは一切の責任を負いません。</p>
                 </div>
                 <div id="terms-content-privacy" class="hidden space-y-2.5">
-                    <p class="font-bold text-emerald-400">縲舌・繝ｩ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ縲・/p>
-                    <p>蠖薙し繝ｼ繝薙せ縺ｧ縺ｯ縲∫ｬｬ荳芽・・菫｡縺ｫ繧医ｋ蠎・相繧ｵ繝ｼ繝薙せ・亥ｿ崎・dMax・峨ｒ蛻ｩ逕ｨ縺励※縺・∪縺吶・/p>
-                    <p>蠎・相驟堺ｿ｡莠区･ｭ閠・・縲√Θ繝ｼ繧ｶ繝ｼ縺ｮ闊亥袖縺ｫ蠢懊§縺溷ｺ・相繧定｡ｨ遉ｺ縺吶ｋ縺溘ａ縺ｫCookie・医け繝・く繝ｼ・峨ｒ菴ｿ逕ｨ縺吶ｋ縺薙→縺後≠繧翫∪縺吶・ookie繧剃ｽｿ逕ｨ縺吶ｋ縺薙→縺ｧ縲∝ｽ薙し繝ｼ繝薙せ繧・ｻ悶・繧ｵ繧､繝医∈縺ｮ驕主悉 of 繧｢繧ｯ繧ｻ繧ｹ諠・�ｱ縺ｫ蝓ｺ縺･縺・◆驕ｩ蛻・↑蠎・相驟堺ｿ｡縺悟庄閭ｽ縺ｨ縺ｪ繧翫∪縺吶・/p>
-                    <p>Cookie縺ｫ繧医ｋ諠・�ｱ蜿朱寔繧貞ｸ梧悍縺輔ｌ縺ｪ縺・�ｴ蜷医・縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ險ｭ螳壹↓繧医ｊCookie繧堤┌蜉ｹ縺ｫ縺吶ｋ縺薙→縺悟庄閭ｽ縺ｧ縺吶ゅ◆縺�縺励∫┌蜉ｹ縺ｫ縺励◆蝣ｴ蜷医∽ｸ驛ｨ縺ｮ繧ｳ繝ｳ繝・Φ繝・ｄ繧ｵ繝ｼ繝薙せ縺梧ｭ｣縺励￥讖溯・縺励↑縺・�ｴ蜷医′縺ゅｊ縺ｾ縺吶・縺ｧ縺比ｺ・価縺上□縺輔＞縲・/p>
+                    <p class="font-bold text-emerald-400">【プライバシーポリシー】</p>
+                    <p>当サービスでは、第三者配信による広告サービス（忍者AdMax）を利用しています。</p>
+                    <p>広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookie（クッキー）を使用することがあります。Cookieを使用することで、当サービスや他のサイトへの過去 of アクセス情報に基づいた適切な広告配信が可能となります。</p>
+                    <p>Cookieによる情報収集を希望されない場合は、ブラウザの設定によりCookieを無効にすることが可能です。ただし、無効にした場合、一部のコンテンツやサービスが正しく機能しない場合がありますのでご了承ください。</p>
                 </div>
             </div>
 
             <div class="mt-4 pt-3 border-t border-white/5">
                 <button onclick="window.closeTermsModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-white/5 transition-all">
-                    髢峨§繧・
+                    閉じる
                 </button>
             </div>
         </div>
