@@ -937,7 +937,7 @@
                         if (result && result.success && result.predictions) {
                             const previousSelectedKey = JCD_SELECT.value + "_" + RNO_SELECT.value;
                             const oldResult = window.predictionsCache[previousSelectedKey];
-                            const oldComment = oldResult ? oldResult.ai.comment : "";
+                            const oldComment = oldResult ? (oldResult.ai?.comment || "") : "";
                             const oldPhase = oldResult ? oldResult.phase : 1;
                             const oldResultCombo = (oldResult && oldResult.result) ? oldResult.result.combo : "";
                             
@@ -946,7 +946,7 @@
                             const newResult = window.predictionsCache[previousSelectedKey];
                             if (newResult) {
                                 const newResultCombo = (newResult.result) ? newResult.result.combo : "";
-                                if (newResult.ai.comment !== oldComment || newResult.phase !== oldPhase || newResultCombo !== oldResultCombo) {
+                                if ((newResult.ai?.comment || "") !== oldComment || newResult.phase !== oldPhase || newResultCombo !== oldResultCombo) {
                                     renderDashboard(newResult);
                                 }
                             }
@@ -1206,13 +1206,11 @@
 
             let solidFocus = [];
             let upsetFocus = [];
-            if (result.ai) {
-                if (result.ai.solid_focus && Array.isArray(result.ai.solid_focus)) {
-                    solidFocus = result.ai.solid_focus.filter(f => f && f !== "-");
-                }
-                if (result.ai.upset_focus && Array.isArray(result.ai.upset_focus)) {
-                    upsetFocus = result.ai.upset_focus.filter(f => f && f !== "-");
-                }
+            if (ai.solid_focus && Array.isArray(ai.solid_focus)) {
+                solidFocus = ai.solid_focus.filter(f => f && f !== "-");
+            }
+            if (ai.upset_focus && Array.isArray(ai.upset_focus)) {
+                upsetFocus = ai.upset_focus.filter(f => f && f !== "-");
             }
             if (solidFocus.length < 4) {
                 solidFocus = get4Focus(result);
