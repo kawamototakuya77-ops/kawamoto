@@ -574,7 +574,7 @@
         window.predictionsCache = {};
         window.currentRno = ""; // 手動選択されたレース
 
-        // Vercel上の場合はSafariの同期エラー（ITP・CORS）を回避するためにプロキシ(/api/gas)を使用します
+        // Vercel Serverless Functionをプロキシとして使用し、SafariのITP制限とLINEのCORS制限を同時に回避します
         const GAS_API_URL = window.location.hostname.includes('vercel.app') 
             ? "/api/gas" 
             : "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
@@ -595,7 +595,7 @@
                     .withFailureHandler(onFailure)
                     .getTodayInitialPayload();
             } else if (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                fetch(`${GAS_API_URL}?action=get_initial_payload`)
+                fetch(`${GAS_API_URL}?action=get_initial_payload&t=${new Date().getTime()}`)
                     .then(res => res.json())
                     .then(onSuccess)
                     .catch(onFailure);
@@ -635,7 +635,7 @@
                     .withFailureHandler(onFailure)
                     .getTodayPredictionsOnly();
             } else if (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                fetch(`${GAS_API_URL}?action=get_predictions_only`)
+                fetch(`${GAS_API_URL}?action=get_predictions_only&t=${new Date().getTime()}`)
                     .then(res => res.json())
                     .then(onSuccess)
                     .catch(onFailure);
@@ -2767,7 +2767,7 @@
                         })
                         .getPastReviews();
                 } else {
-                    fetch(`${GAS_API_URL}?action=get_past_reviews`)
+                    fetch(`${GAS_API_URL}?action=get_past_reviews&t=${new Date().getTime()}`)
                         .then(res => res.json())
                         .then(res => {
                             loading.classList.add('hidden');
