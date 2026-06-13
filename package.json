@@ -1,0 +1,13 @@
+{
+  "name": "boatrace-ai-frontend",
+  "version": "1.0.0",
+  "description": "Boatrace AI frontend build setup",
+  "main": "index.html",
+  "scripts": {
+    "build": "tailwindcss -i input.css -o styles.css"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
+  }
+}

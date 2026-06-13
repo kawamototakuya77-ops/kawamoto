@@ -1087,6 +1087,7 @@
         }
 
         function renderDashboard(result) {
+            try {
             const racers = result.data;
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai;
@@ -1687,6 +1688,22 @@
                 initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
+            }
+        }
+
+            } catch (err) {
+                console.error("Dashboard render error:", err);
+                const commentEl = document.getElementById('ai-comment');
+                if (commentEl) commentEl.innerText = "描画エラーが発生しました: " + err.message;
+            } finally {
+                // 絶対に透明度を元に戻す
+                setTimeout(() => {
+                    const dc = document.getElementById('data-container');
+                    if (dc) {
+                        dc.style.opacity = '1';
+                        dc.style.transform = 'scale(1)';
+                    }
+                }, 50);
             }
         }
 
