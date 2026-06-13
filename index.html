@@ -574,7 +574,10 @@
         window.predictionsCache = {};
         window.currentRno = ""; // 手動選択されたレース
 
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
+        // Vercel上の場合はSafariの同期エラー（ITP・CORS）を回避するためにプロキシ(/api/gas)を使用します
+        const GAS_API_URL = window.location.hostname.includes('vercel.app') 
+            ? "/api/gas" 
+            : "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
 
         const ALL_24_VENUES = {
             "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島",
