@@ -1359,7 +1359,7 @@
                     const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
                                      window.location.hostname.indexOf('googleusercontent') !== -1;
 
-                    if (index >= 1 && !isGasApp) {
+                    if (index >= 1 && !isGasApp && (!window.getPremiumPass || !window.getPremiumPass())) {
                         focusBadgeWrapper.classList.add('premium-blur');
                         
                         const lockOverlay = document.createElement('div');
