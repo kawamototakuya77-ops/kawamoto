@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>競艇直前物理AI - リアルタイム展開予測ダッシュボード</title>
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Goolge Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -69,6 +72,7 @@
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
+    <!-- TOP HEADER -->
     <header class="sticky top-0 z-50 px-4 py-3 glass border-b border-white/5 shadow-lg">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -76,13 +80,16 @@
                 <h1 class="text-lg font-bold font-outfit tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">競艇直前物理AI</h1>
             </div>
             
+            <!-- Quick Info -->
             <div id="last-update" class="text-[10px] text-slate-400 font-mono">未接続</div>
         </div>
     </header>
 
     <main class="max-w-md mx-auto px-4 mt-4 space-y-4">
 
+        <!-- SELECTOR PANEL (STATION & RACE) - 全国24場投票画面風グリッド -->
         <section class="p-4 rounded-2xl glass space-y-4 shadow-md">
+            <!-- TODAY'S STATS CARD (GLOBAL RECOVERY & HIT RATE) - MOVED TO TOP -->
             <div id="today-stats-card" class="hidden p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2.5 mb-3">
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAIトータル成績</span>
@@ -90,6 +97,7 @@
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2">
+                    <!-- 本命成績 -->
                     <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 text-center space-y-1">
                         <span class="text-[9px] text-indigo-400 font-bold block">🔥 本命推奨</span>
                         <div class="grid grid-cols-2 gap-1 border-t border-indigo-500/5 pt-1 mt-1">
@@ -103,6 +111,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 穴成績 -->
                     <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 text-center space-y-1">
                         <span class="text-[9px] text-purple-400 font-bold block">⚡ 穴推奨</span>
                         <div class="grid grid-cols-2 gap-1 border-t border-purple-500/5 pt-1 mt-1">
@@ -134,6 +143,7 @@
                 </div>
             </div>
 
+            <!-- 全国24場グリッド -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -142,7 +152,9 @@
                     <span class="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/10">緑枠：本日開催</span>
                 </div>
                 <div id="venue-grid" class="grid grid-cols-4 gap-1 p-2 bg-slate-950/50 rounded-xl border border-white/5 text-center">
-                    </div>
+                    <!-- 24場がJavaScriptで動的に生成されます -->
+                </div>
+                <!-- 既存JSロジック互換用の隠し入力 -->
                 <input type="hidden" id="jcd-select" value="14">
             </div>
 
@@ -166,6 +178,7 @@
                 </div>
             </div>
 
+            <!-- REFRESH BUTTON -->
             <button id="refresh-btn" class="w-full h-11 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all transform active:scale-95 duration-200">
                 <svg id="spinner" class="w-4 h-4 text-white animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -176,14 +189,17 @@
         </section>
 
 
+        <!-- MAIN SCREEN (INITIAL STATE - HIDDEN BY DEFAULT FOR AUTO-LOAD UX) -->
         <div id="welcome-message" class="hidden p-8 rounded-2xl glass text-center space-y-3">
             <div class="text-4xl">🏁</div>
             <h3 class="text-base font-bold text-white">データをロードしてください</h3>
             <p class="text-xs text-slate-400">上の更新ボタンを押すと、キャッシュされた直前展示データと番組基本データが全自動でマージされます。</p>
         </div>
 
+        <!-- PREMIUM AI LOADING STATE (ACTIVE BY DEFAULT) -->
         <div id="loading-skeleton" class="space-y-4">
             <div class="p-6 rounded-2xl glass border border-emerald-500/30 glow-green relative overflow-hidden">
+                <!-- Scanning laser effect -->
                 <div class="absolute inset-0 w-full h-[2px] bg-emerald-500/50 shadow-[0_0_10px_#10b981] animate-[scan_2s_ease-in-out_infinite]"></div>
                 
                 <div class="flex flex-col items-center justify-center space-y-4 relative z-10">
@@ -198,12 +214,14 @@
                         <p id="loading-progress-text" class="text-[10px] text-slate-300 font-mono h-4">[1/4] 過去180日の条件合致DBと照合中...</p>
                     </div>
                     
+                    <!-- Progress Bar -->
                     <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
                         <div id="loading-progress-bar" class="h-full bg-gradient-to-r from-teal-500 to-emerald-400 w-1/4 transition-all duration-500 ease-out"></div>
                     </div>
                 </div>
             </div>
             
+            <!-- Skeleton placeholders for content -->
             <div class="p-4 bg-slate-800/40 rounded-2xl animate-pulse border border-white/5 space-y-3">
                 <div class="h-4 bg-slate-700/60 rounded-full w-2/3"></div>
                 <div class="space-y-2">
@@ -235,12 +253,16 @@
                 </div>
             </div>
 
+            <!-- ローディング中バナー広告枠 -->
             <div class="w-full flex justify-center py-2 min-h-[60px] bg-slate-900/40 rounded-xl border border-white/5 items-center relative">
                 <span class="absolute top-0.5 left-1.5 text-[7px] text-slate-600">Sponsored</span>
+                <!-- admax -->
                 <script src="https://adm.shinobi.jp/s/b4b8bf335cd1cf7ce012ef5a8eb6cd24"></script>
-                </div>
+                <!-- admax -->
+            </div>
         </div>
 
+        <!-- CONNECTION ERROR CARD (HIDDEN BY DEFAULT) -->
         <div id="connection-error-card" class="hidden p-6 rounded-2xl glass border border-rose-500/20 bg-rose-950/10 shadow-lg text-center space-y-4">
             <div class="text-4xl">⚠️</div>
             <h3 class="text-base font-bold text-rose-400">データ同期エラー</h3>
@@ -257,12 +279,15 @@
             </div>
         </div>
 
+        <!-- REAL DATA WRAPPER (HIDDEN BY DEFAULT) -->
         <div id="data-container" class="hidden space-y-4">
 
+            <!-- AI EVALUATION CARD (CONCLUSION & ACCURACY FIRST) -->
             <section id="ai-card" class="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-slate-900/60 border border-indigo-500/20 shadow-xl space-y-3.5 transition-all duration-300">
                 <div id="ai-mode-alert"></div>
                 <div id="race-result-alert" class="hidden my-2"></div>
                 
+                <!-- Conclusion & Accuracy -->
                 <div class="flex items-center justify-between gap-2 bg-slate-950/50 p-3 rounded-xl border border-white/5">
                     <div>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">イン逃げ期待確度</span>
@@ -274,27 +299,42 @@
                     </div>
                 </div>
 
+                <!-- Recommended Focus -->
                 <div class="bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
                         <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
                     </div>
                     <div id="ai-focus" class="flex flex-wrap gap-2">
-                        </div>
+                        <!-- Focus badges here -->
+                    </div>
                 </div>
             </section>
 
+            <!-- AI DETAILED COMMENT CARD (EXPLANATION RIGHT AFTER CONCLUSION) -->
             <section class="p-4 rounded-2xl glass border border-white/5 shadow-md space-y-2.5">
                 <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit block">プロAI物理展開シミュレーション解説</span>
-                <p id="ai-comment" class="text-xs leading-relaxed text-slate-200">
-                    データを読み込み中...
-                </p>
+                <div id="ai-comment-container" class="relative">
+                    <div id="ai-comment-content" class="text-xs leading-relaxed text-slate-200 max-h-32 overflow-hidden mask-image-b transition-all duration-500">
+                        データを読み込み中...
+                    </div>
+                    <div id="ai-comment-ad-btn" class="absolute bottom-0 left-0 w-full flex justify-center pb-2 hidden">
+                        <button onclick="unlockAiCommentMock()" class="relative overflow-hidden group bg-slate-900 border border-indigo-500/50 hover:bg-indigo-900/50 text-white rounded-full px-5 py-2.5 text-[11px] font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-300 transform hover:scale-[1.02]">
+                            <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                            <span class="flex items-center gap-2 relative z-10">
+                                🎥 広告を視聴してロジックの続きを見る
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </section>
 
+            <!-- SPONSOR BANNERS (RAKUTEN TRAVEL & GOLF) -->
             <div class="w-full flex flex-col items-center gap-2 py-2">
                 <div class="bg-slate-900/60 border border-white/5 rounded-xl w-full p-4 flex flex-col items-center gap-3 relative shadow-inner">
                     <span class="text-[9px] text-slate-500 font-bold self-start">おすすめ提携リンク</span>
                     <div class="flex items-center justify-center gap-4 flex-wrap">
+                        <!-- Rakuten Travel -->
                         <div class="overflow-hidden rounded-lg border border-white/5 shadow-md hover:border-slate-500 transition-all duration-200">
                             <a href="https://rpx.a8.net/svt/ejp?a8mat=4B5RS6+94NAPE+2HOM+6I9N5&rakuten=y&a8ejpredirect=http%3A%2F%2Fhb.afl.rakuten.co.jp%2Fhgc%2F0eb4779e.5d30c5ba.0eb4779f.b871e4e3%2Fa26060923471_4B5RS6_94NAPE_2HOM_6I9N5%3Fpc%3Dhttp%253A%252F%252Ftravel.rakuten.co.jp%252F%26m%3Dhttp%253A%252F%252Ftravel.rakuten.co.jp%252F" rel="nofollow" target="_blank">
                                 <img src="https://hbb.afl.rakuten.co.jp/hsb/0ea7f9a4.79280dcb.0ea7f99d.1ac92fca/153145/" border="0" alt="楽天トラベル">
@@ -302,6 +342,7 @@
                             <img border="0" width="1" height="1" src="https://www11.a8.net/0.gif?a8mat=4B5RS6+94NAPE+2HOM+6I9N5" alt="">
                         </div>
                         
+                        <!-- Rakuten GORA -->
                         <div class="overflow-hidden rounded-lg border border-white/5 shadow-md hover:border-slate-500 transition-all duration-200">
                             <a href="https://rpx.a8.net/svt/ejp?a8mat=4B5RS6+94NAPE+2HOM+7MZOX&rakuten=y&a8ejpredirect=http%3A%2F%2Fhb.afl.rakuten.co.jp%2Fhgc%2F0eb4cf04.fd65a65c.0eb4cf05.fa3f041c%2Fa26060923471_4B5RS6_94NAPE_2HOM_7MZOX%3Fpc%3Dhttp%253A%252F%252Fgora.golf.rakuten.co.jp%252F%26m%3Dhttp%253A%252F%252Fwww.rakuten.co.jp%252F" rel="nofollow" target="_blank">
                                 <img src="https://hbb.afl.rakuten.co.jp/hsb/0eb47da0.3efe4ac2.0eb47d8d.fb51150d/" border="0" alt="楽天GORA">
@@ -311,6 +352,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- REALTIME WEATHER CARD -->
+            <div id="premium-zone" class="relative w-full space-y-4">
+                <!-- Premium Overlay -->
+                <div id="premium-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden">
+                    <div class="p-6 text-center space-y-4 max-w-sm w-full">
+                        <span class="text-4xl block animate-bounce">🔒</span>
+                        <h3 class="text-lg font-bold text-white tracking-wider">プレミアム会員限定</h3>
+                        <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">ここから先は、展示情報を受けた<strong class="text-amber-400">最終決断（第二次予想）</strong>と、AIの<strong class="text-emerald-400">最終フォーカス</strong>が表示されます。</p>
+                        
+                        <div class="pt-3 w-full">
+                            <input type="text" id="license-key-input" placeholder="ライセンスキー (例: VIP-xxxx)" class="w-full bg-slate-900 border border-slate-700 text-white text-xs px-3 py-3 rounded-xl text-center mb-3 focus:outline-none focus:border-indigo-500 font-mono tracking-widest shadow-inner">
+                            <button onclick="unlockPremiumMock()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-indigo-400 hover:to-purple-500 transition-all transform hover:scale-[1.02]">
+                                ロックを解除する
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-2">
+                            <a href="#" class="underline hover:text-indigo-400 transition-colors">プレミアムパスの購入はこちら</a>
+                        </p>
+                    </div>
+                </div>
 
             <section id="weather-card" class="p-4 rounded-2xl glass shadow-md space-y-3 transition-all duration-300">
                 <div class="flex items-center justify-between">
@@ -343,11 +405,13 @@
                     </div>
                 </div>
                 
+                <!-- Physical modifier effect -->
                 <div id="wind-effect-banner" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center text-[10px] font-bold text-emerald-400 leading-normal">
                     物理補正判定: --
                 </div>
             </section>
 
+            <!-- START EXHIBITION SLIT SIMULATOR -->
             <section class="p-4 rounded-2xl glass shadow-md space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">スタート展示スリット再現</span>
@@ -355,11 +419,14 @@
                 </div>
                 
                 <div class="relative bg-slate-950/80 rounded-xl p-3 h-48 overflow-hidden flex flex-col justify-between">
+                    <!-- Slit Line Center -->
                     <div class="absolute inset-y-0 left-2/3 slit-line z-10"></div>
                     <div class="absolute top-1 left-[68%] text-[8px] font-bold text-red-500/80 z-20">SLIT</div>
                     
+                    <!-- Slit Slots 1 to 6 Courses -->
                     <div id="slit-rows" class="space-y-1.5 z-20 h-full flex flex-col justify-around">
-                        </div>
+                        <!-- Dynamically filled with slit rows -->
+                    </div>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 px-1 font-mono">
                     <span>← ダッシュ・スロー</span>
@@ -367,6 +434,7 @@
                 </div>
             </section>
 
+            <!-- LIVE 1ST TURN TACTICAL SIMULATOR (GIF-LIKE ANIMATION) -->
             <section id="tactical-sim-card" class="p-4 rounded-2xl glass shadow-md space-y-3 overflow-hidden transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -381,11 +449,22 @@
                 <div class="relative bg-slate-950/80 rounded-xl overflow-hidden border border-white/5">
                     <canvas id="turn-sim-canvas" class="w-full h-48 block"></canvas>
                     
+                    <!-- Tactical overlay indicators -->
                     <div class="absolute bottom-2 left-3 text-[8px] text-slate-500 font-bold leading-normal font-mono flex gap-2">
                         <span>● 赤白コーン: 1マーク</span>
                         <span>● 点線: 旋回航跡</span>
                     </div>
                 </div>
+                <!-- SIMULATOR CONTROLLER -->
+                <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>👁️ 展開シミュレーション切り替え</span>
+                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
+                    </div>
+                    <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
+                    <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
                     <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
                         <span>👁️ 展開シミュレーション切り替え</span>
@@ -396,21 +475,25 @@
                 </div>
             </section>
 
+            <!-- MERGED RACER TABLE -->
             <section class="rounded-2xl glass shadow-md overflow-hidden">
                 <div class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">展示マージ詳細データ</span>
                     <span id="detail-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold"></span>
                 </div>
                 <div id="racer-list" class="divide-y divide-white/5">
-                    </div>
+                    <!-- Dynamic racer rows go here -->
+                </div>
             </section>
 
+            <!-- PAST HISTORY ARCHIVE -->
             <section class="rounded-2xl glass shadow-md overflow-hidden">
                 <div id="toggle-archive-btn" class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between cursor-pointer hover:bg-slate-800/30 transition-colors">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5 font-outfit">📊 AI実績アーカイブ・過去の履歴</span>
                     <span id="archive-arrow" class="text-slate-400 transition-transform duration-200 inline-block">▼</span>
                 </div>
                 <div id="archive-container" class="hidden p-4 space-y-4">
+                    <!-- Overall Stats Panel -->
                     <div class="p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
                         <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 AI通算成績 (アーカイブ)</span>
                         <div class="grid grid-cols-2 gap-2 text-center">
@@ -453,22 +536,50 @@
                         </div>
                     </div>
                     
+                    <!-- Loading indicator for Archive -->
                     <div id="archive-loading" class="hidden text-center py-6 space-y-2">
                         <div class="w-6 h-6 border-t-2 border-emerald-400 rounded-full animate-spin mx-auto"></div>
                         <span class="text-[10px] text-slate-400 font-medium">アーカイブデータを同期中...</span>
                     </div>
 
+                    <!-- Error state for Archive -->
                     <div id="archive-error" class="hidden text-center py-4 bg-rose-500/5 border border-rose-500/10 rounded-xl space-y-2">
                         <span class="text-[10px] text-rose-400 block font-bold">データ同期エラー</span>
                         <button id="archive-retry-btn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold rounded border border-white/5 active:scale-95 transition-all cursor-pointer">再試行</button>
                     </div>
 
+                    <!-- Daily History List -->
                     <div id="archive-list" class="space-y-2 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
-                        </div>
+                        <!-- Daily accordion items go here -->
+                    </div>
                 </div>
             </section>
 
+            <!-- FOOTER LINKS -->
             <footer class="pt-6 pb-20 text-center space-y-2">
+                <div class="px-4 mb-4 max-w-xs mx-auto text-left">
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">プレミアムパス</label>
+                    <div class="flex gap-2">
+                        <input type="password" id="premium-pass-input" placeholder="パスワードを入力" class="flex-1 bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-white">
+                        <button onclick="saveAndReloadPass()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-lg">保存</button>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const input = document.getElementById('premium-pass-input');
+                        if (input && typeof window.getPremiumPass === 'function') {
+                            input.value = window.getPremiumPass();
+                        }
+                    });
+                    function saveAndReloadPass() {
+                        const input = document.getElementById('premium-pass-input');
+                        if (input && typeof window.savePremiumPass === 'function') {
+                            window.savePremiumPass(input.value);
+                            alert('プレミアムパスを保存しました。データを再読み込みします。');
+                            location.reload();
+                        }
+                    }
+                </script>
                 <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-slate-500 font-bold px-4">
                     <button onclick="window.showTermsModal('about')" class="hover:text-slate-400 transition-colors">このサイトについて</button>
                     <span>•</span>
@@ -486,13 +597,18 @@
         
     </main>
 
+    <!-- NINJA ADMAX STICKY ANCHOR AD -->
     <div class="fixed bottom-0 left-0 w-full z-[100] flex justify-center bg-slate-950/80 backdrop-blur border-t border-white/10 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
         <div class="w-full max-w-md h-[50px] flex items-center justify-center text-[10px] text-slate-500 relative">
             <span class="absolute top-0.5 left-1 text-[7px] text-slate-500">Sponsored</span>
+            <!-- ↓ 忍者AdMaxのアンカーバナー（スマホ下部固定）用スクリプトをここに貼り付けます ↓ -->
+            <!-- admax -->
             <script src="https://adm.shinobi.jp/s/b4b8bf335cd1cf7ce012ef5a8eb6cd24"></script>
-            </div>
+            <!-- admax -->
+        </div>
     </div>
 
+    <!-- JS LOGIC TO FETCH FROM GAS -->
     <script>
         const JCD_SELECT = document.getElementById('jcd-select');
         const RNO_SELECT = document.getElementById('rno-select');
@@ -509,6 +625,7 @@
         window.activeVenues = [];
         window.cutoffTimesMap = {};
         window.predictionsCache = {};
+        let currentRaceKey = "";
         window.currentRno = ""; // 手動選択されたレース
 
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzYijAhOUJamFkAHakS5axVUs1e5ncxYUELbmvEclgz7MfWbsN_w7wPRv1M7YRZ8CAl/exec";
@@ -522,6 +639,14 @@
             "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村"
         };
 
+        
+        window.getPremiumPass = function() {
+            return localStorage.getItem('PREMIUM_PASS_KEY') || "";
+        };
+        window.savePremiumPass = function(pass) {
+            localStorage.setItem('PREMIUM_PASS_KEY', pass);
+        };
+        
         function getInitialPayload(onSuccess, onFailure) {
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
@@ -537,13 +662,15 @@
         }
 
         function getPredictionsOnly(onSuccess, onFailure) {
+            const pass = window.getPremiumPass();
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
-                    .getTodayPredictionsOnly();
+                    .getTodayPredictionsOnly(pass);
             } else if (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                fetch(`${GAS_API_URL}?action=get_predictions_only&t=${new Date().getTime()}`)
+                const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
+                fetch(`${GAS_API_URL}?action=get_predictions_only${queryPass}&t=${new Date().getTime()}`)
                     .then(res => res.json())
                     .then(onSuccess)
                     .catch(onFailure);
@@ -744,6 +871,7 @@
         }
 
         function loadDataLocal() {
+            currentRaceKey = JCD_SELECT.value + "_" + RNO_SELECT.value;
             const jcd = JCD_SELECT.value;
             const rno = RNO_SELECT.value;
             const cacheKey = jcd + "_" + rno;
@@ -1025,605 +1153,605 @@
 
         function renderDashboard(result) {
             try {
-                const racers = result.data;
-                const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
-                const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
-                const exhibitionCompleted = result.exhibition_completed;
-                const phase = result.phase || (exhibitionCompleted ? 2 : 1);
-                window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
+            const racers = result.data;
+            const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
+            const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
+            const exhibitionCompleted = result.exhibition_completed;
+            const phase = result.phase || (exhibitionCompleted ? 2 : 1);
+            window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
-                const aiCard = document.getElementById('ai-card');
-                const aiModeAlert = document.getElementById('ai-mode-alert');
-                const slitStatus = document.getElementById('slit-status-badge');
-                const detailStatus = document.getElementById('detail-status-badge');
-                const raceResultAlert = document.getElementById('race-result-alert');
+            const aiCard = document.getElementById('ai-card');
+            const aiModeAlert = document.getElementById('ai-mode-alert');
+            const slitStatus = document.getElementById('slit-status-badge');
+            const detailStatus = document.getElementById('detail-status-badge');
+            const raceResultAlert = document.getElementById('race-result-alert');
 
-                const finalFocus = get4Focus(result);
+            const finalFocus = get4Focus(result);
 
-                if (result.result && result.result.success) {
-                    raceResultAlert.classList.remove('hidden');
-                    const combo = result.result.combo;
-                    const payout = result.result.payout;
-                    const isHit = finalFocus.includes(combo);
+            if (result.result && result.result.success) {
+                raceResultAlert.classList.remove('hidden');
+                const combo = result.result.combo;
+                const payout = result.result.payout;
+                const isHit = finalFocus.includes(combo);
 
-                    if (isHit) {
-                        raceResultAlert.innerHTML = `
-                            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm animate-pulse">
-                                <span>🎉 的中！ 確定結果: ${combo}</span>
-                                <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">払戻金: ${payout.toLocaleString()}円</span>
-                            </div>
-                        `;
-                    } else {
-                        raceResultAlert.innerHTML = `
-                            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-bold shadow-sm">
-                                <span>❌ 不的中 (確定結果: ${combo})</span>
-                                <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">払戻金: ${payout.toLocaleString()}円</span>
-                            </div>
-                        `;
-                    }
-                } else {
-                    raceResultAlert.classList.add('hidden');
-                    raceResultAlert.innerHTML = '';
-                }
-
-                if (phase === 3) {
-                    // Phase 3: Weather shift update (Purple/Indigo styled)
-                    aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/60 border border-purple-500/40 shadow-xl shadow-purple-500/5 space-y-3 transition-all duration-300";
-                    aiModeAlert.innerHTML = `
-                        <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold leading-normal shadow-sm animate-pulse">
-                            <span class="text-sm">⚡</span>
-                            <div>
-                                <strong class="font-outfit text-xs tracking-wide">第三次予想：直前気象急変対応モデル</strong>
-                                <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">展示公開後、本番直前に【風速2m以上・風向・天候】に大きな変動を検知したため、AIが物理展開シミュレーションを緊急更新した最終結論です。</span>
-                            </div>
+                if (isHit) {
+                    raceResultAlert.innerHTML = `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm animate-pulse">
+                            <span>🎉 的中！ 確定結果: ${combo}</span>
+                            <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
                     `;
-                    
-                    slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
-                    slitStatus.innerText = "⚡ 気象急変反映";
-                    
-                    detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
-                    detailStatus.innerText = "⚡ 気象急変反映";
-                } else if (phase === 2) {
-                    // Phase 2: Exhibition merge (Emerald/Green styled)
-                    aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-emerald-950/25 to-slate-900/60 border border-emerald-500/30 shadow-xl space-y-3 transition-all duration-300";
-                    aiModeAlert.innerHTML = `
-                        <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold leading-normal shadow-sm">
-                            <span class="text-sm">🟢</span>
-                            <div>
-                                <strong class="font-outfit text-xs tracking-wide">第二次予想：直前展示すり合わせ完了</strong>
-                                <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示タイム、スタート展示スリット、チルト調整の気配をマージした最終結論です。</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
-                    slitStatus.innerText = "🟢 展示反映済";
-                    
-                    detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
-                    detailStatus.innerText = "🟢 展示反映済";
                 } else {
-                    // Phase 1: Pre-race (Amber/Gold styled)
-                    aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-amber-950/20 to-slate-900/60 border border-amber-500/20 shadow-xl space-y-3 transition-all duration-300";
-                    aiModeAlert.innerHTML = `
-                        <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold leading-normal shadow-sm">
-                            <span class="text-sm">🌅</span>
-                            <div>
-                                <strong class="font-outfit text-xs tracking-wide">第一次予想：朝イチ事前予想</strong>
-                                <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示は未実施です。選手勝率とモーター性能のみによる前情報予想です。本番15分前のアラーム巡回後に自動で第二次（直前展示）に上書き更新されます。</span>
-                            </div>
+                    raceResultAlert.innerHTML = `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-bold shadow-sm">
+                            <span>❌ 不的中 (確定結果: ${combo})</span>
+                            <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
                     `;
-                    
-                    slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
-                    slitStatus.innerText = "⚠️ 待機中（前情報）";
-                    
-                    detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
-                    detailStatus.innerText = "⚠️ 展示未実施";
                 }
+            } else {
+                raceResultAlert.classList.add('hidden');
+                raceResultAlert.innerHTML = '';
+            }
 
-                let modeBadge = '';
-                if (phase === 3) {
-                    modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">⚡ 第三次：気象急変対応</span>';
-                } else if (phase === 2) {
-                    modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">🟢 第二次：直前展示</span>';
-                } else {
-                    modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">🌅 第一次：朝イチ事前</span>';
-                }
-                    
-                document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">イン逃げ確度: ${ai.escape_rate}%</span>`;
-                const parsedComment = (ai.comment || '')
-                    .replace(/\*\*/g, '') // 太字用のアスタリスクを削除
-                    .replace(/\n/g, '<br>');
-                document.getElementById('ai-comment').innerHTML = parsedComment;
+            if (phase === 3) {
+                // Phase 3: Weather shift update (Purple/Indigo styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/60 border border-purple-500/40 shadow-xl shadow-purple-500/5 space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold leading-normal shadow-sm animate-pulse">
+                        <span class="text-sm">⚡</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第三次予想：直前気象急変対応モデル</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">展示公開後、本番直前に【風速2m以上・風向・天候】に大きな変動を検知したため、AIが物理展開シミュレーションを緊急更新した最終結論です。</span>
+                        </div>
+                    </div>
+                `;
                 
-                const focusContainer = document.getElementById('ai-focus');
-                focusContainer.innerHTML = '';
-                focusContainer.className = 'flex flex-col gap-3 w-full';
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
+                slitStatus.innerText = "⚡ 気象急変反映";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
+                detailStatus.innerText = "⚡ 気象急変反映";
+            } else if (phase === 2) {
+                // Phase 2: Exhibition merge (Emerald/Green styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-emerald-950/25 to-slate-900/60 border border-emerald-500/30 shadow-xl space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold leading-normal shadow-sm">
+                        <span class="text-sm">🟢</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第二次予想：直前展示すり合わせ完了</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示タイム、スタート展示スリット、チルト調整の気配をマージした最終結論です。</span>
+                        </div>
+                    </div>
+                `;
+                
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
+                slitStatus.innerText = "🟢 展示反映済";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
+                detailStatus.innerText = "🟢 展示反映済";
+            } else {
+                // Phase 1: Pre-race (Amber/Gold styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-amber-950/20 to-slate-900/60 border border-amber-500/20 shadow-xl space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold leading-normal shadow-sm">
+                        <span class="text-sm">🌅</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第一次予想：朝イチ事前予想</strong>
+                            <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示は未実施です。選手勝率とモーター性能のみによる前情報予想です。本番15分前のアラーム巡回後に自動で第二次（直前展示）に上書き更新されます。</span>
+                        </div>
+                    </div>
+                `;
+                
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
+                slitStatus.innerText = "⚠️ 待機中（前情報）";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
+                detailStatus.innerText = "⚠️ 展示未実施";
+            }
 
-                let solidFocus = [];
-                let upsetFocus = [];
-                if (ai.solid_focus && Array.isArray(ai.solid_focus)) {
-                    solidFocus = ai.solid_focus.filter(f => f && f !== "-");
-                }
-                if (ai.upset_focus && Array.isArray(ai.upset_focus)) {
-                    upsetFocus = ai.upset_focus.filter(f => f && f !== "-");
-                }
-                if (solidFocus.length < 4) {
-                    solidFocus = get4Focus(result);
-                }
-                if (upsetFocus.length < 4) {
-                    if (result.data && result.data.length >= 6) {
-                        const dynamicCombos = getDynamicPredictions(result.data);
-                        upsetFocus = [];
-                        for (let i = 0; i < dynamicCombos.length; i++) {
-                            const combo = dynamicCombos[i].combo;
-                            if (!combo.startsWith("1-")) {
-                                upsetFocus.push(combo);
-                            }
-                            if (upsetFocus.length >= 4) break;
+            let modeBadge = '';
+            if (phase === 3) {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">⚡ 第三次：気象急変対応</span>';
+            } else if (phase === 2) {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">🟢 第二次：直前展示</span>';
+            } else {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">🌅 第一次：朝イチ事前</span>';
+            }
+                
+            document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">イン逃げ確度: ${ai.escape_rate}%</span>`;
+            const parsedComment = (ai.comment || '')
+                .replace(/\*\*/g, '') // 太字用のアスタリスクを削除
+                .replace(/\n/g, '<br>');
+            document.getElementById('ai-comment').innerHTML = parsedComment;
+            
+            const focusContainer = document.getElementById('ai-focus');
+            focusContainer.innerHTML = '';
+            focusContainer.className = 'flex flex-col gap-3 w-full';
+
+            let solidFocus = [];
+            let upsetFocus = [];
+            if (ai.solid_focus && Array.isArray(ai.solid_focus)) {
+                solidFocus = ai.solid_focus.filter(f => f && f !== "-");
+            }
+            if (ai.upset_focus && Array.isArray(ai.upset_focus)) {
+                upsetFocus = ai.upset_focus.filter(f => f && f !== "-");
+            }
+            if (solidFocus.length < 4) {
+                solidFocus = get4Focus(result);
+            }
+            if (upsetFocus.length < 4) {
+                if (result.data && result.data.length >= 6) {
+                    const dynamicCombos = getDynamicPredictions(result.data);
+                    upsetFocus = [];
+                    for (let i = 0; i < dynamicCombos.length; i++) {
+                        const combo = dynamicCombos[i].combo;
+                        if (!combo.startsWith("1-")) {
+                            upsetFocus.push(combo);
                         }
-                    }
-                    while (upsetFocus.length < 4) {
-                        upsetFocus.push("2-1-3");
+                        if (upsetFocus.length >= 4) break;
                     }
                 }
+                while (upsetFocus.length < 4) {
+                    upsetFocus.push("2-1-3");
+                }
+            }
 
-                function renderFocusGroup(title, items, isUpset) {
-                    const groupWrapper = document.createElement('div');
-                    groupWrapper.className = isUpset 
-                        ? 'bg-purple-500/5 p-3 rounded-xl border border-purple-500/10 space-y-2 w-full'
-                        : 'bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2 w-full';
+            function renderFocusGroup(title, items, isUpset) {
+                const groupWrapper = document.createElement('div');
+                groupWrapper.className = isUpset 
+                    ? 'bg-purple-500/5 p-3 rounded-xl border border-purple-500/10 space-y-2 w-full'
+                    : 'bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2 w-full';
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.className = isUpset
+                    ? 'text-[10px] text-purple-400 font-bold tracking-wider uppercase block'
+                    : 'text-[10px] text-indigo-400 font-bold tracking-wider uppercase block';
+                titleSpan.innerText = title;
+                groupWrapper.appendChild(titleSpan);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
+
+                items.slice(0, 4).forEach((f, index) => {
+                    const itemWrapper = document.createElement('div');
+                    itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
                     
-                    const titleSpan = document.createElement('span');
-                    titleSpan.className = isUpset
-                        ? 'text-[10px] text-purple-400 font-bold tracking-wider uppercase block'
-                        : 'text-[10px] text-indigo-400 font-bold tracking-wider uppercase block';
-                    titleSpan.innerText = title;
-                    groupWrapper.appendChild(titleSpan);
-
-                    const grid = document.createElement('div');
-                    grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
-
-                    items.slice(0, 4).forEach((f, index) => {
-                        const itemWrapper = document.createElement('div');
-                        itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
-                        
-                        let labelText = '抑え';
-                        let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
-                        if (!isUpset) {
-                            if (index === 0) {
-                                labelText = '大本線';
-                                labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-                            } else if (index === 1) {
-                                labelText = '本線';
-                                labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                            } else if (index === 2) {
-                                labelText = '抑え1';
-                                labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
-                            } else if (index === 3) {
-                                labelText = '抑え2';
-                                labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
-                            }
-                        } else {
-                            if (index === 0) {
-                                labelText = '中穴';
-                                labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-                            } else if (index === 1) {
-                                labelText = '穴狙い';
-                                labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-                            } else if (index === 2) {
-                                labelText = '大穴1';
-                                labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
-                            } else if (index === 3) {
-                                labelText = '大穴2';
-                                labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
-                            }
+                    let labelText = '抑え';
+                    let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
+                    if (!isUpset) {
+                        if (index === 0) {
+                            labelText = '大本線';
+                            labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 1) {
+                            labelText = '本線';
+                            labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                        } else if (index === 2) {
+                            labelText = '抑え1';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                        } else if (index === 3) {
+                            labelText = '抑え2';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
                         }
+                    } else {
+                        if (index === 0) {
+                            labelText = '中穴';
+                            labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                        } else if (index === 1) {
+                            labelText = '穴狙い';
+                            labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+                        } else if (index === 2) {
+                            labelText = '大穴1';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 3) {
+                            labelText = '大穴2';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        }
+                    }
 
-                        const labelSpan = document.createElement('span');
-                        labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-[2px] rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center flex-shrink-0`;
-                        labelSpan.innerText = labelText;
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center flex-shrink-0`;
+                    labelSpan.innerText = labelText;
+                    
+                    const focusBadgeWrapper = createPremiumFocusElement(f);
+                    focusBadgeWrapper.className = 'flex items-center gap-1 justify-end flex-1 min-w-0 transition-all duration-500';
+
+                    const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
+                                     window.location.hostname.indexOf('googleusercontent') !== -1;
+
+                    if (index >= 1 && !isGasApp) {
+                        focusBadgeWrapper.classList.add('premium-blur');
                         
-                        const focusBadgeWrapper = createPremiumFocusElement(f);
-                        focusBadgeWrapper.className = 'flex items-center gap-1 justify-end flex-1 min-w-0 transition-all duration-500';
-
-                        const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
-                                         window.location.hostname.indexOf('googleusercontent') !== -1;
-
-                        if (index >= 1 && !isGasApp) {
-                            focusBadgeWrapper.classList.add('premium-blur');
-                            
-                            const lockOverlay = document.createElement('div');
-                            lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
-                            lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
-                            
-                            itemWrapper.classList.add('relative');
-                            itemWrapper.appendChild(lockOverlay);
-                            
-                            lockOverlay.addEventListener('click', function(e) {
-                                e.stopPropagation();
-                                if (typeof window.triggerAdUnlock === 'function') {
-                                    window.triggerAdUnlock(focusBadgeWrapper, lockOverlay, function() {
-                                        itemWrapper.click();
-                                    });
-                                } else {
-                                    focusBadgeWrapper.classList.remove('premium-blur');
-                                    focusBadgeWrapper.classList.add('premium-unlocked');
-                                    lockOverlay.remove();
+                        const lockOverlay = document.createElement('div');
+                        lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
+                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
+                        
+                        itemWrapper.classList.add('relative');
+                        itemWrapper.appendChild(lockOverlay);
+                        
+                        lockOverlay.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            if (typeof window.triggerAdUnlock === 'function') {
+                                window.triggerAdUnlock(focusBadgeWrapper, lockOverlay, function() {
                                     itemWrapper.click();
-                                }
-                            });
+                                });
+                            } else {
+                                focusBadgeWrapper.classList.remove('premium-blur');
+                                focusBadgeWrapper.classList.add('premium-unlocked');
+                                lockOverlay.remove();
+                                itemWrapper.click();
+                            }
+                        });
+                    }
+
+                    // 初期状態で本命の1番目(大本線)をハイライト
+                    if (!isUpset && index === 0) {
+                        itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
+                    }
+
+                    // 買い目クリックでシミュレーション起動
+                    itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
+                    itemWrapper.addEventListener('click', function() {
+                        if (focusBadgeWrapper.classList.contains('premium-blur')) {
+                            return; 
                         }
 
-                        // 初期状態で本命の1番目(大本線)をハイライト
-                        if (!isUpset && index === 0) {
+                        // すべての買い目のハイライト枠を除去
+                        document.querySelectorAll('.focus-item-active').forEach(el => {
+                            el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
+                        });
+
+                        // 選択されたものをハイライト
+                        if (isUpset) {
+                            itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
+                        } else {
                             itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
                         }
 
-                        // 買い目クリックでシミュレーション起動
-                        itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
-                        itemWrapper.addEventListener('click', function() {
-                            if (focusBadgeWrapper.classList.contains('premium-blur')) {
-                                return; 
+                        // 物理シミュレータをこの展開(f)で即座に再起動
+                        try {
+                            initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+                            if (window.setSimCombo) {
+                                window.setSimCombo(f);
                             }
-
-                            // すべての買い目のハイライト枠を除去
-                            document.querySelectorAll('.focus-item-active').forEach(el => {
-                                el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
-                            });
-
-                            // 選択されたものをハイライト
-                            if (isUpset) {
-                                itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
-                            } else {
-                                itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
-                            }
-
-                            // 物理シミュレータをこの展開(f)で即座に再起動
-                            try {
-                                initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
-                                if (window.setSimCombo) {
-                                    window.setSimCombo(f);
-                                }
-                            } catch (e) {
-                                console.error("Click-to-simulate error:", e);
-                            }
-                        });
-
-                        itemWrapper.appendChild(labelSpan);
-                        itemWrapper.appendChild(focusBadgeWrapper);
-                        grid.appendChild(itemWrapper);
+                        } catch (e) {
+                            console.error("Click-to-simulate error:", e);
+                        }
                     });
 
-                    groupWrapper.appendChild(grid);
-                    return groupWrapper;
+                    itemWrapper.appendChild(labelSpan);
+                    itemWrapper.appendChild(focusBadgeWrapper);
+                    grid.appendChild(itemWrapper);
+                });
+
+                groupWrapper.appendChild(grid);
+                return groupWrapper;
+            }
+
+            if (solidFocus.length > 0 || upsetFocus.length > 0) {
+                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
+                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
+            } else {
+                focusContainer.className = 'flex flex-wrap gap-2 w-full';
+                const emptySpan = document.createElement('span');
+                emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
+                emptySpan.innerText = '待機中...';
+                focusContainer.appendChild(emptySpan);
+            }
+
+            // Populate Confidence Stars
+            const confidenceStarsEl = document.getElementById('ai-confidence-stars');
+            if (confidenceStarsEl && result.confidence) {
+                confidenceStarsEl.innerText = result.confidence.stars || '★★★☆☆';
+            }
+
+            // Populate Weather Details
+            if (result.weather) {
+                const w = result.weather;
+                const showRealWeather = exhibitionCompleted;
+                
+                document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '曇り') : '計測中...';
+                document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '℃') : '--℃';
+                document.getElementById('wind-dir-txt').innerText = showRealWeather ? (w.wind_dir_name || '--') : '--';
+                document.getElementById('wind-speed-txt').innerText = showRealWeather ? ((w.wind_speed !== undefined ? w.wind_speed : '--') + 'm') : '--m';
+                document.getElementById('wave-txt').innerText = showRealWeather ? ((w.wave_height !== undefined ? w.wave_height : '--') + 'cm') : '--cm';
+                document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '℃') : '--℃';
+                
+                const windEffectBanner = document.getElementById('wind-effect-banner');
+                if (windEffectBanner) {
+                    windEffectBanner.innerText = showRealWeather ? `物理補正判定: ${w.wind_effect || '補正なし'}` : '物理補正判定: 展示公開時にリアルタイム計算';
                 }
 
-                if (solidFocus.length > 0 || upsetFocus.length > 0) {
-                    focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
-                    focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
+                // 気象データの取得時刻を表示
+                const weatherStatusBadge = document.getElementById('weather-status-badge');
+                if (weatherStatusBadge) {
+                    if (showRealWeather) {
+                        const now = new Date();
+                        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        weatherStatusBadge.innerText = `${timeStr} 取得`;
+                    } else {
+                        weatherStatusBadge.innerText = `待機中`;
+                    }
+                }
+
+                // Rotate Wind Arrow
+                const windDirArrow = document.getElementById('wind-dir-arrow');
+                if (windDirArrow && w.wind_dir_num !== undefined) {
+                    const angles = {
+                        1: 180, 2: 202.5, 3: 225, 4: 247.5,
+                        5: 270, 6: 292.5, 7: 315, 8: 337.5,
+                        9: 0, 10: 22.5, 11: 45, 12: 67.5,
+                        13: 90, 14: 112.5, 15: 135, 16: 157.5
+                    };
+                    const deg = showRealWeather && angles[w.wind_dir_num] !== undefined ? angles[w.wind_dir_num] : 0;
+                    windDirArrow.style.transform = `rotate(${deg}deg)`;
+                }
+            }
+
+            // 展示情報未公開時のカードグレーアウト表示
+            const weatherCard = document.getElementById('weather-card');
+            if (weatherCard) {
+                if (exhibitionCompleted) {
+                    weatherCard.classList.remove('opacity-40');
                 } else {
-                    focusContainer.className = 'flex flex-wrap gap-2 w-full';
-                    const emptySpan = document.createElement('span');
-                    emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
-                    emptySpan.innerText = '待機中...';
-                    focusContainer.appendChild(emptySpan);
+                    weatherCard.classList.add('opacity-40');
                 }
+            }
 
-                // Populate Confidence Stars
-                const confidenceStarsEl = document.getElementById('ai-confidence-stars');
-                if (confidenceStarsEl && result.confidence) {
-                    confidenceStarsEl.innerText = result.confidence.stars || '★★★☆☆';
-                }
-
-                // Populate Weather Details
-                if (result.weather) {
-                    const w = result.weather;
-                    const showRealWeather = exhibitionCompleted;
-                    
-                    document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '曇り') : '計測中...';
-                    document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '℃') : '--℃';
-                    document.getElementById('wind-dir-txt').innerText = showRealWeather ? (w.wind_dir_name || '--') : '--';
-                    document.getElementById('wind-speed-txt').innerText = showRealWeather ? ((w.wind_speed !== undefined ? w.wind_speed : '--') + 'm') : '--m';
-                    document.getElementById('wave-txt').innerText = showRealWeather ? ((w.wave_height !== undefined ? w.wave_height : '--') + 'cm') : '--cm';
-                    document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '℃') : '--℃';
-                    
-                    const windEffectBanner = document.getElementById('wind-effect-banner');
-                    if (windEffectBanner) {
-                        windEffectBanner.innerText = showRealWeather ? `物理補正判定: ${w.wind_effect || '補正なし'}` : '物理補正判定: 展示公開時にリアルタイム計算';
+            const tacticalSimCard = document.getElementById('tactical-sim-card');
+            const replaySimBtn = document.getElementById('replay-sim-btn');
+            if (tacticalSimCard) {
+                if (exhibitionCompleted) {
+                    tacticalSimCard.classList.remove('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = false;
+                        replaySimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
-
-                    // 気象データの取得時刻を表示
-                    const weatherStatusBadge = document.getElementById('weather-status-badge');
-                    if (weatherStatusBadge) {
-                        if (showRealWeather) {
-                            const now = new Date();
-                            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                            weatherStatusBadge.innerText = `${timeStr} 取得`;
-                        } else {
-                            weatherStatusBadge.innerText = `待機中`;
-                        }
-                    }
-
-                    // Rotate Wind Arrow
-                    const windDirArrow = document.getElementById('wind-dir-arrow');
-                    if (windDirArrow && w.wind_dir_num !== undefined) {
-                        const angles = {
-                            1: 180, 2: 202.5, 3: 225, 4: 247.5,
-                            5: 270, 6: 292.5, 7: 315, 8: 337.5,
-                            9: 0, 10: 22.5, 11: 45, 12: 67.5,
-                            13: 90, 14: 112.5, 15: 135, 16: 157.5
-                        };
-                        const deg = showRealWeather && angles[w.wind_dir_num] !== undefined ? angles[w.wind_dir_num] : 0;
-                        windDirArrow.style.transform = `rotate(${deg}deg)`;
+                } else {
+                    tacticalSimCard.classList.add('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = true;
+                        replaySimBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     }
                 }
+            }
 
-                // 展示情報未公開時のカードグレーアウト表示
-                const weatherCard = document.getElementById('weather-card');
-                if (weatherCard) {
-                    if (exhibitionCompleted) {
-                        weatherCard.classList.remove('opacity-40');
-                    } else {
-                        weatherCard.classList.add('opacity-40');
-                    }
-                }
+            // 2. Render Slit Simulator (進入崩れ自動検知＆好ST強調・バグ完全排除版)
+            const slitContainer = document.getElementById('slit-rows');
+            slitContainer.innerHTML = '';
+            
+            const hasExhibition = exhibitionCompleted && !isPlaceholder;
+            
+            if (!hasExhibition) {
+                slitContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full w-full text-slate-500 gap-1 text-center py-8">
+                        <span class="text-lg">🔒</span>
+                        <span class="text-[11px] font-bold">直前展示データ公開までシミュレーション待機中</span>
+                        <span class="text-[9px] text-slate-600">本番約15分前の展示情報取得後にスタート再現が表示されます</span>
+                    </div>
+                `;
+            } else {
+                const slitItems = racers.map(r => {
+                    const isNA = r.st_val === "N/A" || r.st_val === "";
+                    return {
+                        lane: r.lane,
+                        st: isNA ? "待機中" : r.st_val,
+                        course: isNA ? r.lane.toString() : r.st_course,
+                        is_flying: isNA ? false : r.st_val.includes('F'),
+                        val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
+                    };
+                });
 
-                const tacticalSimCard = document.getElementById('tactical-sim-card');
-                const replaySimBtn = document.getElementById('replay-sim-btn');
-                if (tacticalSimCard) {
-                    if (exhibitionCompleted) {
-                        tacticalSimCard.classList.remove('opacity-40');
-                        if (replaySimBtn) {
-                            replaySimBtn.disabled = false;
-                            replaySimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        }
-                    } else {
-                        tacticalSimCard.classList.add('opacity-40');
-                        if (replaySimBtn) {
-                            replaySimBtn.disabled = true;
-                            replaySimBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        }
-                    }
-                }
+                // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
+                slitItems.sort((a, b) => {
+                    const cA = parseFloat(a.course) || 99;
+                    const cB = parseFloat(b.course) || 99;
+                    return cA - cB;
+                });
 
-                // 2. Render Slit Simulator (進入崩れ自動検知＆好ST強調・バグ完全排除版)
-                const slitContainer = document.getElementById('slit-rows');
-                slitContainer.innerHTML = '';
+                // 進入崩れ（枠なり崩れ）を自動検出
+                const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
                 
-                const hasExhibition = exhibitionCompleted && !isPlaceholder;
+                // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
+                if (isWakunariKuzure) {
+                    const currentText = slitStatus.innerText;
+                    if (!currentText.includes("進入崩れ")) {
+                        slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
+                        slitStatus.innerText = currentText + " ⚠️進入崩れ";
+                    }
+                }
+
+                slitItems.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center w-full h-6 relative';
+                    
+                    const courseLabel = document.createElement('span');
+                    courseLabel.className = 'text-[10px] font-black text-slate-500 w-6 z-20 font-mono';
+                    courseLabel.innerText = `C${item.course}`;
+                    row.appendChild(courseLabel);
+
+                    // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
+                    let badgeClass = `w-4.5 h-4.5 rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
+                    if (item.is_flying) {
+                        badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
+                    } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
+                        badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
+                    }
+
+                    const boatBadge = document.createElement('span');
+                    boatBadge.className = badgeClass;
+                    boatBadge.innerText = item.lane;
+                    
+                    let leftPercent = 66; // スリットライン(赤点線)の位置
+                    if (!hasExhibition) {
+                        leftPercent = 48; // 展示未実施時は中央付近に整列
+                    } else if (item.is_flying) {
+                        leftPercent += (item.val * 100); // フライングは右に突き抜け
+                        if (leftPercent > 92) leftPercent = 92;
+                    } else {
+                        leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
+                        if (leftPercent < 20) leftPercent = 20;
+                    }
+
+                    const boatWrapper = document.createElement('div');
+                    boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
+                    boatWrapper.style.left = `${leftPercent}%`;
+                    
+                    // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
+                    let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
+                    let timingTextContent = item.st;
+                    
+                    if (!hasExhibition) {
+                        timingTextClass += 'text-slate-500 bg-slate-900/30';
+                    } else if (item.is_flying) {
+                        timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
+                        timingTextContent = '🔥 F' + item.st.replace('F', '');
+                    } else if (item.val < 0.10) {
+                        timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
+                        timingTextContent = '⚡ ' + item.st;
+                    } else {
+                        timingTextClass += 'text-slate-300 bg-slate-900/40';
+                    }
+                    
+                    const timingText = document.createElement('span');
+                    timingText.className = timingTextClass;
+                    timingText.innerText = timingTextContent;
+
+                    boatWrapper.appendChild(boatBadge);
+                    boatWrapper.appendChild(timingText);
+                    row.appendChild(boatWrapper);
+                    slitContainer.appendChild(row);
+                });
+            }
+
+            // 3. Render Racer Table Details
+            const racerList = document.getElementById('racer-list');
+            racerList.innerHTML = '';
+            
+            if (isPlaceholder) {
+                racerList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
+                        <svg class="w-6 h-6 text-slate-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
+                        <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
+                    </div>
+                `;
+            } else {
+                const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
+            const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
+
+            // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
+            const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
+            const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
+
+            const turnTimes = racers.map(r => parseFloat(r.turn_time)).filter(t => !isNaN(t) && t > 0);
+            const minTurn = turnTimes.length > 0 ? Math.min(...turnTimes) : 999;
+
+            const straightTimes = racers.map(r => parseFloat(r.straight_time)).filter(t => !isNaN(t) && t > 0);
+            const minStraight = straightTimes.length > 0 ? Math.min(...straightTimes) : 999;
+
+            racers.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'p-3 flex items-center justify-between gap-2';
+
+                const leftArea = document.createElement('div');
+                leftArea.className = 'flex items-center gap-2.5 w-full';
                 
-                if (!hasExhibition) {
-                    slitContainer.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-full w-full text-slate-500 gap-1 text-center py-8">
-                            <span class="text-lg">🔒</span>
-                            <span class="text-[11px] font-bold">直前展示データ公開までシミュレーション待機中</span>
-                            <span class="text-[9px] text-slate-600">本番約15分前の展示情報取得後にスタート再現が表示されます</span>
+                const badge = document.createElement('div');
+                badge.className = `w-7 h-7 rounded-xl flex items-center justify-center font-black font-outfit text-sm shadow-sm boat-${r.lane} flex-shrink-0`;
+                badge.innerText = r.lane;
+                
+                // オリジナル展示タイムがある場（鳴門・三国など）の追加HTML生成
+                let originalHtml = '';
+                const hasOriginalTimes = (r.loop_time && r.loop_time !== "N/A" && r.loop_time !== "");
+                if (hasOriginalTimes) {
+                    const lVal = parseFloat(r.loop_time) || 0;
+                    const tVal = parseFloat(r.turn_time) || 0;
+                    const sVal = parseFloat(r.straight_time) || 0;
+
+                    const lColor = (lVal === minLoop) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const tColor = (tVal === minTurn) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const sColor = (sVal === minStraight) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+
+                    const lBadge = (lVal === minLoop) ? '👑' : '';
+                    const tBadge = (tVal === minTurn) ? '👑' : '';
+                    const sBadge = (sVal === minStraight) ? '👑' : '';
+
+                    originalHtml = `
+                        <div class="flex gap-2.5 mt-1.5 text-[9px] bg-slate-950/50 px-2 py-0.5 rounded-lg border border-white/5 w-fit">
+                            <span class="text-slate-400 font-medium">一周: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">まわり: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">直線: <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
                         </div>
                     `;
-                } else {
-                    const slitItems = racers.map(r => {
-                        const isNA = r.st_val === "N/A" || r.st_val === "";
-                        return {
-                            lane: r.lane,
-                            st: isNA ? "待機中" : r.st_val,
-                            course: isNA ? r.lane.toString() : r.st_course,
-                            is_flying: isNA ? false : r.st_val.includes('F'),
-                            val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
-                        };
-                    });
-
-                    // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
-                    slitItems.sort((a, b) => {
-                        const cA = parseFloat(a.course) || 99;
-                        const cB = parseFloat(b.course) || 99;
-                        return cA - cB;
-                    });
-
-                    // 進入崩れ（枠なり崩れ）を自動検出
-                    const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
-                    
-                    // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
-                    if (isWakunariKuzure) {
-                        const currentText = slitStatus.innerText;
-                        if (!currentText.includes("進入崩れ")) {
-                            slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
-                            slitStatus.innerText = currentText + " ⚠️進入崩れ";
-                        }
-                    }
-
-                    slitItems.forEach(item => {
-                        const row = document.createElement('div');
-                        row.className = 'flex items-center w-full h-6 relative';
-                        
-                        const courseLabel = document.createElement('span');
-                        courseLabel.className = 'text-[10px] font-black text-slate-500 w-6 z-20 font-mono';
-                        courseLabel.innerText = `C${item.course}`;
-                        row.appendChild(courseLabel);
-
-                        // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
-                        let badgeClass = `w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
-                        if (item.is_flying) {
-                            badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
-                        } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
-                            badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
-                        }
-
-                        const boatBadge = document.createElement('span');
-                        boatBadge.className = badgeClass;
-                        boatBadge.innerText = item.lane;
-                        
-                        let leftPercent = 66; // スリットライン(赤点線)の位置
-                        if (!hasExhibition) {
-                            leftPercent = 48; // 展示未実施時は中央付近に整列
-                        } else if (item.is_flying) {
-                            leftPercent += (item.val * 100); // フライングは右に突き抜け
-                            if (leftPercent > 92) leftPercent = 92;
-                        } else {
-                            leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
-                            if (leftPercent < 20) leftPercent = 20;
-                        }
-
-                        const boatWrapper = document.createElement('div');
-                        boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
-                        boatWrapper.style.left = `${leftPercent}%`;
-                        
-                        // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
-                        let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
-                        let timingTextContent = item.st;
-                        
-                        if (!hasExhibition) {
-                            timingTextClass += 'text-slate-500 bg-slate-900/30';
-                        } else if (item.is_flying) {
-                            timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
-                            timingTextContent = '🔥 F' + item.st.replace('F', '');
-                        } else if (item.val < 0.10) {
-                            timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
-                            timingTextContent = '⚡ ' + item.st;
-                        } else {
-                            timingTextClass += 'text-slate-300 bg-slate-900/40';
-                        }
-                        
-                        const timingText = document.createElement('span');
-                        timingText.className = timingTextClass;
-                        timingText.innerText = timingTextContent;
-
-                        boatWrapper.appendChild(boatBadge);
-                        boatWrapper.appendChild(timingText);
-                        row.appendChild(boatWrapper);
-                        slitContainer.appendChild(row);
-                    });
                 }
 
-                // 3. Render Racer Table Details
-                const racerList = document.getElementById('racer-list');
-                racerList.innerHTML = '';
+                const details = document.createElement('div');
+                details.className = 'w-full';
+                details.innerHTML = `
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-black text-white">${r.name}</span>
+                        <span class="text-[8px] px-1 py-0.2 bg-slate-800 text-slate-400 font-bold rounded">${r.cls}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-medium">
+                        勝率:${parseFloat(r.rate).toFixed(2)} | モーター:${parseFloat(r.motor_rate).toFixed(1)}%
+                    </div>
+                    ${originalHtml}
+                `;
                 
-                if (isPlaceholder) {
-                    racerList.innerHTML = `
-                        <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
-                            <svg class="w-6 h-6 text-slate-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
-                            <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
-                        </div>
-                    `;
-                } else {
-                    const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
-                    const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
+                leftArea.appendChild(badge);
+                leftArea.appendChild(details);
+                card.appendChild(leftArea);
 
-                    // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
-                    const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
-                    const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
-
-                    const turnTimes = racers.map(r => parseFloat(r.turn_time)).filter(t => !isNaN(t) && t > 0);
-                    const minTurn = turnTimes.length > 0 ? Math.min(...turnTimes) : 999;
-
-                    const straightTimes = racers.map(r => parseFloat(r.straight_time)).filter(t => !isNaN(t) && t > 0);
-                    const minStraight = straightTimes.length > 0 ? Math.min(...straightTimes) : 999;
-
-                    racers.forEach(r => {
-                        const card = document.createElement('div');
-                        card.className = 'p-3 flex items-center justify-between gap-2';
-
-                        const leftArea = document.createElement('div');
-                        leftArea.className = 'flex items-center gap-2.5 w-full';
-                        
-                        const badge = document.createElement('div');
-                        badge.className = `w-7 h-7 rounded-xl flex items-center justify-center font-black font-outfit text-sm shadow-sm boat-${r.lane} flex-shrink-0`;
-                        badge.innerText = r.lane;
-                        
-                        // オリジナル展示タイムがある場（鳴門・三国など）の追加HTML生成
-                        let originalHtml = '';
-                        const hasOriginalTimes = (r.loop_time && r.loop_time !== "N/A" && r.loop_time !== "");
-                        if (hasOriginalTimes) {
-                            const lVal = parseFloat(r.loop_time) || 0;
-                            const tVal = parseFloat(r.turn_time) || 0;
-                            const sVal = parseFloat(r.straight_time) || 0;
-
-                            const lColor = (lVal === minLoop) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
-                            const tColor = (tVal === minTurn) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
-                            const sColor = (sVal === minStraight) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
-
-                            const lBadge = (lVal === minLoop) ? '👑' : '';
-                            const tBadge = (tVal === minTurn) ? '👑' : '';
-                            const sBadge = (sVal === minStraight) ? '👑' : '';
-
-                            originalHtml = `
-                                <div class="flex gap-2.5 mt-1.5 text-[9px] bg-slate-950/50 px-2 py-0.5 rounded-lg border border-white/5 w-fit">
-                                    <span class="text-slate-400 font-medium">一周: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
-                                    <span class="text-slate-400 font-medium">まわり: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
-                                    <span class="text-slate-400 font-medium">直線: <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
-                                </div>
-                            `;
-                        }
-
-                        const details = document.createElement('div');
-                        details.className = 'w-full';
-                        details.innerHTML = `
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-black text-white">${r.name}</span>
-                                <span class="text-[8px] px-1 py-[2px] bg-slate-800 text-slate-400 font-bold rounded">${r.cls}</span>
-                            </div>
-                            <div class="text-[10px] text-slate-400 font-medium">
-                                勝率:${parseFloat(r.rate).toFixed(2)} | モーター:${parseFloat(r.motor_rate).toFixed(1)}%
-                            </div>
-                            ${originalHtml}
-                        `;
-                        
-                        leftArea.appendChild(badge);
-                        leftArea.appendChild(details);
-                        card.appendChild(leftArea);
-
-                        const rightArea = document.createElement('div');
-                        rightArea.className = 'text-right flex flex-col items-end gap-1 w-28 flex-shrink-0';
-                        
-                        const isNA = r.ex_time === "N/A" || r.ex_time === "";
-                        const exTimeVal = parseFloat(r.ex_time) || 0.0;
-                        const offset = (exTimeVal - minTime).toFixed(2);
-                        
-                        let gaugeColor = 'bg-emerald-500';
-                        let offsetText = `±0.00`;
-                        let displayTimeText = r.ex_time;
-                        let gaugeWidth = 100;
-
-                        if (isNA) {
-                            gaugeColor = 'bg-slate-700/50';
-                            offsetText = '未実施';
-                            displayTimeText = '--.--';
-                            gaugeWidth = 50; 
-                        } else if (offset > 0) {
-                            offsetText = `+${offset}`;
-                            if (offset > 0.08) gaugeColor = 'bg-red-500 animate-pulse';
-                            else if (offset > 0.04) gaugeColor = 'bg-amber-500';
-                            gaugeWidth = Math.max(10, 100 - (offset * 500));
-                        }
-
-                        rightArea.innerHTML = `
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-xs font-black font-mono ${isNA ? 'text-slate-500' : 'text-white'}">${displayTimeText}</span>
-                                <span class="text-[8px] font-black font-mono ${isNA ? 'text-slate-500' : (offset > 0.08 ? 'text-red-400' : 'text-emerald-400')}">(${offsetText})</span>
-                            </div>
-                            <div class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden">
-                                <div class="h-full ${gaugeColor}" style="width: ${gaugeWidth}%"></div>
-                            </div>
-                            <div class="text-[8px] ${isNA ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase tracking-wider">TILT: ${isNA ? '--' : r.tilt}</div>
-                        `;
-                        
-                        card.appendChild(rightArea);
-                        racerList.appendChild(card);
-                    });
-                }
+                const rightArea = document.createElement('div');
+                rightArea.className = 'text-right flex flex-col items-end gap-1 w-28 flex-shrink-0';
                 
-                // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
-                try {
-                    initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
-                } catch (e) {
-                    console.error("Simulation init failed:", e);
+                const isNA = r.ex_time === "N/A" || r.ex_time === "";
+                const exTimeVal = parseFloat(r.ex_time) || 0.0;
+                const offset = (exTimeVal - minTime).toFixed(2);
+                
+                let gaugeColor = 'bg-emerald-500';
+                let offsetText = `±0.00`;
+                let displayTimeText = r.ex_time;
+                let gaugeWidth = 100;
+
+                if (isNA) {
+                    gaugeColor = 'bg-slate-700/50';
+                    offsetText = '未実施';
+                    displayTimeText = '--.--';
+                    gaugeWidth = 50; 
+                } else if (offset > 0) {
+                    offsetText = `+${offset}`;
+                    if (offset > 0.08) gaugeColor = 'bg-red-500 animate-pulse';
+                    else if (offset > 0.04) gaugeColor = 'bg-amber-500';
+                    gaugeWidth = Math.max(10, 100 - (offset * 500));
                 }
+
+                rightArea.innerHTML = `
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xs font-black font-mono ${isNA ? 'text-slate-500' : 'text-white'}">${displayTimeText}</span>
+                        <span class="text-[8px] font-black font-mono ${isNA ? 'text-slate-500' : (offset > 0.08 ? 'text-red-400' : 'text-emerald-400')}">(${offsetText})</span>
+                    </div>
+                    <div class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden">
+                        <div class="h-full ${gaugeColor}" style="width: ${gaugeWidth}%"></div>
+                    </div>
+                    <div class="text-[8px] ${isNA ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase tracking-wider">TILT: ${isNA ? '--' : r.tilt}</div>
+                `;
+                
+                card.appendChild(rightArea);
+                racerList.appendChild(card);
+            });
+            }
+            
+            // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
+            try {
+                initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+            } catch (e) {
+                console.error("Simulation init failed:", e);
+            }
 
             } catch (err) {
                 console.error("Dashboard render error:", err);
@@ -1864,6 +1992,7 @@
                     rightDiv.innerHTML = `${payoutText} ${profitText}`;
 
                     row.appendChild(leftDiv);
+                    rightDiv.className = "font-mono flex items-center gap-2";
                     row.appendChild(rightDiv);
                     historyContainer.appendChild(row);
                 });
@@ -2396,8 +2525,8 @@
                     btn.addEventListener('click', () => {
                         const allBtns = document.querySelectorAll('#sim-controls-container button');
                         allBtns.forEach(b => {
-                            const isUpt = b.parentElement.id === 'sim-controls-upset'; // タイポを修正
-                            b.className = isUpt
+                            const isBUt = b.parentElement.id === 'sim-controls-upset';
+                            b.className = isBUt
                                 ? 'px-2 py-1 text-[9px] rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-400 font-bold hover:bg-purple-500/10 active:scale-95 transition-all cursor-pointer'
                                 : 'px-2 py-1 text-[9px] rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 font-bold hover:bg-indigo-500/10 active:scale-95 transition-all cursor-pointer';
                         });
@@ -2474,6 +2603,7 @@
             buildControls();
             startSim();
         }
+
 
         // 広告ロック解除用ロジック
         window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
@@ -2903,17 +3033,32 @@
                 listContainer.appendChild(dailyCard);
             });
         }
+        window.closeTermsModal = function() {
+            const modal = document.getElementById('terms-modal');
+            if (!modal) return;
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
     </script>
 
+    <!-- 広告ロック解除用のポップアップモーダル -->
     <div id="ad-unlock-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
         <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl text-center space-y-4 relative">
             <h3 class="text-sm font-bold text-white tracking-wider font-outfit">🔒 プレミアム予想ロック解除</h3>
             <p class="text-xs text-slate-400">広告がロードされています。ロック解除までお待ちください。</p>
             
+            <!-- Ad Container -->
             <div class="w-full flex justify-center py-2 min-h-[250px] bg-slate-900/50 rounded-xl border border-white/5 items-center">
                 <div id="modal-ad-box" class="w-full text-center">
+                    <!-- ↓ ここに2つ目の忍者AdMaxタグ（300x250などのインライン枠）を貼り付けます ↓ -->
+                    <!-- admax -->
                     <script src="https://adm.shinobi.jp/s/49471adf51751ff10c0264d812ee97ef"></script>
-                    </div>
+                    <!-- admax -->
+                </div>
             </div>
 
             <div id="unlock-btn-container" class="w-full">
@@ -2924,11 +3069,13 @@
         </div>
     </div>
 
+    <!-- 免責事項・プライバシーポリシー用モーダル -->
     <div id="terms-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
         <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh] relative">
             <h3 id="terms-title" class="text-sm font-bold text-white tracking-wider font-outfit mb-3">利用規約</h3>
             
             <div class="flex-1 overflow-y-auto text-left text-xs text-slate-300 space-y-3 pr-2 scrollbar-thin">
+                <!-- このサイトについて -->
                 <div id="terms-content-about" class="hidden space-y-2.5">
                     <p class="font-bold text-indigo-400">【AI予想ダッシュボードについて】</p>
                     <p>当サイトは、最先端のデータ分析と物理シミュレーションを融合した次世代のボートレース（競艇）予想支援サービスです。</p>
@@ -2936,6 +3083,7 @@
                     <p>1マーク旋回時の艇同士の物理干渉（まくり、差し、まくり差し等の進路軌道）を自律エンジンが何万回もシミュレートし、最も数学的に合理的かつ高確率な展開と3連単買い目をリアルタイムに可視化して提供しています。</p>
                 </div>
 
+                <!-- 予想の見方・使い方 -->
                 <div id="terms-content-help" class="hidden space-y-2.5 text-[11px] leading-relaxed">
                     <p class="font-bold text-teal-400 text-xs">【各機能の解説】</p>
                     
