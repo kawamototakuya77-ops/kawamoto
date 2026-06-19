@@ -561,30 +561,12 @@
             </section>
 
             <!-- FOOTER LINKS -->
-            <footer class="pt-6 pb-20 text-center space-y-2">
-                <div class="px-4 mb-4 max-w-xs mx-auto text-left">
-                    <label class="text-[10px] text-slate-400 font-bold block mb-1">プレミアムパス</label>
-                    <div class="flex gap-2">
-                        <input type="password" id="premium-pass-input" placeholder="パスワードを入力" class="flex-1 bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-white">
-                        <button onclick="saveAndReloadPass()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-lg">保存</button>
-                    </div>
+            <footer class="pt-6 pb-20 text-center space-y-4">
+                <!-- 動的に切り替わるサブスク・アカウント管理ボタンエリア -->
+                <div id="footer-auth-area" class="px-4 max-w-xs mx-auto space-y-2">
+                    <!-- JSで動的にボタンを挿入します -->
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const input = document.getElementById('premium-pass-input');
-                        if (input && typeof window.getPremiumPass === 'function') {
-                            input.value = window.getPremiumPass();
-                        }
-                    });
-                    function saveAndReloadPass() {
-                        const input = document.getElementById('premium-pass-input');
-                        if (input && typeof window.savePremiumPass === 'function') {
-                            window.savePremiumPass(input.value);
-                            alert('プレミアムパスを保存しました。データを再読み込みします。');
-                            location.reload();
-                        }
-                    }
-                </script>
+                
                 <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-slate-500 font-bold px-4">
                     <button onclick="window.showTermsModal('about')" class="hover:text-slate-400 transition-colors">このサイトについて</button>
                     <span>•</span>
@@ -676,7 +658,7 @@
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
-                    .getTodayInitialPayload(pass || email);
+                    .getTodayInitialPayload(false, email, pass);
             } else {
                 const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
                 const queryEmail = email ? `&email=${encodeURIComponent(email)}` : '';
@@ -702,7 +684,7 @@
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
-                    .getTodayPredictionsOnly(pass || email);
+                    .getTodayPredictionsOnly(false, email, pass);
             } else if (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
                 const queryEmail = email ? `&email=${encodeURIComponent(email)}` : '';
@@ -1036,6 +1018,8 @@
         }
 
         function silentPoll() {
+            const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(function(result) {
@@ -1058,7 +1042,7 @@
                             calculateTodayStats();
                         }
                     })
-                    .getTodayPredictionsOnly();
+                    .getTodayPredictionsOnly(false, email, pass);
             }
         }
 
@@ -1076,6 +1060,8 @@
             SPINNER.classList.remove('hidden');
             BTN_TEXT.innerText = '🔄 最新データをフェッチ中...';
             
+            const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(function(result) {
@@ -1098,7 +1084,7 @@
                         SPINNER.classList.add('hidden');
                         BTN_TEXT.innerText = '🔄 最新データを表示';
                     })
-                    .getTodayPredictionsOnly();
+                    .getTodayPredictionsOnly(false, email, pass);
             } else {
                 setTimeout(() => {
                     REFRESH_BTN.disabled = false;
@@ -3235,15 +3221,26 @@
             updateLoginIcon(isUnlocked);
         }
 
+        window.submitLogout = function() {
+            if (confirm("ログアウトしますか？")) {
+                localStorage.removeItem('PREMIUM_PASS_KEY');
+                localStorage.removeItem('PREMIUM_EMAIL_KEY');
+                localStorage.removeItem('PREMIUM_AUTH_TIME');
+                updateLoginIcon(false);
+                fetchLatestDataSilently();
+            }
+        };
+
         function updateLoginIcon(forceUnlocked) {
             const pass = window.getPremiumPass();
             const email = window.getPremiumEmail();
             
-            const isUnlocked = (typeof forceUnlocked === 'boolean') ? forceUnlocked : (!!pass || !!email);
+            const isUnlocked = (typeof forceUnlocked === 'boolean') ? forceUnlocked : (!!pass && !!email);
             
             const icon = document.getElementById('header-login-icon');
             const text = document.getElementById('header-login-text');
             const btn = document.getElementById('header-login-btn');
+            const footerArea = document.getElementById('footer-auth-area');
             
             if (isUnlocked) {
                 if (icon) icon.textContent = "👑";
@@ -3258,13 +3255,37 @@
                     }
                 }
                 if (btn) {
-                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 hover:from-amber-500/30 hover:to-yellow-500/30 transition-colors shadow-sm focus:outline-none text-[11px] font-bold";
+                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 hover:from-amber-500/30 hover:to-yellow-500/30 transition-colors shadow-sm focus:outline-none text-[11px] font-bold cursor-pointer";
+                    btn.onclick = function() { window.submitLogout(); };
+                }
+                
+                // フッターエリア（ログイン中：ポータルリンク＋ログアウト）
+                if (footerArea) {
+                    // ※ Stripeカスタマーポータルの固定リンク
+                    footerArea.innerHTML = `
+                        <a href="https://billing.stripe.com/p/login/14A7sL9QicK66O54bdgjC00" target="_blank" class="block w-full py-2 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-white text-xs font-bold rounded-xl shadow-md transition-all text-center">
+                            👑 契約内容の確認・解約
+                        </a>
+                        <button onclick="window.submitLogout()" class="block w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-white/5 transition-all cursor-pointer">
+                            🔓 ログアウト
+                        </button>
+                    `;
                 }
             } else {
                 if (icon) icon.textContent = "🔑";
                 if (text) text.textContent = "ログイン";
                 if (btn) {
-                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none text-[11px] font-bold text-slate-200";
+                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none text-[11px] font-bold text-slate-200 cursor-pointer";
+                    btn.onclick = function() { window.showLoginModal(); };
+                }
+                
+                // フッターエリア（未ログイン：プレミアム登録ボタンのみ）
+                if (footerArea) {
+                    footerArea.innerHTML = `
+                        <a href="https://buy.stripe.com/eVq6oH9Qi39w3BT8rtgjC01" target="_blank" class="block w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all text-center">
+                            👑 プレミアム登録 (月額500円)
+                        </a>
+                    `;
                 }
             }
         }
