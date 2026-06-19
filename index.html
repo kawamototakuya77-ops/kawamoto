@@ -590,7 +590,7 @@
 
                         <!-- 投稿フォーム -->
                         <div class="pt-3 border-t border-white/5 flex gap-2 items-center">
-                            <input type="text" id="bbs-nickname-input" placeholder="ニックネーム" maxlength="15" class="w-1/3 bg-slate-900 border border-white/10 rounded-xl px-2.5 py-1.5 text-[10px] text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                            <span id="bbs-user-display" class="text-[10px] text-indigo-400 font-bold px-2.5 py-1.5 bg-slate-900/60 rounded-xl border border-white/5 whitespace-nowrap">匿名</span>
                             <input type="text" id="bbs-comment-input" placeholder="メッセージを入力（最大100文字）" maxlength="100" class="flex-1 bg-slate-900 border border-white/10 rounded-xl px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-indigo-500 transition-colors">
                             <button id="bbs-submit-btn" onclick="submitBBSPost()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-xl border border-indigo-500/10 active:scale-95 transition-all cursor-pointer">
                                 送信
@@ -3198,6 +3198,10 @@
                     <label class="block text-[10px] font-bold text-slate-400 mb-1">ライセンスキー (パスワード)</label>
                     <input type="text" id="login-pass-input" placeholder="キーを入力" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono">
                 </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1">ユーザー名 (BBS投稿用の表示名/変更可)</label>
+                    <input type="text" id="login-username-input" placeholder="2〜15文字（卑猥・差別用語は禁止）" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                </div>
                 <button onclick="window.submitLogin()" class="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
                     🔓 ロックを解除する
                 </button>
@@ -3213,12 +3217,36 @@
     </div>
 
     <script>
+        function containsBadWords(str) {
+            if (!str) return false;
+            var normalized = str.toLowerCase().replace(/[\s　\-_]/g, "");
+            normalized = normalized.replace(/[\u30a1-\u30f6]/g, function(match) {
+                var chr = match.charCodeAt(0) - 0x60;
+                return String.fromCharCode(chr);
+            });
+            var badPatterns = [
+                /ちん[こぽ]/, /まんこ/, /おまんこ/, /ぺにす/, /ペニス/, /ばぎな/, /ヴァギナ/,
+                /せっくす/, /セックス/, /ふぇら/, /フェラ/, /くんに/, /クンニ/, /アナル/, /あなる/,
+                /おなにい/, /オナニー/, /なまだし/, /中出し/, /ばいぶ/, /バイブ/, /ろーたー/, /ローター/,
+                /きちがい/, /キチガイ/, /基地外/, /どじん/, /土人/, /しなじん/, /支那/, /ちょん/, /チョン/,
+                /がいじ/, /ガイジ/, /めくら/, /つんぼ/, /ちんば/, /ぶらく/, /部落/, /ひにん/, /非人/,
+                /しね/, /死ね/, /ころす/, /殺す/, /ばか/, /馬鹿/, /ごみ/, /ゴミ/,
+                /fuck/, /shit/, /bitch/, /cunt/, /nigger/, /fag/, /pussy/, /cock/
+            ];
+            for (var i = 0; i < badPatterns.length; i++) {
+                if (badPatterns[i].test(normalized)) return true;
+            }
+            return false;
+        }
+
         window.showLoginModal = function() {
             const modal = document.getElementById('login-modal');
             const passInput = document.getElementById('login-pass-input');
             const emailInput = document.getElementById('login-email-input');
+            const usernameInput = document.getElementById('login-username-input');
             if(passInput) passInput.value = window.getPremiumPass();
             if(emailInput) emailInput.value = window.getPremiumEmail();
+            if(usernameInput) usernameInput.value = localStorage.getItem('PREMIUM_USERNAME_KEY') || "";
             modal.classList.remove('hidden');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
         };
@@ -3230,12 +3258,63 @@
         window.submitLogin = function() {
             const passInput = document.getElementById('login-pass-input');
             const emailInput = document.getElementById('login-email-input');
-            if(passInput && emailInput) {
-                window.savePremiumAuth(emailInput.value, passInput.value);
-                window.closeLoginModal();
-                updateLoginIcon();
-                fetchLatestDataSilently();
+            const usernameInput = document.getElementById('login-username-input');
+            
+            if(!passInput || !emailInput) return;
+            
+            const email = emailInput.value.trim();
+            const pass = passInput.value.trim();
+            const username = usernameInput ? usernameInput.value.trim() : "";
+            
+            if(!email || !pass) {
+                alert("メールアドレスとライセンスキーを入力してください。");
+                return;
             }
+            
+            if(!username) {
+                alert("BBS投稿用に使用するユーザー名を入力してください。");
+                return;
+            }
+            
+            if(username.length < 2 || username.length > 15) {
+                alert("ユーザー名は2文字以上15文字以内で入力してください。");
+                return;
+            }
+            
+            if(containsBadWords(username)) {
+                alert("ユーザー名に不適切な表現（卑猥・差別用語等）が含まれています。別のユーザー名を入力してください。");
+                return;
+            }
+            
+            window.savePremiumAuth(email, pass);
+            
+            const btn = document.querySelector("#login-modal button");
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "登録・認証中...";
+            
+            const updateUrl = `${GAS_API_URL}?action=update_username&email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}&username=${encodeURIComponent(username)}&t=${new Date().getTime()}`;
+            
+            fetch(updateUrl)
+                .then(res => res.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    if(res && res.success) {
+                        localStorage.setItem('PREMIUM_USERNAME_KEY', res.username);
+                        window.closeLoginModal();
+                        updateLoginIcon();
+                        fetchLatestDataSilently();
+                    } else {
+                        alert(res.error || "ユーザー名の登録に失敗しました。");
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    console.error(err);
+                    alert("通信エラーが発生しました。");
+                });
         };
         
         function fetchLatestDataSilently() {
@@ -3292,6 +3371,16 @@
             if (payload) {
                 if (payload.access === "granted" || payload.status === 200 || payload.is_premium === true) {
                     isUnlocked = true;
+                    
+                    if (payload.username) {
+                        localStorage.setItem('PREMIUM_USERNAME_KEY', payload.username);
+                    }
+                    
+                    if (!payload.username && hasLocalAuth) {
+                        alert("BBSやサービスのご利用前に、ユーザー名の登録が必要です。");
+                        window.showLoginModal();
+                        return;
+                    }
                 } else if (payload.predictions && Object.keys(payload.predictions).length > 0) {
                     const firstKey = Object.keys(payload.predictions)[0];
                     const pred = payload.predictions[firstKey];
@@ -3299,7 +3388,6 @@
                         isUnlocked = (pred.predictions[0].combo !== "🔒-🔒-🔒");
                     }
                 } else {
-                    // 予測データが空（早朝や全レース終了後など）の場合は、ローカルのログイン情報を維持する
                     isUnlocked = hasLocalAuth;
                 }
             } else {
@@ -3313,6 +3401,7 @@
                 localStorage.removeItem('PREMIUM_PASS_KEY');
                 localStorage.removeItem('PREMIUM_EMAIL_KEY');
                 localStorage.removeItem('PREMIUM_AUTH_TIME');
+                localStorage.removeItem('PREMIUM_USERNAME_KEY');
                 updateLoginIcon(false);
                 fetchLatestDataSilently();
             }
@@ -3394,6 +3483,11 @@
             const container = document.getElementById('bbs-messages');
             if (!container) return;
             
+            const userDisplay = document.getElementById('bbs-user-display');
+            if (userDisplay) {
+                userDisplay.textContent = localStorage.getItem('PREMIUM_USERNAME_KEY') || "匿名";
+            }
+            
             const pass = window.getPremiumPass();
             const email = window.getPremiumEmail();
             if (!pass || !email) return;
@@ -3450,7 +3544,6 @@
         }
 
         window.submitBBSPost = function() {
-            const nickInput = document.getElementById('bbs-nickname-input');
             const commentInput = document.getElementById('bbs-comment-input');
             const btn = document.getElementById('bbs-submit-btn');
             const errorMsg = document.getElementById('bbs-error-msg');
@@ -3458,7 +3551,7 @@
             if (!commentInput || !btn) return;
             
             const comment = commentInput.value.trim();
-            const nickname = nickInput ? nickInput.value.trim() : "匿名";
+            const nickname = localStorage.getItem('PREMIUM_USERNAME_KEY') || "匿名";
             
             if (comment === "") {
                 if (errorMsg) {
