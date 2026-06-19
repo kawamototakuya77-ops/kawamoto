@@ -579,6 +579,8 @@
                 <span>•</span>
                 <button onclick="window.showTermsModal('privacy')" class="hover:text-slate-400 transition-colors">プライバシーポリシー</button>
                 <span>•</span>
+                <button onclick="window.showTermsModal('tokushoho')" class="hover:text-slate-400 transition-colors">特定商取引法に基づく表記</button>
+                <span>•</span>
                 <a href="https://billing.stripe.com/p/login/14A7sL9QicK66O54bdgjC00" target="_blank" class="hover:text-slate-400 transition-colors">サブスクの確認・解約</a>
             </div>
             <p class="text-[9px] text-slate-600 font-mono">© 2026 Antigravity AI. All Rights Reserved.</p>
@@ -2685,15 +2687,17 @@
             const privacyContent = document.getElementById('terms-content-privacy');
             const aboutContent = document.getElementById('terms-content-about');
             const helpContent = document.getElementById('terms-content-help');
+            const tokushohoContent = document.getElementById('terms-content-tokushoho');
             const title = document.getElementById('terms-title');
             
-            if (!modal || !disclaimerContent || !privacyContent || !aboutContent || !helpContent || !title) return;
+            if (!modal || !disclaimerContent || !privacyContent || !aboutContent || !helpContent || !tokushohoContent || !title) return;
 
             // すべて隠す
             disclaimerContent.classList.add('hidden');
             privacyContent.classList.add('hidden');
             aboutContent.classList.add('hidden');
             helpContent.classList.add('hidden');
+            tokushohoContent.classList.add('hidden');
 
             if (type === 'disclaimer') {
                 title.innerText = "⚖️ 免責事項";
@@ -2707,6 +2711,9 @@
             } else if (type === 'help') {
                 title.innerText = "💡 予想の見方・使い方";
                 helpContent.classList.remove('hidden');
+            } else if (type === 'tokushoho') {
+                title.innerText = "⚖️ 特定商取引法に基づく表記";
+                tokushohoContent.classList.remove('hidden');
             }
 
             modal.classList.remove('hidden');
@@ -3075,46 +3082,59 @@
             
             <div class="flex-1 overflow-y-auto text-left text-xs text-slate-300 space-y-3 pr-2 scrollbar-thin">
                 <!-- このサイトについて -->
-                <div id="terms-content-about" class="hidden space-y-2.5">
-                    <p class="font-bold text-indigo-400">【AI予想ダッシュボードについて】</p>
-                    <p>当サイトは、最先端のデータ分析と物理シミュレーションを融合した次世代のボートレース（競艇）予想支援サービスです。</p>
-                    <p>直前展示情報、選手ごとの過去の枠番別勝率、モーターの仕上がりデータに加え、当日の「風向・風速・気温・水温・波高」などの気象状況を完全マージ。</p>
-                    <p>1マーク旋回時の艇同士の物理干渉（まくり、差し、まくり差し等の進路軌道）を自律エンジンが何万回もシミュレートし、最も数学的に合理的かつ高確率な展開と3連単買い目をリアルタイムに可視化して提供しています。</p>
+                <div id="terms-content-about" class="hidden space-y-3">
+                    <p class="font-bold text-indigo-400 border-b border-indigo-500/30 pb-1">【AI予想ダッシュボードについて】</p>
+                    <p>当サイトは、最先端のデータ解析と物理シミュレーションを融合した「次世代型ボートレース展開予測ダッシュボード」です。</p>
+                    <ul class="list-disc pl-5 space-y-1 text-[11px] text-slate-400">
+                        <li><strong class="text-slate-300">完全データ主義：</strong>個人の勘や感情を排除し、全国24場の公式データをリアルタイムに自動取得して解析します。</li>
+                        <li><strong class="text-slate-300">物理展開シミュレーター：</strong>当日の気象条件とスタート展示の進入隊列をマージし、1マーク旋回時の物理的な軌道を数万回シミュレートします。</li>
+                        <li><strong class="text-slate-300">独自数式アルゴリズム：</strong>Harville公式をベースとした確率計算により、期待値の高い「本命」と、展開のズレを突く「穴」を論理的に抽出します。</li>
+                    </ul>
                 </div>
 
                 <!-- 予想の見方・使い方 -->
-                <div id="terms-content-help" class="hidden space-y-2.5 text-[11px] leading-relaxed">
-                    <p class="font-bold text-teal-400 text-xs">【各機能の解説】</p>
-                    
-                    <p class="font-bold text-slate-200">① イン逃げ期待確度</p>
-                    <p class="pl-2">1号艇が先頭で1マークを旋回し、バックストレッチで逃げ切る確率をAIがパーセンテージで算出したものです。数値が高いほどイン逃げの信頼度が上がります。</p>
-                    
-                    <p class="font-bold text-slate-200">② 推奨フォーカス（3連単）</p>
-                    <ul class="list-disc pl-5 space-y-1">
-                        <li><span class="text-rose-400 font-bold">大本線</span>：最も的中確率が高いと算出された本命の買い目。</li>
-                        <li><span class="text-amber-400 font-bold">本線</span>：大本線に次いで手堅い対抗の買い目。</li>
-                        <li><span class="text-emerald-400 font-bold">中穴</span>：進入崩れや強風・高波などの展開変化で発生しやすい好配当の買い目（広告解除で解放）。</li>
-                        <li><span class="text-purple-400 font-bold">穴狙い</span>：一発大逆転が期待できる万舟券級の波乱狙い買い目（広告解除で解放）。</li>
+                <div id="terms-content-help" class="hidden space-y-3 text-[11px] leading-relaxed">
+                    <p class="font-bold text-teal-400 border-b border-teal-500/30 pb-1">【予想の更新タイミングと見方】</p>
+                    <p class="font-bold text-slate-200 mt-2">🕒 予想の3段階アップデート</p>
+                    <ul class="list-decimal pl-5 space-y-1 text-slate-400">
+                        <li><strong class="text-amber-300">第一次予想（朝イチ）：</strong>選手実力とモーター勝率のみで算出するベース予想。</li>
+                        <li><strong class="text-emerald-400">第二次予想（展示直後）：</strong>展示タイム、スリット隊列、チルトを反映した本番用データ。</li>
+                        <li><strong class="text-purple-400">第三次予想（気象急変）：</strong>展示後から本番までの間に、風速や風向が急変した場合にのみ発動する補正予想。</li>
                     </ul>
-
-                    <p class="font-bold text-slate-200">③ 展示スリット再現</p>
-                    <p class="pl-2">スタート展示における各艇のスリット通過時の位置関係をビジュアルで再現。フライング(F)や出遅れ、進入コースの崩れを直感的に見極められます。</p>
-
-                    <p class="font-bold text-slate-200">④ 展開シミュレーター</p>
-                    <p class="pl-2">1マークでの各艇の物理的な旋回軌跡をアニメーションで再現します。どの艇がまくり、どの艇が差すのか、AIが予測した「決まり手」の軌道を視覚的に理解できます。</p>
                 </div>
 
-                <div id="terms-content-disclaimer" class="hidden space-y-2.5">
-                    <p class="font-bold text-rose-400">【免責事項】</p>
-                    <p>当サイト（以下、「当サービス」）で提供される競艇（ボートレース）のAI予想および各種分析データは、過去の統計データおよびリアルタイム情報に基づいて独自に算出されたものであり、的中を保証するものではありません。</p>
-                    <p>当サービスが提供する情報を参考に舟券を購入された結果、損失が発生した場合でも、当サービスおよび運営者は一切の責任を負いません。投票のご判断は、必ずご自身の責任において行っていただくようお願いいたします。</p>
-                    <p>また、データ通信の遅延や障害、配信情報の誤りによって生じた損害についても、当サービスは一切の責任を負いません。</p>
+                <div id="terms-content-disclaimer" class="hidden space-y-3">
+                    <p class="font-bold text-rose-400 border-b border-rose-500/30 pb-1">【免責事項（必ずお読みください）】</p>
+                    <ul class="list-disc pl-5 space-y-2 text-[11px] text-slate-400">
+                        <li><strong class="text-slate-300">自己責任の原則：</strong>提供データおよびAI予想は確率的見解であり、舟券の的中を保証するものではありません。購入は必ずご自身の責任で行ってください。</li>
+                        <li><strong class="text-slate-300">損害の免責：</strong>当サービスを利用したことによる直接的・間接的な損失について、運営者は一切の責任を負いません。</li>
+                        <li><strong class="text-slate-300">サービスの停止・遅延：</strong>公式サイトの仕様変更や通信障害等により、予告なくデータ更新遅延やサービス停止が発生する場合があります。</li>
+                        <li><strong class="text-slate-300">返金規定：</strong>デジタルコンテンツの性質上、システムの不具合による長期的な機能不全を除き、月額料金の返金は原則として受け付けておりません。</li>
+                    </ul>
                 </div>
-                <div id="terms-content-privacy" class="hidden space-y-2.5">
-                    <p class="font-bold text-emerald-400">【プライバシーポリシー】</p>
-                    <p>当サービスでは、第三者配信による広告サービス（忍者AdMax）を利用しています。</p>
-                    <p>広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookie（クッキー）を使用することがあります。Cookieを使用することで、当サービスや他のサイトへの過去 of アクセス情報に基づいた適切な広告配信が可能となります。</p>
-                    <p>Cookieによる情報収集を希望されない場合は、ブラウザの設定によりCookieを無効にすることが可能です。ただし、無効にした場合、一部のコンテンツやサービスが正しく機能しない場合がありますのでご了承ください。</p>
+
+                <div id="terms-content-privacy" class="hidden space-y-3">
+                    <p class="font-bold text-emerald-400 border-b border-emerald-500/30 pb-1">【プライバシーポリシー・データ連携】</p>
+                    <ul class="list-disc pl-5 space-y-2 text-[11px] text-slate-400">
+                        <li><strong class="text-slate-300">個人情報の取得と利用：</strong>サブスクリプション管理のため「メールアドレス」および「Stripe顧客ID」を保存しますが、決済情報（カード番号等）はStripe社が管理し当サービスには一切保存されません。</li>
+                        <li><strong class="text-slate-300">Cookieの利用：</strong>広告表示（忍者AdMax等）やアクセス解析のため、Cookieを使用する場合があります。</li>
+                    </ul>
+                </div>
+
+                <div id="terms-content-tokushoho" class="hidden space-y-3">
+                    <p class="font-bold text-indigo-400 border-b border-indigo-500/30 pb-1">【特定商取引法に基づく表記】</p>
+                    <table class="w-full text-[11px] text-slate-400 border-collapse">
+                        <tbody>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300 w-1/3">販売事業者</th><td class="py-1.5">[事業者名または個人名をご入力ください]</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">運営責任者</th><td class="py-1.5">[責任者名をご入力ください]</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">所在地</th><td class="py-1.5">[住所をご入力ください]</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">連絡先</th><td class="py-1.5">[メールアドレス等をご入力ください]</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">販売価格</th><td class="py-1.5">月額 500円（税込）</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">支払方法・時期</th><td class="py-1.5">クレジットカード決済（Stripe社を利用）。初回は登録時、以降は毎月自動更新となります。</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">サービスの提供時期</th><td class="py-1.5">決済完了後、即時（ライセンスキー発行後）にご利用いただけます。</td></tr>
+                            <tr><th class="py-1.5 text-left text-slate-300 align-top">解約・キャンセル</th><td class="py-1.5">「サブスクの確認・解約」リンクのカスタマーポータルよりいつでも解約可能です。次回更新日より請求が停止されます。日割りでの返金は行っておりません。</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
