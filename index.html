@@ -3222,8 +3222,14 @@
         
         function checkPremiumStatusFromData(payload) {
             let isUnlocked = false;
+            
+            // ローカルの認証情報の有無を確認
+            const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
+            const hasLocalAuth = (!!pass && !!email);
+
             if (payload) {
-                if (payload.access === "granted" || payload.status === 200) {
+                if (payload.access === "granted" || payload.status === 200 || payload.is_premium === true) {
                     isUnlocked = true;
                 } else if (payload.predictions && Object.keys(payload.predictions).length > 0) {
                     const firstKey = Object.keys(payload.predictions)[0];
@@ -3231,7 +3237,12 @@
                     if (pred && pred.predictions && pred.predictions.length > 0) {
                         isUnlocked = (pred.predictions[0].combo !== "🔒-🔒-🔒");
                     }
+                } else {
+                    // 予測データが空（早朝や全レース終了後など）の場合は、ローカルのログイン情報を維持する
+                    isUnlocked = hasLocalAuth;
                 }
+            } else {
+                isUnlocked = hasLocalAuth;
             }
             updateLoginIcon(isUnlocked);
         }
