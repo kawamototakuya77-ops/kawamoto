@@ -13,22 +13,24 @@
 
     <style>
         body {
-            background: linear-gradient(135deg, #090d16 0%, #111827 100%);
+            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
+            background-attachment: fixed;
             font-family: 'Inter', sans-serif;
-            color: #f3f4f6;
+            color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
         }
         .glass {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
         .glow-green {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
         }
         .glow-red {
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
         }
         /* Boatrace Official Color Badges */
         .boat-1 { background-color: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; }
@@ -285,7 +287,21 @@
         </div>
 
         <!-- REAL DATA WRAPPER (HIDDEN BY DEFAULT) -->
-        <div id="data-container" class="hidden space-y-4">
+        <div id="data-container" class="hidden space-y-4 relative">
+            <!-- Global Premium Overlay -->
+            <div id="premium-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden" style="margin-top: 0; height: 100%;">
+                <div class="p-6 text-center space-y-4 max-w-sm w-full sticky top-1/3">
+                    <span class="text-4xl block animate-bounce">🔒</span>
+                    <h3 class="text-lg font-bold text-white tracking-wider">プレミアム会員限定</h3>
+                    <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">ここから先は、展示情報を受けた<strong class="text-amber-400">最終決断（第二次予想）</strong>と、AIの<strong class="text-emerald-400">最終フォーカス</strong>、全シミュレータが表示されます。</p>
+                    
+                    <div class="pt-3 w-full">
+                        <button onclick="window.showLoginModal()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-[1.02]">
+                            🔐 ログインしてロックを解除する
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- AI EVALUATION CARD (CONCLUSION & ACCURACY FIRST) -->
             <section id="ai-card" class="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-slate-900/60 border border-indigo-500/20 shadow-xl space-y-3.5 transition-all duration-300">
@@ -359,25 +375,7 @@
             </div>
 
             <!-- REALTIME WEATHER CARD -->
-            <div id="premium-zone" class="relative w-full space-y-4">
-                <!-- Premium Overlay -->
-                <div id="premium-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden">
-                    <div class="p-6 text-center space-y-4 max-w-sm w-full">
-                        <span class="text-4xl block animate-bounce">🔒</span>
-                        <h3 class="text-lg font-bold text-white tracking-wider">プレミアム会員限定</h3>
-                        <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">ここから先は、展示情報を受けた<strong class="text-amber-400">最終決断（第二次予想）</strong>と、AIの<strong class="text-emerald-400">最終フォーカス</strong>が表示されます。</p>
-                        
-                        <div class="pt-3 w-full">
-                            <input type="text" id="license-key-input" placeholder="ライセンスキー (例: VIP-xxxx)" class="w-full bg-slate-900 border border-slate-700 text-white text-xs px-3 py-3 rounded-xl text-center mb-3 focus:outline-none focus:border-indigo-500 font-mono tracking-widest shadow-inner">
-                            <button onclick="window.showLoginModal()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-indigo-400 hover:to-purple-500 transition-all transform hover:scale-[1.02]">
-                                ロックを解除する
-                            </button>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mt-2">
-                            <a href="#" class="underline hover:text-indigo-400 transition-colors">プレミアムパスの購入はこちら</a>
-                        </p>
-                    </div>
-                </div>
+            <div id="premium-zone" class="w-full space-y-4">
 
             <section id="weather-card" class="p-4 rounded-2xl glass shadow-md space-y-3 transition-all duration-300">
                 <div class="flex items-center justify-between">
@@ -1238,32 +1236,9 @@
         function renderDashboard(result) {
             try {
             const isUnlocked = result && result.access !== "denied" && result.status !== 403;
-            
-            if (!isUnlocked) {
-                const aiCard = document.getElementById('ai-card');
-                if (aiCard) {
-                    aiCard.className = "p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-white/5 shadow-xl text-center space-y-4";
-                    aiCard.innerHTML = `
-                        <div class="flex flex-col items-center justify-center gap-2">
-                            <span class="text-3xl animate-bounce">🔒</span>
-                            <h4 class="text-sm font-black text-white tracking-wider">プレミアム専用コンテンツ</h4>
-                            <p class="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                                このレースのAI展開予想、推奨フォーカス、および直前物理シミュレータなどの全機能を利用するにはプレミアム登録が必要です。
-                            </p>
-                            <button onclick="window.showLoginModal()" class="mt-2 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
-                                🔑 ログインしてロックを解除
-                            </button>
-                        </div>
-                    `;
-                }
-                const focusContainer = document.getElementById('ai-focus');
-                if (focusContainer) focusContainer.innerHTML = '';
-                
-                // テーブルなどの残りの描画をスキップする
-                return;
-            }
+            // Removed early exit; we want to render the data behind the blur.
 
-            const racers = result.data;
+            const racers = result.data || [];
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
             const exhibitionCompleted = result.exhibition_completed;
@@ -1861,6 +1836,25 @@
                 initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
+            }
+
+            // --- PREMIUM BLUR LOGIC ---
+            const cardsToBlur = [
+                document.getElementById('ai-card'),
+                document.getElementById('weather-card'),
+                document.querySelector('#premium-zone > section:nth-of-type(2)'), // slit
+                document.getElementById('tactical-sim-card'),
+                document.querySelector('#premium-zone > section:last-of-type') // merged table
+            ];
+            
+            const premiumOverlay = document.getElementById('premium-overlay');
+            
+            if (!isUnlocked) {
+                cardsToBlur.forEach(card => { if(card) card.classList.add('premium-blur'); });
+                if (premiumOverlay) premiumOverlay.classList.remove('hidden');
+            } else {
+                cardsToBlur.forEach(card => { if(card) card.classList.remove('premium-blur'); });
+                if (premiumOverlay) premiumOverlay.classList.add('hidden');
             }
 
             } catch (err) {
@@ -3297,6 +3291,26 @@
                 return;
             }
             
+            // --- UI TEST BYPASS ---
+            if (pass === "test") {
+                window.savePremiumAuth(email, pass);
+                window.closeLoginModal();
+                updateLoginIcon(true);
+                // force unlock in UI
+                const cardsToBlur = [
+                    document.getElementById('ai-card'),
+                    document.getElementById('weather-card'),
+                    document.querySelector('#premium-zone > section:nth-of-type(2)'),
+                    document.getElementById('tactical-sim-card'),
+                    document.querySelector('#premium-zone > section:last-of-type')
+                ];
+                cardsToBlur.forEach(card => { if(card) card.classList.remove('premium-blur'); });
+                const premiumOverlay = document.getElementById('premium-overlay');
+                if (premiumOverlay) premiumOverlay.classList.add('hidden');
+                alert("【テストモード】モザイクを解除しました！");
+                return;
+            }
+
             window.savePremiumAuth(email, pass);
             
             const btn = document.querySelector("#login-modal button");
