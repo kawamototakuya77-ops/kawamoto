@@ -82,8 +82,9 @@
             
             <div class="flex items-center gap-3">
                 <div id="last-update" class="text-[10px] text-slate-400 font-mono">未接続</div>
-                <button id="header-login-btn" onclick="window.showLoginModal()" class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none">
-                    <span id="header-login-icon" class="text-sm">🔑</span>
+                <button id="header-login-btn" onclick="window.showLoginModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none text-[11px] font-bold text-slate-200">
+                    <span id="header-login-icon">🔑</span>
+                    <span id="header-login-text">ログイン</span>
                 </button>
             </div>
         </div>
@@ -2675,69 +2676,6 @@
             window.showLoginModal();
         };
 
-            // モーダルを表示
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.classList.add('opacity-100');
-            }, 10);
-
-            // フェーズに応じてカウントダウン秒数を決定（第一次=5秒、第二次/三次=15秒）
-            const phase = window.currentPhase || 1;
-            let timeLeft = (phase >= 2) ? 15 : 5;
-            const phaseLabel = phase >= 3 ? '第三次予想' : phase === 2 ? '第二次予想' : '第一次予想';
-
-            btn.disabled = true;
-            btn.className = "w-full py-2.5 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed border border-white/5 transition-all";
-            btn.innerText = `あと ${timeLeft} 秒お待ちください...`;
-
-            // モーダルのタイトルにフェーズを反映
-            const modalTitle = modal.querySelector('h3');
-            if (modalTitle) modalTitle.textContent = `🔒 ${phaseLabel}ロック解除`;
-            const modalDesc = modal.querySelector('p');
-            if (modalDesc) modalDesc.textContent = phase >= 2
-                ? '第二次予想（直前展示反映）は価値が高いため15秒の広告視聴が必要です。'
-                : '広告を視聴して第一次予想の買い目を開示します（5秒）。';
-
-            const interval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    btn.disabled = false;
-                    btn.className = "w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-black rounded-xl cursor-pointer shadow-lg transition-all active:scale-95 duration-200";
-                    btn.innerText = "閉じて予想を開示する 🔓";
-                } else {
-                    btn.innerText = `あと ${timeLeft} 秒お待ちください...`;
-                }
-            }, 1000);
-
-            // ボタンクリック時のイベント
-            const clickHandler = function() {
-                // モザイク解除
-                targetWrapper.classList.remove('premium-blur');
-                targetWrapper.classList.add('premium-unlocked');
-                
-                // ロック表示削除
-                lockEl.style.opacity = '0';
-                setTimeout(() => lockEl.remove(), 300);
-
-                // モーダルを閉じる
-                modal.classList.remove('opacity-100');
-                modal.classList.add('opacity-0');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-
-                btn.removeEventListener('click', clickHandler);
-                
-                if (typeof onSuccess === 'function') {
-                    onSuccess();
-                }
-            };
-
-            btn.addEventListener('click', clickHandler);
-        };
-
         // 規約モーダル表示制御
         window.showTermsModal = function(type) {
             const modal = document.getElementById('terms-modal');
@@ -3294,21 +3232,43 @@
                     }
                 }
             }
-            const icon = document.getElementById('header-login-icon');
-            if(icon) {
-                icon.textContent = isUnlocked ? "👑" : "🔑";
-            }
+            updateLoginIcon(isUnlocked);
         }
 
-        function updateLoginIcon() {
+        function updateLoginIcon(forceUnlocked) {
             const pass = window.getPremiumPass();
             const email = window.getPremiumEmail();
+            
+            const isUnlocked = (typeof forceUnlocked === 'boolean') ? forceUnlocked : (!!pass || !!email);
+            
             const icon = document.getElementById('header-login-icon');
-            if(icon) {
-                icon.textContent = (pass || email) ? "👑" : "🔑";
+            const text = document.getElementById('header-login-text');
+            const btn = document.getElementById('header-login-btn');
+            
+            if (isUnlocked) {
+                if (icon) icon.textContent = "👑";
+                if (text) {
+                    if (email) {
+                        const namePart = email.split('@')[0];
+                        text.textContent = namePart.substring(0, 8) + (namePart.length > 8 ? "..." : "");
+                    } else if (pass) {
+                        text.textContent = pass.substring(0, 8);
+                    } else {
+                        text.textContent = "プレミアム";
+                    }
+                }
+                if (btn) {
+                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 hover:from-amber-500/30 hover:to-yellow-500/30 transition-colors shadow-sm focus:outline-none text-[11px] font-bold";
+                }
+            } else {
+                if (icon) icon.textContent = "🔑";
+                if (text) text.textContent = "ログイン";
+                if (btn) {
+                    btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none text-[11px] font-bold text-slate-200";
+                }
             }
         }
-        document.addEventListener('DOMContentLoaded', updateLoginIcon);
+        document.addEventListener('DOMContentLoaded', () => updateLoginIcon());
     </script>
 </body>
 </html>
