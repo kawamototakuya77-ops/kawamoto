@@ -80,8 +80,12 @@
                 <h1 class="text-lg font-bold font-outfit tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">競艇直前物理AI</h1>
             </div>
             
-            <!-- Quick Info -->
-            <div id="last-update" class="text-[10px] text-slate-400 font-mono">未接続</div>
+            <div class="flex items-center gap-3">
+                <div id="last-update" class="text-[10px] text-slate-400 font-mono">未接続</div>
+                <button id="header-login-btn" onclick="window.showLoginModal()" class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors shadow-sm focus:outline-none">
+                    <span id="header-login-icon" class="text-sm">🔑</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -319,7 +323,7 @@
                         データを読み込み中...
                     </div>
                     <div id="ai-comment-ad-btn" class="absolute bottom-0 left-0 w-full flex justify-center pb-2 hidden">
-                        <button onclick="unlockAiCommentMock()" class="relative overflow-hidden group bg-slate-900 border border-indigo-500/50 hover:bg-indigo-900/50 text-white rounded-full px-5 py-2.5 text-[11px] font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-300 transform hover:scale-[1.02]">
+                        <button onclick="window.showLoginModal()" class="relative overflow-hidden group bg-slate-900 border border-indigo-500/50 hover:bg-indigo-900/50 text-white rounded-full px-5 py-2.5 text-[11px] font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-300 transform hover:scale-[1.02]">
                             <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                             <span class="flex items-center gap-2 relative z-10">
                                 🎥 広告を視聴してロジックの続きを見る
@@ -364,7 +368,7 @@
                         
                         <div class="pt-3 w-full">
                             <input type="text" id="license-key-input" placeholder="ライセンスキー (例: VIP-xxxx)" class="w-full bg-slate-900 border border-slate-700 text-white text-xs px-3 py-3 rounded-xl text-center mb-3 focus:outline-none focus:border-indigo-500 font-mono tracking-widest shadow-inner">
-                            <button onclick="unlockPremiumMock()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-indigo-400 hover:to-purple-500 transition-all transform hover:scale-[1.02]">
+                            <button onclick="window.showLoginModal()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-indigo-400 hover:to-purple-500 transition-all transform hover:scale-[1.02]">
                                 ロックを解除する
                             </button>
                         </div>
@@ -601,10 +605,7 @@
     <div class="fixed bottom-0 left-0 w-full z-[100] flex justify-center bg-slate-950/80 backdrop-blur border-t border-white/10 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
         <div class="w-full max-w-md h-[50px] flex items-center justify-center text-[10px] text-slate-500 relative">
             <span class="absolute top-0.5 left-1 text-[7px] text-slate-500">Sponsored</span>
-            <!-- ↓ 忍者AdMaxのアンカーバナー（スマホ下部固定）用スクリプトをここに貼り付けます ↓ -->
-            <!-- admax -->
             <script src="https://adm.shinobi.jp/s/b4b8bf335cd1cf7ce012ef5a8eb6cd24"></script>
-            <!-- admax -->
         </div>
     </div>
 
@@ -638,23 +639,47 @@
             "17": "宮島", "18": "徳山", "19": "下関", "20": "若松",
             "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村"
         };
-
         
         window.getPremiumPass = function() {
+            const authTime = localStorage.getItem('PREMIUM_AUTH_TIME');
+            const now = new Date().getTime();
+            if (authTime && (now - parseInt(authTime) > 24 * 60 * 60 * 1000)) {
+                localStorage.removeItem('PREMIUM_PASS_KEY');
+                localStorage.removeItem('PREMIUM_EMAIL_KEY');
+                localStorage.removeItem('PREMIUM_AUTH_TIME');
+                return "";
+            }
             return localStorage.getItem('PREMIUM_PASS_KEY') || "";
         };
-        window.savePremiumPass = function(pass) {
-            localStorage.setItem('PREMIUM_PASS_KEY', pass);
+        window.getPremiumEmail = function() {
+            const authTime = localStorage.getItem('PREMIUM_AUTH_TIME');
+            const now = new Date().getTime();
+            if (authTime && (now - parseInt(authTime) > 24 * 60 * 60 * 1000)) {
+                localStorage.removeItem('PREMIUM_PASS_KEY');
+                localStorage.removeItem('PREMIUM_EMAIL_KEY');
+                localStorage.removeItem('PREMIUM_AUTH_TIME');
+                return "";
+            }
+            return localStorage.getItem('PREMIUM_EMAIL_KEY') || "";
+        };
+        window.savePremiumAuth = function(email, pass) {
+            localStorage.setItem('PREMIUM_PASS_KEY', pass || "");
+            localStorage.setItem('PREMIUM_EMAIL_KEY', email || "");
+            localStorage.setItem('PREMIUM_AUTH_TIME', new Date().getTime().toString());
         };
         
         function getInitialPayload(onSuccess, onFailure) {
+            const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
-                    .getTodayInitialPayload();
+                    .getTodayInitialPayload(pass || email);
             } else {
-                fetch(`${GAS_API_URL}?action=get_initial_payload&t=${new Date().getTime()}`)
+                const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
+                const queryEmail = email ? `&email=${encodeURIComponent(email)}` : '';
+                fetch(`${GAS_API_URL}?action=get_initial_payload${queryPass}${queryEmail}&t=${new Date().getTime()}`)
                     .then(res => res.json())
                     .then(onSuccess)
                     .catch(onFailure);
@@ -663,14 +688,24 @@
 
         function getPredictionsOnly(onSuccess, onFailure) {
             const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
+            
+            if (!pass && !email) {
+                if (typeof onFailure === 'function') {
+                    onFailure({ error: "認証されていません。", status: 403 });
+                }
+                return;
+            }
+
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
-                    .getTodayPredictionsOnly(pass);
+                    .getTodayPredictionsOnly(pass || email);
             } else if (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
-                fetch(`${GAS_API_URL}?action=get_predictions_only${queryPass}&t=${new Date().getTime()}`)
+                const queryEmail = email ? `&email=${encodeURIComponent(email)}` : '';
+                fetch(`${GAS_API_URL}?action=get_predictions_only${queryPass}${queryEmail}&t=${new Date().getTime()}`)
                     .then(res => res.json())
                     .then(onSuccess)
                     .catch(onFailure);
@@ -732,6 +767,10 @@
                         window.activeVenues = payload.venues || [];
                         window.cutoffTimesMap = payload.cutoffTimes || {};
                         window.predictionsCache = payload.predictions || {};
+                        
+                        if (typeof checkPremiumStatusFromData === 'function') {
+                            checkPremiumStatusFromData(payload);
+                        }
                         
                         if (window.activeVenues.length === 0) {
                             handleInitFailure("本日の開催会場データがありません。");
@@ -1153,12 +1192,38 @@
 
         function renderDashboard(result) {
             try {
+            const isUnlocked = result && result.access !== "denied" && result.status !== 403;
+            
+            if (!isUnlocked) {
+                const aiCard = document.getElementById('ai-card');
+                if (aiCard) {
+                    aiCard.className = "p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-white/5 shadow-xl text-center space-y-4";
+                    aiCard.innerHTML = `
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="text-3xl animate-bounce">🔒</span>
+                            <h4 class="text-sm font-black text-white tracking-wider">プレミアム専用コンテンツ</h4>
+                            <p class="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+                                このレースのAI展開予想、推奨フォーカス、および直前物理シミュレータなどの全機能を利用するにはプレミアム登録が必要です。
+                            </p>
+                            <button onclick="window.showLoginModal()" class="mt-2 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
+                                🔑 ログインしてロックを解除
+                            </button>
+                        </div>
+                    `;
+                }
+                const focusContainer = document.getElementById('ai-focus');
+                if (focusContainer) focusContainer.innerHTML = '';
+                
+                // テーブルなどの残りの描画をスキップする
+                return;
+            }
+
             const racers = result.data;
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
-            window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
+            window.currentPhase = phase; 
 
             const aiCard = document.getElementById('ai-card');
             const aiModeAlert = document.getElementById('ai-mode-alert');
@@ -2607,14 +2672,8 @@
 
         // 広告ロック解除用ロジック
         window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
-            const modal = document.getElementById('ad-unlock-modal');
-            const btn = document.getElementById('unlock-countdown-btn');
-            if (!modal || !btn) {
-                targetWrapper.classList.remove('premium-blur');
-                targetWrapper.classList.add('premium-unlocked');
-                lockEl.remove();
-                return;
-            }
+            window.showLoginModal();
+        };
 
             // モーダルを表示
             modal.classList.remove('hidden');
@@ -3126,5 +3185,130 @@
             </div>
         </div>
     </div>
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl relative">
+            <h3 class="text-sm font-bold text-white tracking-wider font-outfit mb-4 text-center">プレミアムログイン</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1">メールアドレス</label>
+                    <input type="email" id="login-email-input" placeholder="登録メールアドレスを入力" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 mb-1">ライセンスキー (パスワード)</label>
+                    <input type="text" id="login-pass-input" placeholder="キーを入力" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono">
+                </div>
+                <button onclick="window.submitLogin()" class="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
+                    🔓 ロックを解除する
+                </button>
+                <div class="pt-4 border-t border-white/5 text-center space-y-2">
+                    <p class="text-[10px] text-slate-400">プレミアムパスをお持ちでない方はこちら</p>
+                    <a href="https://buy.stripe.com/eVq6oH9Qi39w3BT8rtgjC01" target="_blank" class="block w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-white/5 transition-all">
+                        👑 プレミアム登録 (月額500円)
+                    </a>
+                </div>
+            </div>
+            <button onclick="window.closeLoginModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white">✕</button>
+        </div>
+    </div>
+
+    <script>
+        window.showLoginModal = function() {
+            const modal = document.getElementById('login-modal');
+            const passInput = document.getElementById('login-pass-input');
+            const emailInput = document.getElementById('login-email-input');
+            if(passInput) passInput.value = window.getPremiumPass();
+            if(emailInput) emailInput.value = window.getPremiumEmail();
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+        window.closeLoginModal = function() {
+            const modal = document.getElementById('login-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+        window.submitLogin = function() {
+            const passInput = document.getElementById('login-pass-input');
+            const emailInput = document.getElementById('login-email-input');
+            if(passInput && emailInput) {
+                window.savePremiumAuth(emailInput.value, passInput.value);
+                window.closeLoginModal();
+                updateLoginIcon();
+                fetchLatestDataSilently();
+            }
+        };
+        
+        function fetchLatestDataSilently() {
+            const lastUpdate = document.getElementById('last-update');
+            const dataContainer = document.getElementById('data-container');
+            if(lastUpdate) lastUpdate.innerHTML = `<span class="text-indigo-400 animate-pulse font-bold">更新中...</span>`;
+            if(dataContainer) {
+                dataContainer.style.opacity = '0.4';
+                dataContainer.style.pointerEvents = 'none';
+                dataContainer.style.transition = 'opacity 0.2s ease';
+            }
+            
+            getInitialPayload(
+                function(payload) {
+                    if(dataContainer) {
+                        dataContainer.style.opacity = '1';
+                        dataContainer.style.pointerEvents = 'auto';
+                    }
+                    if (payload && payload.success) {
+                        window.activeVenues = payload.venues || [];
+                        window.cutoffTimesMap = payload.cutoffTimes || {};
+                        window.predictionsCache = payload.predictions || {};
+                        
+                        checkPremiumStatusFromData(payload);
+                        
+                        // 現在選択されているレースデータを再ロード
+                        loadDataLocal();
+                        
+                        if(lastUpdate) {
+                            const now = new Date();
+                            lastUpdate.textContent = now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2);
+                        }
+                    }
+                },
+                function(err) {
+                    console.error("Re-fetch failed:", err);
+                    if(dataContainer) {
+                        dataContainer.style.opacity = '1';
+                        dataContainer.style.pointerEvents = 'auto';
+                    }
+                    if(lastUpdate) lastUpdate.innerHTML = `<span class="text-rose-500 font-bold">更新失敗</span>`;
+                }
+            );
+        }
+        
+        function checkPremiumStatusFromData(payload) {
+            let isUnlocked = false;
+            if (payload) {
+                if (payload.access === "granted" || payload.status === 200) {
+                    isUnlocked = true;
+                } else if (payload.predictions && Object.keys(payload.predictions).length > 0) {
+                    const firstKey = Object.keys(payload.predictions)[0];
+                    const pred = payload.predictions[firstKey];
+                    if (pred && pred.predictions && pred.predictions.length > 0) {
+                        isUnlocked = (pred.predictions[0].combo !== "🔒-🔒-🔒");
+                    }
+                }
+            }
+            const icon = document.getElementById('header-login-icon');
+            if(icon) {
+                icon.textContent = isUnlocked ? "👑" : "🔑";
+            }
+        }
+
+        function updateLoginIcon() {
+            const pass = window.getPremiumPass();
+            const email = window.getPremiumEmail();
+            const icon = document.getElementById('header-login-icon');
+            if(icon) {
+                icon.textContent = (pass || email) ? "👑" : "🔑";
+            }
+        }
+        document.addEventListener('DOMContentLoaded', updateLoginIcon);
+    </script>
 </body>
 </html>
