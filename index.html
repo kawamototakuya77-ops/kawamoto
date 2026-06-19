@@ -902,6 +902,19 @@
 
             let result = window.predictionsCache[cacheKey];
 
+            // バックエンドと通信成功している場合は、ヘッダーの「未接続」表示を「ライブ接続中」等へ即座に更新する
+            if (window.activeVenues && window.activeVenues.length > 0) {
+                const now = new Date();
+                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                let statusHtml = '';
+                if (result && result.is_mock) {
+                    statusHtml = `<span class="text-amber-500 font-extrabold animate-pulse">⚠️ デモモード</span>`;
+                } else {
+                    statusHtml = `<span class="text-emerald-400 font-extrabold">🟢 ライブ接続中</span> <span class="text-[9px] text-slate-400">(${timeStr}同期)</span>`;
+                }
+                LAST_UPDATE.innerHTML = statusHtml;
+            }
+
             // AI予想が実データかどうか判定（フォーカスが "-" でなく、待機コメントでもない）
             const _aiFocus = result && result.ai && (
                 (result.ai.solid_focus && result.ai.solid_focus.length > 0 && result.ai.solid_focus[0] !== "-") ||
