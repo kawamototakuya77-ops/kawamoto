@@ -3198,10 +3198,6 @@
                     <label class="block text-[10px] font-bold text-slate-400 mb-1">ライセンスキー (パスワード)</label>
                     <input type="text" id="login-pass-input" placeholder="キーを入力" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono">
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 mb-1">ユーザー名 (BBS投稿用の表示名/変更可)</label>
-                    <input type="text" id="login-username-input" placeholder="2〜15文字（卑猥・差別用語は禁止）" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
-                </div>
                 <button onclick="window.submitLogin()" class="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
                     🔓 ロックを解除する
                 </button>
@@ -3213,6 +3209,26 @@
                 </div>
             </div>
             <button onclick="window.closeLoginModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white">✕</button>
+        </div>
+    </div>
+
+    <!-- ユーザー名設定モーダル (初回のみ) -->
+    <div id="username-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 backdrop-blur-sm bg-black/60">
+        <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.2)] relative">
+            <h3 class="text-lg font-bold text-white tracking-wider font-outfit mb-2 text-center text-indigo-400">ようこそプレミアムへ！</h3>
+            <p class="text-xs text-slate-300 mb-4 text-center leading-relaxed">
+                BBS（プレミアム専用掲示板）で表示される<br>
+                あなたのユーザー名を設定してください。<br>
+                <span class="text-[10px] text-slate-400">※後からいつでも変更可能です</span>
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <input type="text" id="setup-username-input" placeholder="2〜15文字（例：競艇太郎）" class="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-center font-bold tracking-wide">
+                </div>
+                <button onclick="window.submitUsername()" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
+                    設定を完了する
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3255,34 +3271,29 @@
             modal.classList.add('opacity-0');
             setTimeout(() => modal.classList.add('hidden'), 300);
         };
+        
+        window.showUsernameModal = function() {
+            const modal = document.getElementById('username-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+        window.closeUsernameModal = function() {
+            const modal = document.getElementById('username-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
         window.submitLogin = function() {
             const passInput = document.getElementById('login-pass-input');
             const emailInput = document.getElementById('login-email-input');
-            const usernameInput = document.getElementById('login-username-input');
             
             if(!passInput || !emailInput) return;
             
             const email = emailInput.value.trim();
             const pass = passInput.value.trim();
-            const username = usernameInput ? usernameInput.value.trim() : "";
             
             if(!email || !pass) {
                 alert("メールアドレスとライセンスキーを入力してください。");
-                return;
-            }
-            
-            if(!username) {
-                alert("BBS投稿用に使用するユーザー名を入力してください。");
-                return;
-            }
-            
-            if(username.length < 2 || username.length > 15) {
-                alert("ユーザー名は2文字以上15文字以内で入力してください。");
-                return;
-            }
-            
-            if(containsBadWords(username)) {
-                alert("ユーザー名に不適切な表現（卑猥・差別用語等）が含まれています。別のユーザー名を入力してください。");
                 return;
             }
             
@@ -3291,7 +3302,63 @@
             const btn = document.querySelector("#login-modal button");
             const originalText = btn.textContent;
             btn.disabled = true;
-            btn.textContent = "登録・認証中...";
+            btn.textContent = "認証中...";
+            
+            const verifyUrl = `${GAS_API_URL}?action=verify_license&email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}&t=${new Date().getTime()}`;
+            
+            fetch(verifyUrl)
+                .then(res => res.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    if(res && res.success) {
+                        window.closeLoginModal();
+                        updateLoginIcon();
+                        fetchLatestDataSilently();
+                    } else {
+                        alert("認証に失敗しました。メールアドレスとライセンスキーを確認してください。");
+                        window.savePremiumAuth("", ""); // 失敗時はクリア
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    console.error(err);
+                    alert("通信エラーが発生しました。");
+                });
+        };
+
+        window.submitUsername = function() {
+            const usernameInput = document.getElementById('setup-username-input');
+            if(!usernameInput) return;
+            
+            const username = usernameInput.value.trim();
+            if(!username) {
+                alert("ユーザー名を入力してください。");
+                return;
+            }
+            if(username.length < 2 || username.length > 15) {
+                alert("ユーザー名は2文字以上15文字以内で入力してください。");
+                return;
+            }
+            if(containsBadWords(username)) {
+                alert("ユーザー名に不適切な表現（卑猥・差別用語等）が含まれています。別の名前を入力してください。");
+                return;
+            }
+            
+            const email = window.getPremiumEmail();
+            const pass = window.getPremiumPass();
+            if(!email || !pass) {
+                alert("セッションが切れました。再度ログインしてください。");
+                window.closeUsernameModal();
+                window.showLoginModal();
+                return;
+            }
+            
+            const btn = document.querySelector("#username-modal button");
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "登録中...";
             
             const updateUrl = `${GAS_API_URL}?action=update_username&email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}&username=${encodeURIComponent(username)}&t=${new Date().getTime()}`;
             
@@ -3302,9 +3369,8 @@
                     btn.textContent = originalText;
                     if(res && res.success) {
                         localStorage.setItem('PREMIUM_USERNAME_KEY', res.username);
-                        window.closeLoginModal();
-                        updateLoginIcon();
-                        fetchLatestDataSilently();
+                        window.closeUsernameModal();
+                        alert("ユーザー名を設定しました！");
                     } else {
                         alert(res.error || "ユーザー名の登録に失敗しました。");
                     }
@@ -3374,12 +3440,9 @@
                     
                     if (payload.username) {
                         localStorage.setItem('PREMIUM_USERNAME_KEY', payload.username);
-                    }
-                    
-                    if (!payload.username && hasLocalAuth) {
-                        alert("BBSやサービスのご利用前に、ユーザー名の登録が必要です。");
-                        window.showLoginModal();
-                        return;
+                    } else if (hasLocalAuth) {
+                        // 認証済だがユーザー名未登録の場合はポップアップを出す
+                        window.showUsernameModal();
                     }
                 } else if (payload.predictions && Object.keys(payload.predictions).length > 0) {
                     const firstKey = Object.keys(payload.predictions)[0];
