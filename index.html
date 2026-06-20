@@ -402,7 +402,7 @@
 
                 <section id="live-ai-comment-container" class="p-4 rounded-2xl glass border border-white/5 shadow-md space-y-2.5">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit block">プロAI物理展開シミュレーション解説</span>
-                    <div id="live-ai-comment-content" class="text-xs leading-relaxed text-slate-200 transition-all duration-500">
+                    <div id="live-ai-comment-content" class="text-xs leading-relaxed text-slate-200 transition-all duration-500 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-800">
                         データを読み込み中...
                     </div>
                 </section>
@@ -2850,7 +2850,7 @@ function draw() {
                                 ${raceProfitText}
                             </div>
                         </div>
-                        <div class="comment-section hidden text-[9px] text-slate-400 border-t border-white/5 pt-1.5 mt-1 leading-relaxed bg-slate-950/40 p-1.5 rounded">
+                        <div class="comment-section hidden text-[9px] text-slate-400 border-t border-white/5 pt-1.5 mt-1 leading-relaxed bg-slate-950/40 p-1.5 rounded max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-800">
                             <div class="text-[8px] text-indigo-400 font-black uppercase tracking-wider mb-0.5">🤖 AI解説・振り返り</div>
                             ${rev.comment || "解説データはありません。"}
                         </div>
