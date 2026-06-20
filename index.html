@@ -1868,7 +1868,7 @@
                 });
             }
 
-            function initRacerPositions() {
+                        function initRacerPositions() {
                 // 120パターン全展開・戦術辞書 (Tactical Role Engine)
                 let stVals = {};
                 racers.forEach(r => {
@@ -1981,6 +1981,7 @@
                     };
                 });
             }
+
             function updatePhysics() {
                 const markX = viewWidth - 110;
                 const markY = 96;
@@ -2066,112 +2067,15 @@
                     }
                 });
             }
-            function updatePhysics() {
+
+function draw() {
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, viewWidth, viewHeight);
+                
                 const markX = viewWidth - 110;
                 const markY = 96;
 
-                simRacers.forEach(sr => {
-                    const laneNum = parseInt(sr.lane) || 1;
-                    if (sr.phase === 1) {
-                        const targetSpeed = sr.straightSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.08;
-                        sr.x += sr.speed;
-                        sr.angle = 0;
-
-                        if (sr.x >= markX) {
-                            sr.phase = 2;
-                            sr.phi = Math.PI * 0.5;
-                        }
-                    } 
-                    else if (sr.phase === 2) {
-                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; // 0.0 to 1.0
-                        
-                        let targetRadius = sr.baseRadius;
-                        
-                        // --- 予想に基づくリアルな軌道（半径）計算 ---
-                        if (sr.rank === 1) {
-                            if (winnerLane === 1) {
-                                targetRadius = 16; // イン逃げの最短半径
-                            } else if (winnerLane === 2) {
-                                if (fullOrder[1] === 1) {
-                                    // 2-1: 差し (ターン後半で鋭く内に切れ込む)
-                                    targetRadius = (turnProgress > 0.4) ? 14 : sr.baseRadius + 5;
-                                } else {
-                                    // 2コースまくり (内を潰して回る)
-                                    targetRadius = (turnProgress > 0.2) ? 17 : sr.baseRadius;
-                                }
-                            } else if (winnerLane >= 3) {
-                                if (fullOrder[1] < winnerLane) {
-                                    // まくり差し (例: 3-1, 4-2) 後半で最内を突く
-                                    targetRadius = (turnProgress > 0.5) ? 15 : sr.baseRadius + 2;
-                                } else {
-                                    // まくり (例: 3-4, 4-5) 前半から強引に内へ
-                                    targetRadius = (turnProgress > 0.3) ? 18 : sr.baseRadius;
-                                }
-                            }
-                        } else if (sr.rank === 2) {
-                            targetRadius = 26; // 2着は良い位置を追走
-                            if (laneNum === 1 && winnerLane >= 2) {
-                                // インで残す場合
-                                targetRadius = 22;
-                            }
-                        } else if (sr.rank === 3) {
-                            targetRadius = 34; // 3着
-                        } else {
-                            // 4着以下は引き波で大きく外へ膨らむ
-                            targetRadius = 45 + (sr.rank - 4) * 8;
-                        }
-
-                        // 【ドカ遅れ＆まくり】インが遅れてまくられる場合の特殊軌道
-                        if (laneNum === 1 && sr.st > 0.22 && winnerLane >= 2 && turnProgress > 0.3) {
-                            targetRadius = 55; // 完全に引き波に飲まれて吹き飛ぶ
-                        }
-
-                        // 半径を徐々に目標へシフト
-                        if (turnProgress > 0.1 && turnProgress < 0.9) {
-                            sr.radius += (targetRadius - sr.radius) * 0.12;
-                        }
-
-                        // --- 予想に基づくリアルなスピード計算（引き波の影響） ---
-                        const baseSpeedFactor = 1.0 - 0.35 * Math.sin(turnProgress * Math.PI);
-                        let targetSpeed = sr.turnSpeed * baseSpeedFactor;
-                        
-                        // ターン後半（立ち上がり）で上位陣は一気に加速、下位は失速
-                        if (turnProgress > 0.4) {
-                            if (sr.rank === 1) targetSpeed *= 1.35;
-                            else if (sr.rank === 2) targetSpeed *= 1.15;
-                            else if (sr.rank === 3) targetSpeed *= 1.05;
-                            else targetSpeed *= 0.75; // 下位は引き波で大きく失速
-                            
-                            // ドカ遅れでまくられたイン艇は激しく失速
-                            if (laneNum === 1 && sr.st > 0.22 && winnerLane >= 2) {
-                                targetSpeed *= 0.60;
-                            }
-                        }
-                        
-                        sr.speed += (targetSpeed - sr.speed) * 0.15;
-
-                        const dPhi = sr.speed / sr.radius;
-                        sr.phi -= dPhi;
-
-                        sr.x = markX + sr.radius * Math.cos(sr.phi);
-                        sr.y = markY + sr.radius * Math.sin(sr.phi);
-                        
-                        sr.angle = sr.phi - Math.PI * 0.5;
-
-                        if (sr.phi <= -Math.PI * 0.5) {
-                            sr.phase = 3;
-                            sr.y = markY - sr.radius;
-                        }
-                    } 
-                    else if (sr.phase === 3) {
-                        const targetSpeed = sr.exitSpeed;
-                        sr.speed += (targetSpeed - sr.speed) * 0.08;
-                        sr.x -= sr.speed;
-                        sr.angle = Math.PI;
-                    }
-                });
-            }
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath();
                 ctx.arc(markX, markY, 20, 0, Math.PI * 2);
@@ -2453,6 +2357,94 @@
             startSim();
         }
 
+
+        // 広告ロック解除用ロジック
+        window.unlockWithAd = function() {
+            const modal = document.getElementById('ad-unlock-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+                
+                // Simulate Ad viewing time (2.5 seconds for demo)
+                setTimeout(() => {
+                    modal.classList.add('opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        
+                        const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
+                        const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
+                        if (firstAdOverlay) firstAdOverlay.classList.add('hidden');
+                        if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
+                        
+                        const currentRaceKey = window.currentJCD + "_" + window.currentRNO;
+                        if (currentRaceKey) {
+                            sessionStorage.setItem('ad_unlocked_' + currentRaceKey, 'true');
+                        }
+                    }, 300);
+                }, 2500);
+            }
+        };
+
+        window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
+            window.showLoginModal();
+        };
+
+        // 規約モーダル表示制御
+        window.showTermsModal = function(type) {
+            const modal = document.getElementById('terms-modal');
+            const disclaimerContent = document.getElementById('terms-content-disclaimer');
+            const privacyContent = document.getElementById('terms-content-privacy');
+            const aboutContent = document.getElementById('terms-content-about');
+            const helpContent = document.getElementById('terms-content-help');
+            const tokushohoContent = document.getElementById('terms-content-tokushoho');
+            const title = document.getElementById('terms-title');
+            
+            if (!modal || !disclaimerContent || !privacyContent || !aboutContent || !helpContent || !tokushohoContent || !title) return;
+
+            // すべて隠す
+            disclaimerContent.classList.add('hidden');
+            privacyContent.classList.add('hidden');
+            aboutContent.classList.add('hidden');
+            helpContent.classList.add('hidden');
+            tokushohoContent.classList.add('hidden');
+
+            if (type === 'disclaimer') {
+                title.innerText = "⚖️ 免責事項";
+                disclaimerContent.classList.remove('hidden');
+            } else if (type === 'privacy') {
+                title.innerText = "🛡️ プライバシーポリシー";
+                privacyContent.classList.remove('hidden');
+            } else if (type === 'about') {
+                title.innerText = "🏁 このサイトについて";
+                aboutContent.classList.remove('hidden');
+            } else if (type === 'help') {
+                title.innerText = "💡 予想の見方・使い方";
+                helpContent.classList.remove('hidden');
+            } else if (type === 'tokushoho') {
+                title.innerText = "⚖️ 特定商取引法に基づく表記";
+                tokushohoContent.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+            }, 10);
+        };
+
+        window.closeTermsModal = function() {
+            const modal = document.getElementById('terms-modal');
+            if (!modal) return;
+
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
+        // デモモード用フォールバック起動処理
+        
 
         // 広告ロック解除用ロジック
         window.unlockWithAd = function() {
