@@ -1869,54 +1869,94 @@
             }
 
             function initRacerPositions() {
+                // 120パターン全展開・戦術辞書 (Tactical Role Engine)
+                let stVals = {};
+                racers.forEach(r => {
+                    const l = parseInt(r.lane) || 1;
+                    let v = 0.15;
+                    if (r.st_val && r.st_val !== "N/A" && r.st_val !== "") {
+                        v = parseFloat(r.st_val.replace('F', '')) || 0.15;
+                        if (r.st_val.includes('F')) v = -v;
+                    }
+                    stVals[l] = v;
+                });
+
+                let roles = {};
+                const w1 = fullOrder[0];
+                const w2 = fullOrder[1];
+                const w3 = fullOrder[2];
+
+                for (let i = 1; i <= 6; i++) {
+                    roles[i] = "OUT_FOLLOW";
+                }
+
+                if (w1 === 1) {
+                    roles[1] = "NIGE";
+                } else if (w1 === 2) {
+                    roles[2] = (w2 === 1) ? "SASHI" : "MAKURI";
+                } else if (w1 === 3) {
+                    roles[3] = (w2 <= 2) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 4) {
+                    roles[4] = (w2 <= 3) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 5) {
+                    roles[5] = (w2 <= 4) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 6) {
+                    roles[6] = "SASHI"; 
+                }
+
+                let makuriBoat = -1;
+                if (roles[w1] === "MAKURI") makuriBoat = w1;
+
+                if (w2 === 1) {
+                    roles[1] = "IN_FOLLOW"; 
+                } else if (w2 === 2) {
+                    roles[2] = (w1 === 1) ? "SASHI_FOLLOW" : "OUT_FOLLOW";
+                } else {
+                    if (makuriBoat !== -1 && w2 > makuriBoat) {
+                        roles[w2] = "MAKURI_FOLLOW"; 
+                    } else {
+                        roles[w2] = "OUT_FOLLOW";
+                    }
+                }
+
+                roles[w3] = "THIRD_FOLLOW";
+
+                for (let i = 1; i <= 6; i++) {
+                    if (stVals[i] > 0.22 && i !== w1 && i !== w2 && i !== w3) {
+                        roles[i] = "DELAYED";
+                    }
+                }
+
+                if (makuriBoat !== -1) {
+                    for (let i = 1; i < makuriBoat; i++) {
+                        if (i !== w1 && i !== w2 && i !== w3) {
+                            roles[i] = "BLOCKED_IN"; 
+                        }
+                    }
+                }
+
                 simRacers = racers.map(r => {
                     const laneNum = parseInt(r.lane) || 1;
                     const rank = rankMap[laneNum] || 6;
-                    
-                    let stVal = 0.15;
-                    let isFlying = false;
-                    if (r.st_val && r.st_val !== "N/A" && r.st_val !== "") {
-                        const clean = r.st_val.replace('F', '');
-                        stVal = parseFloat(clean) || 0.15;
-                        if (r.st_val.includes('F')) {
-                            isFlying = true;
-                            stVal = -stVal;
-                        }
-                    }
-
+                    const stVal = stVals[laneNum];
                     const course = parseInt(r.st_course) || laneNum;
                     const exTime = parseFloat(r.ex_time) || 6.80;
                     const rate = parseFloat(r.rate) || 5.00;
 
-                    // Speed parameters based on rank and exTime
                     let straightSpeed = 2.3 + (rate * 0.02) - (exTime - 6.70) * 0.8;
-                    
-                    // まくり勝ちは直線で一気に伸びてくる！
-                    if (rank === 1) {
-                        if (winnerLane >= 3) {
-                            straightSpeed += 0.35; // まくり艇の直線伸び
-                        } else {
-                            straightSpeed += 0.08; // 通常
-                        }
-                    }
-
                     const baseRadius = 16 + (course - 1) * 9.5; 
-                    let radius = baseRadius;
-                    if (laneNum === winnerLane) {
-                        if (winnerLane === 1) {
-                            radius = baseRadius - 3.0; // 逃げのイン小回り
-                        } else if (winnerLane === 2) {
-                            radius = baseRadius - 2.5; // 差しの小回り
-                        } else {
-                            radius = baseRadius + 1.0; // まくりは外を回る
-                        }
-                    } else if (rank >= 5) {
-                        radius = baseRadius + 3.0; // 下位艇は外に流れる
-                    }
+                    
+                    const role = roles[laneNum];
+                    if (role === "MAKURI") straightSpeed += 0.35;
+                    else if (role === "NIGE") straightSpeed += 0.08;
 
                     const turnSpeed = straightSpeed * (0.80 - (rank - 1) * 0.05);
                     const exitSpeed = 1.6 + (6 - rank) * 0.4;
-                    const stOffset = (0.15 - stVal) * 110; 
+                    
+                    let stOffset = (0.15 - stVal) * 180; 
+                    if (role === "DELAYED" || (course === 1 && stVal > 0.22)) {
+                        stOffset -= 40; // 視覚的なドカ遅れ
+                    }
 
                     return {
                         lane: laneNum,
@@ -1924,11 +1964,11 @@
                         course: course,
                         rank: rank,
                         st: stVal,
-                        isFlying: isFlying,
+                        role: role,
                         exTime: exTime,
                         rate: rate,
                         baseRadius: baseRadius,
-                        radius: radius,
+                        radius: baseRadius,
                         straightSpeed: straightSpeed,
                         turnSpeed: turnSpeed,
                         exitSpeed: exitSpeed,
@@ -1941,7 +1981,91 @@
                     };
                 });
             }
+            function updatePhysics() {
+                const markX = viewWidth - 110;
+                const markY = 96;
 
+                simRacers.forEach(sr => {
+                    if (sr.phase === 1) {
+                        const targetSpeed = sr.straightSpeed;
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
+                        sr.x += sr.speed;
+                        sr.angle = 0;
+
+                        if (sr.x >= markX) {
+                            sr.phase = 2;
+                            sr.phi = Math.PI * 0.5;
+                        }
+                    } 
+                    else if (sr.phase === 2) {
+                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; 
+                        
+                        let targetRadius = sr.baseRadius;
+                        const role = sr.role;
+                        
+                        if (role === "NIGE") {
+                            targetRadius = 15; 
+                        } else if (role === "SASHI") {
+                            targetRadius = (turnProgress > 0.4) ? 14 : sr.baseRadius + 4;
+                        } else if (role === "MAKURI") {
+                            targetRadius = (turnProgress > 0.2) ? 17 : Math.max(16, sr.baseRadius - 3);
+                        } else if (role === "MAKURI_ZASHI") {
+                            targetRadius = (turnProgress > 0.5) ? 15 : sr.baseRadius + 2;
+                        } else if (role === "IN_FOLLOW") {
+                            targetRadius = 20; 
+                        } else if (role === "SASHI_FOLLOW") {
+                            targetRadius = 24;
+                        } else if (role === "MAKURI_FOLLOW") {
+                            targetRadius = 28;
+                        } else if (role === "THIRD_FOLLOW") {
+                            targetRadius = 33;
+                        } else if (role === "BLOCKED_IN") {
+                            targetRadius = (turnProgress > 0.2) ? 55 : sr.baseRadius + 5;
+                        } else if (role === "DELAYED") {
+                            targetRadius = 50; 
+                        } else {
+                            targetRadius = 42 + (sr.rank - 4) * 6;
+                        }
+
+                        if (turnProgress > 0.1 && turnProgress < 0.9) {
+                            sr.radius += (targetRadius - sr.radius) * 0.12;
+                        }
+
+                        const baseSpeedFactor = 1.0 - 0.35 * Math.sin(turnProgress * Math.PI);
+                        let targetSpeed = sr.turnSpeed * baseSpeedFactor;
+                        
+                        if (turnProgress > 0.4) {
+                            if (sr.rank === 1) targetSpeed *= 1.35;
+                            else if (sr.rank === 2) targetSpeed *= 1.18;
+                            else if (sr.rank === 3) targetSpeed *= 1.08;
+                            else targetSpeed *= 0.85; 
+                            
+                            if (role === "BLOCKED_IN") targetSpeed *= 0.55; 
+                            if (role === "DELAYED") targetSpeed *= 0.65;
+                        }
+                        
+                        sr.speed += (targetSpeed - sr.speed) * 0.15;
+
+                        const dPhi = sr.speed / sr.radius;
+                        sr.phi -= dPhi;
+
+                        sr.x = markX + sr.radius * Math.cos(sr.phi);
+                        sr.y = markY + sr.radius * Math.sin(sr.phi);
+                        sr.angle = sr.phi - Math.PI * 0.5;
+
+                        if (sr.phi <= -Math.PI * 0.5) {
+                            sr.phase = 3;
+                            sr.y = markY - sr.radius;
+                        }
+                    } 
+                    else if (sr.phase === 3) {
+                        const targetSpeed = sr.exitSpeed;
+                        sr.speed += (targetSpeed - sr.speed) * 0.08;
+                        sr.x -= sr.speed;
+                        sr.angle = Math.PI;
+                    }
+                });
+            }
             function updatePhysics() {
                 const markX = viewWidth - 110;
                 const markY = 96;
@@ -1960,24 +2084,72 @@
                         }
                     } 
                     else if (sr.phase === 2) {
-                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI;
+                        const turnProgress = (Math.PI * 0.5 - sr.phi) / Math.PI; // 0.0 to 1.0
                         
-                        if (winnerLane >= 2 && winnerLane <= 3 && laneNum === 1) {
-                            sr.radius = sr.baseRadius + 14.0 * Math.sin(turnProgress * Math.PI);
-                        }
+                        let targetRadius = sr.baseRadius;
                         
-                        if (winnerLane >= 3 && laneNum < winnerLane && turnProgress > 0.2 && turnProgress < 0.8) {
-                            sr.speed *= 0.95;
+                        // --- 予想に基づくリアルな軌道（半径）計算 ---
+                        if (sr.rank === 1) {
+                            if (winnerLane === 1) {
+                                targetRadius = 16; // イン逃げの最短半径
+                            } else if (winnerLane === 2) {
+                                if (fullOrder[1] === 1) {
+                                    // 2-1: 差し (ターン後半で鋭く内に切れ込む)
+                                    targetRadius = (turnProgress > 0.4) ? 14 : sr.baseRadius + 5;
+                                } else {
+                                    // 2コースまくり (内を潰して回る)
+                                    targetRadius = (turnProgress > 0.2) ? 17 : sr.baseRadius;
+                                }
+                            } else if (winnerLane >= 3) {
+                                if (fullOrder[1] < winnerLane) {
+                                    // まくり差し (例: 3-1, 4-2) 後半で最内を突く
+                                    targetRadius = (turnProgress > 0.5) ? 15 : sr.baseRadius + 2;
+                                } else {
+                                    // まくり (例: 3-4, 4-5) 前半から強引に内へ
+                                    targetRadius = (turnProgress > 0.3) ? 18 : sr.baseRadius;
+                                }
+                            }
+                        } else if (sr.rank === 2) {
+                            targetRadius = 26; // 2着は良い位置を追走
+                            if (laneNum === 1 && winnerLane >= 2) {
+                                // インで残す場合
+                                targetRadius = 22;
+                            }
+                        } else if (sr.rank === 3) {
+                            targetRadius = 34; // 3着
+                        } else {
+                            // 4着以下は引き波で大きく外へ膨らむ
+                            targetRadius = 45 + (sr.rank - 4) * 8;
                         }
 
-                        const speedFactor = 1.0 - 0.40 * Math.sin(turnProgress * Math.PI);
-                        let targetSpeed = sr.turnSpeed * speedFactor;
+                        // 【ドカ遅れ＆まくり】インが遅れてまくられる場合の特殊軌道
+                        if (laneNum === 1 && sr.st > 0.22 && winnerLane >= 2 && turnProgress > 0.3) {
+                            targetRadius = 55; // 完全に引き波に飲まれて吹き飛ぶ
+                        }
+
+                        // 半径を徐々に目標へシフト
+                        if (turnProgress > 0.1 && turnProgress < 0.9) {
+                            sr.radius += (targetRadius - sr.radius) * 0.12;
+                        }
+
+                        // --- 予想に基づくリアルなスピード計算（引き波の影響） ---
+                        const baseSpeedFactor = 1.0 - 0.35 * Math.sin(turnProgress * Math.PI);
+                        let targetSpeed = sr.turnSpeed * baseSpeedFactor;
                         
-                        if (laneNum === winnerLane && winnerLane >= 3) {
-                            targetSpeed *= 1.15;
+                        // ターン後半（立ち上がり）で上位陣は一気に加速、下位は失速
+                        if (turnProgress > 0.4) {
+                            if (sr.rank === 1) targetSpeed *= 1.35;
+                            else if (sr.rank === 2) targetSpeed *= 1.15;
+                            else if (sr.rank === 3) targetSpeed *= 1.05;
+                            else targetSpeed *= 0.75; // 下位は引き波で大きく失速
+                            
+                            // ドカ遅れでまくられたイン艇は激しく失速
+                            if (laneNum === 1 && sr.st > 0.22 && winnerLane >= 2) {
+                                targetSpeed *= 0.60;
+                            }
                         }
                         
-                        sr.speed += (targetSpeed - sr.speed) * 0.10;
+                        sr.speed += (targetSpeed - sr.speed) * 0.15;
 
                         const dPhi = sr.speed / sr.radius;
                         sr.phi -= dPhi;
@@ -2000,15 +2172,6 @@
                     }
                 });
             }
-
-            function draw() {
-                ctx.fillStyle = '#090d16';
-                ctx.fillRect(0, 0, viewWidth, viewHeight);
-                
-                const markX = viewWidth - 110;
-                const markY = 96;
-
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath();
                 ctx.arc(markX, markY, 20, 0, Math.PI * 2);
