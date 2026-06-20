@@ -1310,7 +1310,7 @@
             const raceResultAlert = document.getElementById('race-result-alert');
             
             const firstPred = result.first_prediction || null;
-            const secondPred = result.second_prediction || result;
+            const secondPred = result.second_prediction || null;
             
             if (firstPred && firstPred.ai) {
                 document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-200">${firstPred.ai.escape_rate || '--'}%</span>`;
