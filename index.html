@@ -1265,9 +1265,10 @@
         }
 
         function get4Focus(pred) {
-            if (!pred || !pred.ai) return [];
+            if (!pred) return [];
+            const ai = pred.ai || (pred.second_prediction && pred.second_prediction.ai) || (pred.first_prediction && pred.first_prediction.ai) || null;
+            if (!ai) return [];
             let finalFocus = [];
-            const ai = pred.ai;
             if (ai.solid_focus && ai.solid_focus.length > 0 && ai.solid_focus[0] !== "-") {
                 finalFocus = ai.solid_focus.filter(f => f && f !== "-" && /^[1-6](-|=|>|➔)[1-6](-|=|>|➔)[1-6]/.test(f));
             } else if (ai.focus && ai.focus.length > 0 && ai.focus[0] !== "-") {
@@ -1311,6 +1312,51 @@
             
             const firstPred = result.first_prediction || null;
             const secondPred = result.second_prediction || null;
+            
+            if (result.result && result.result.success) {
+                const combo = result.result.combo;
+                const payout = result.result.payout || 0;
+                
+                const activeAiResult = result.ai || (secondPred && secondPred.ai) || (firstPred && firstPred.ai) || null;
+                let isHit = false;
+                if (activeAiResult) {
+                    let sFocus = (activeAiResult.solid_focus || []).filter(f => f && f !== "-");
+                    if (sFocus.length < 4) sFocus = get4Focus(result).slice(0, 4);
+                    let uFocus = (activeAiResult.upset_focus || []).filter(f => f && f !== "-");
+                    if (uFocus.length < 4) {
+                        const dynamicCombos = getDynamicPredictions(result.data || []);
+                        uFocus = [];
+                        for (let i = 0; i < dynamicCombos.length; i++) {
+                            const c = dynamicCombos[i].combo;
+                            if (!c.startsWith("1-")) uFocus.push(c);
+                            if (uFocus.length >= 4) break;
+                        }
+                    }
+                    if (sFocus.includes(combo) || uFocus.includes(combo)) {
+                        isHit = true;
+                    }
+                }
+                
+                raceResultAlert.classList.remove('hidden');
+                raceResultAlert.innerHTML = `
+                    <div class="p-3 mt-4 mb-2 rounded-xl bg-slate-900 border ${isHit ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-slate-700'} flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-slate-400 font-bold">レース結果</span>
+                                ${isHit ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-black border border-emerald-500/30">的中 🎉</span>' : '<span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black border border-slate-700">不的中</span>'}
+                            </div>
+                            <div class="font-mono text-xl font-black text-white">${combo}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-slate-400 font-bold mb-1">払戻金</div>
+                            <div class="font-mono text-xl font-black ${isHit ? 'text-emerald-400' : 'text-slate-300'}">${payout.toLocaleString()}円</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                raceResultAlert.classList.add('hidden');
+                raceResultAlert.innerHTML = '';
+            }
             
             if (firstPred && firstPred.ai) {
                 document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-200">${firstPred.ai.escape_rate || '--'}%</span>`;
@@ -1469,7 +1515,9 @@
 
             for (const key in window.predictionsCache) {
                 const pred = window.predictionsCache[key];
-                if (!pred || !pred.success || !pred.ai) continue;
+                if (!pred || !pred.success) continue;
+
+                const activeAi = pred.ai || (pred.second_prediction && pred.second_prediction.ai) || (pred.first_prediction && pred.first_prediction.ai) || null;
 
                 if (pred.result && pred.result.success) {
                     const resultCombo = pred.result.combo;
@@ -1477,8 +1525,8 @@
 
                     // Get Solid Focus
                     let solidFocus = [];
-                    if (pred.ai.solid_focus && Array.isArray(pred.ai.solid_focus)) {
-                        solidFocus = pred.ai.solid_focus.filter(f => f && f !== "-");
+                    if (activeAi && activeAi.solid_focus && Array.isArray(activeAi.solid_focus)) {
+                        solidFocus = activeAi.solid_focus.filter(f => f && f !== "-");
                     }
                     if (solidFocus.length < 4) {
                         solidFocus = get4Focus(pred);
@@ -1487,8 +1535,8 @@
 
                     // Get Upset Focus
                     let upsetFocus = [];
-                    if (pred.ai.upset_focus && Array.isArray(pred.ai.upset_focus)) {
-                        upsetFocus = pred.ai.upset_focus.filter(f => f && f !== "-");
+                    if (activeAi && activeAi.upset_focus && Array.isArray(activeAi.upset_focus)) {
+                        upsetFocus = activeAi.upset_focus.filter(f => f && f !== "-");
                     }
                     if (upsetFocus.length < 4) {
                         if (pred.data && pred.data.length >= 6) {
