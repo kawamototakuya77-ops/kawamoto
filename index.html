@@ -312,12 +312,24 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-800/30 p-3 rounded-xl border border-white/5 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-slate-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                    <div class="grid grid-cols-2 gap-3 mt-2">
+                        <!-- 本命（大本線）ボックス -->
+                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-indigo-500/20 space-y-2 relative">
+                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block">🟦 本命（大本線）</span>
+                            <div id="first-ai-solid-focus" class="flex flex-col gap-1"></div>
                         </div>
-                        <div id="first-ai-focus" class="flex flex-wrap gap-2">
-                            <!-- Focus badges here -->
+                        <!-- 穴狙い（中大穴）ボックス -->
+                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-amber-500/20 space-y-2 relative overflow-hidden">
+                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block">🟧 穴狙い（中大穴）</span>
+                            <div id="first-ai-upset-focus" class="flex flex-col gap-1"></div>
+                            
+                            <!-- Ad Unlock Mosaic overlay for Upset Focus -->
+                            <div id="first-ai-ad-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px] z-10 flex flex-col items-center justify-center p-2 text-center transition-all border border-amber-500/30 rounded-xl hidden">
+                                <span class="text-[9px] text-amber-400 font-bold mb-1.5 shadow-black drop-shadow-md">🔒 穴狙い解禁</span>
+                                <button onclick="window.unlockWithAd()" class="px-2.5 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-white text-[9px] font-bold rounded shadow-lg transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">
+                                    ▶ 広告を見る
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -370,12 +382,21 @@
                         </div>
                     </div>
 
-                    <div class="bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
-                            <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
+                    <div class="flex items-center justify-between mb-1 mt-3">
+                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                        <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- 本命（大本線）ボックス -->
+                        <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20 space-y-2 relative">
+                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block">🟦 本命（大本線）</span>
+                            <div id="live-ai-solid-focus" class="flex flex-col gap-1"></div>
                         </div>
-                        <div id="live-ai-focus" class="flex flex-wrap gap-2"></div>
+                        <!-- 穴狙い（中大穴）ボックス -->
+                        <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/20 space-y-2 relative">
+                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block">🟧 穴狙い（中大穴）</span>
+                            <div id="live-ai-upset-focus" class="flex flex-col gap-1"></div>
+                        </div>
                     </div>
                 </section>
 
@@ -1298,49 +1319,41 @@
                 }
                 document.getElementById('first-ai-comment-content').innerText = firstPred.ai.comment || '解説データがありません。';
                 
-                const firstFocusContainer = document.getElementById('first-ai-focus');
-                firstFocusContainer.innerHTML = '';
+                const firstSolidContainer = document.getElementById('first-ai-solid-focus');
+                const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
+                const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
+                
+                if (firstSolidContainer) firstSolidContainer.innerHTML = '';
+                if (firstUpsetContainer) firstUpsetContainer.innerHTML = '';
+                
+                const isPremium = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass();
+                const currentRaceKey = window.currentJCD + "_" + window.currentRNO;
+                const isAdUnlocked = sessionStorage.getItem('ad_unlocked_' + currentRaceKey) === 'true';
+                
+                if (!isPremium && !isAdUnlocked && firstAdOverlay) {
+                    firstAdOverlay.classList.remove('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.add('premium-blur');
+                } else if (firstAdOverlay) {
+                    firstAdOverlay.classList.add('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
+                }
+
                 if(firstPred.ai.focus && firstPred.ai.focus.length > 0) {
                     firstPred.ai.focus.forEach((f, idx) => {
                         const isUpset = idx >= 4; 
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper';
-                        
-                        const isUnlocked = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass();
-                        
-                        if (idx >= 1 && !isUnlocked) {
-                            w.classList.add('premium-blur', 'relative');
-                            w.innerHTML = `
-                                <div class="px-2.5 py-1 rounded border shadow-sm font-black font-outfit text-sm ${isUpset ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-slate-800 border-indigo-500/30 text-indigo-300'}">
-                                    <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>???
-                                </div>
-                            `;
-                            const lockOverlay = document.createElement('div');
-                            lockOverlay.innerHTML = '<span class="text-[10px] font-bold text-white tracking-widest pointer-events-none drop-shadow-md">🎥 広告を見る</span>';
-                            lockOverlay.className = 'absolute inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm rounded border border-white/10 cursor-pointer hover:bg-slate-800/60 transition-colors z-10';
-                            w.appendChild(lockOverlay);
-                            
-                            lockOverlay.addEventListener('click', function(e) {
-                                e.stopPropagation();
-                                if (typeof window.triggerAdUnlock === 'function') {
-                                    window.triggerAdUnlock(w, lockOverlay, function() {
-                                        w.classList.remove('premium-blur');
-                                        w.querySelector('div').innerHTML = `<span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}`;
-                                        lockOverlay.remove();
-                                    });
-                                } else {
-                                    window.showLoginModal();
-                                }
-                            });
-                        } else {
-                            w.innerHTML = `
-                                <div class="px-2.5 py-1 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
-                                    <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
-                                </div>
-                            `;
+                        w.className = 'focus-badge-wrapper w-full';
+                        w.innerHTML = `
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
+                            </div>
+                        `;
+                        if (isUpset && firstUpsetContainer) {
+                            firstUpsetContainer.appendChild(w);
+                        } else if (!isUpset && firstSolidContainer) {
+                            firstSolidContainer.appendChild(w);
                         }
-                        firstFocusContainer.appendChild(w);
                     });
                 }
             }
@@ -1355,27 +1368,35 @@
                 }
                 document.getElementById('live-ai-comment-content').innerText = secondPred.ai.comment || '解説データがありません。';
                 
-                const liveFocusContainer = document.getElementById('live-ai-focus');
-                liveFocusContainer.innerHTML = '';
+                const liveSolidContainer = document.getElementById('live-ai-solid-focus');
+                const liveUpsetContainer = document.getElementById('live-ai-upset-focus');
+                if (liveSolidContainer) liveSolidContainer.innerHTML = '';
+                if (liveUpsetContainer) liveUpsetContainer.innerHTML = '';
+                
                 if(secondPred.ai.focus && secondPred.ai.focus.length > 0) {
                     secondPred.ai.focus.forEach((f, idx) => {
                         const isUpset = idx >= 4;
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper';
+                        w.className = 'focus-badge-wrapper w-full';
                         w.innerHTML = `
-                            <div class="px-2.5 py-1 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
                                 <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
                             </div>
                         `;
-                        liveFocusContainer.appendChild(w);
+                        if (isUpset && liveUpsetContainer) {
+                            liveUpsetContainer.appendChild(w);
+                        } else if (!isUpset && liveSolidContainer) {
+                            liveSolidContainer.appendChild(w);
+                        }
                     });
                 }
             } else {
                 document.getElementById('live-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">展示待機中</span>`;
                 document.getElementById('live-ai-confidence-stars').innerHTML = '---';
                 document.getElementById('live-ai-comment-content').innerText = '展示航走が終了後、約5〜10分で自動的に直前予想が計算されます。';
-                document.getElementById('live-ai-focus').innerHTML = '<span class="text-xs text-slate-500">---</span>';
+                if(document.getElementById('live-ai-solid-focus')) document.getElementById('live-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                if(document.getElementById('live-ai-upset-focus')) document.getElementById('live-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
             }
             
             const premiumZone = document.getElementById('premium-zone');
@@ -2253,6 +2274,32 @@
 
 
         // 広告ロック解除用ロジック
+        window.unlockWithAd = function() {
+            const modal = document.getElementById('ad-unlock-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+                
+                // Simulate Ad viewing time (2.5 seconds for demo)
+                setTimeout(() => {
+                    modal.classList.add('opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        
+                        const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
+                        const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
+                        if (firstAdOverlay) firstAdOverlay.classList.add('hidden');
+                        if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
+                        
+                        const currentRaceKey = window.currentJCD + "_" + window.currentRNO;
+                        if (currentRaceKey) {
+                            sessionStorage.setItem('ad_unlocked_' + currentRaceKey, 'true');
+                        }
+                    }, 300);
+                }, 2500);
+            }
+        };
+
         window.triggerAdUnlock = function(targetWrapper, lockEl, onSuccess) {
             window.showLoginModal();
         };
