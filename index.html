@@ -1362,6 +1362,12 @@
                         }
                     });
                 }
+            } else {
+                document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">事前AI解析中</span>`;
+                document.getElementById('first-ai-confidence-stars').innerHTML = '---';
+                document.getElementById('first-ai-comment-content').innerText = 'ただいま朝一のAI解析データを集計中です。しばらくお待ちください。';
+                if(document.getElementById('first-ai-solid-focus')) document.getElementById('first-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                if(document.getElementById('first-ai-upset-focus')) document.getElementById('first-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
             }
             
             const liveAiContainer = document.getElementById('live-ai-container');
