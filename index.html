@@ -1338,8 +1338,14 @@
                     if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
                 }
 
-                if(firstPred.ai.focus && firstPred.ai.focus.length > 0) {
-                    firstPred.ai.focus.forEach((f, idx) => {
+                let firstFocusArr = [];
+                if (firstPred.ai.solid_focus && firstPred.ai.upset_focus) {
+                    firstFocusArr = [...firstPred.ai.solid_focus, ...firstPred.ai.upset_focus];
+                } else if (firstPred.ai.focus) {
+                    firstFocusArr = firstPred.ai.focus;
+                }
+                if(firstFocusArr.length > 0) {
+                    firstFocusArr.forEach((f, idx) => {
                         const isUpset = idx >= 4; 
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
@@ -1373,8 +1379,14 @@
                 if (liveSolidContainer) liveSolidContainer.innerHTML = '';
                 if (liveUpsetContainer) liveUpsetContainer.innerHTML = '';
                 
-                if(secondPred.ai.focus && secondPred.ai.focus.length > 0) {
-                    secondPred.ai.focus.forEach((f, idx) => {
+                let secondFocusArr = [];
+                if (secondPred.ai.solid_focus && secondPred.ai.upset_focus) {
+                    secondFocusArr = [...secondPred.ai.solid_focus, ...secondPred.ai.upset_focus];
+                } else if (secondPred.ai.focus) {
+                    secondFocusArr = secondPred.ai.focus;
+                }
+                if(secondFocusArr.length > 0) {
+                    secondFocusArr.forEach((f, idx) => {
                         const isUpset = idx >= 4;
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
