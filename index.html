@@ -1350,9 +1350,7 @@
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
             window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
-            const aiCard = document.getElementById('ai-card');
-            const aiModeAlert = document.getElementById('ai-mode-alert');
-            const slitStatus = document.getElementById('slit-status-badge');
+                                    const slitStatus = document.getElementById('slit-status-badge');
             const detailStatus = document.getElementById('detail-status-badge');
             const raceResultAlert = document.getElementById('race-result-alert');
 
@@ -1386,16 +1384,6 @@
 
             if (phase === 3) {
                 // Phase 3: Weather shift update (Purple/Indigo styled)
-                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/60 border border-purple-500/40 shadow-xl shadow-purple-500/5 space-y-3 transition-all duration-300";
-                aiModeAlert.innerHTML = `
-                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold leading-normal shadow-sm animate-pulse">
-                        <span class="text-sm">⚡</span>
-                        <div>
-                            <strong class="font-outfit text-xs tracking-wide">第三次予想：直前気象急変対応モデル</strong>
-                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">展示公開後、本番直前に【風速2m以上・風向・天候】に大きな変動を検知したため、AIが物理展開シミュレーションを緊急更新した最終結論です。</span>
-                        </div>
-                    </div>
-                `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
                 slitStatus.innerText = "⚡ 気象急変反映";
@@ -1404,16 +1392,6 @@
                 detailStatus.innerText = "⚡ 気象急変反映";
             } else if (phase === 2) {
                 // Phase 2: Exhibition merge (Emerald/Green styled)
-                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-emerald-950/25 to-slate-900/60 border border-emerald-500/30 shadow-xl space-y-3 transition-all duration-300";
-                aiModeAlert.innerHTML = `
-                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold leading-normal shadow-sm">
-                        <span class="text-sm">🟢</span>
-                        <div>
-                            <strong class="font-outfit text-xs tracking-wide">第二次予想：直前展示すり合わせ完了</strong>
-                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示タイム、スタート展示スリット、チルト調整の気配をマージした最終結論です。</span>
-                        </div>
-                    </div>
-                `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
                 slitStatus.innerText = "🟢 展示反映済";
@@ -1422,16 +1400,6 @@
                 detailStatus.innerText = "🟢 展示反映済";
             } else {
                 // Phase 1: Pre-race (Amber/Gold styled)
-                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-amber-950/20 to-slate-900/60 border border-amber-500/20 shadow-xl space-y-3 transition-all duration-300";
-                aiModeAlert.innerHTML = `
-                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold leading-normal shadow-sm">
-                        <span class="text-sm">🌅</span>
-                        <div>
-                            <strong class="font-outfit text-xs tracking-wide">第一次予想：朝イチ事前予想</strong>
-                            <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示は未実施です。選手勝率とモーター性能のみによる前情報予想です。本番15分前のアラーム巡回後に自動で第二次（直前展示）に上書き更新されます。</span>
-                        </div>
-                    </div>
-                `;
                 
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
                 slitStatus.innerText = "⚠️ 待機中（前情報）";
