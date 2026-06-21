@@ -900,15 +900,14 @@
                 const btn = document.createElement('div');
                 btn.dataset.jcd = jcd;
                 
-                if (isActive) {
-                    btn.className = "venue-btn py-1.5 text-[11px] font-black rounded-lg border border-slate-700/60 bg-slate-900/60 text-white cursor-pointer hover:border-slate-500 transition-all";
-                    btn.dataset.active = "true";
-                    btn.innerText = name;
-                    btn.addEventListener('click', () => selectVenue(jcd));
-                } else {
-                    btn.className = "py-1.5 text-[11px] font-bold rounded-lg border border-slate-900 bg-slate-950/20 text-slate-600 opacity-40 cursor-not-allowed select-none";
-                    btn.innerText = name;
+                // Force all venues to be active visually, but visually distinguish slightly if not in activeJcds
+                btn.dataset.active = isActive ? "true" : "false";
+                btn.className = "venue-btn py-1.5 text-[11px] font-black rounded-lg border border-slate-700/60 bg-slate-900/60 text-white cursor-pointer hover:border-slate-500 transition-all";
+                if (!isActive) {
+                    btn.className = "venue-btn py-1.5 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:border-slate-600 transition-all";
                 }
+                btn.innerText = name;
+                btn.addEventListener('click', () => selectVenue(jcd));
                 gridContainer.appendChild(btn);
             }
             
@@ -943,7 +942,7 @@
                     } else if (isActiveVenue) {
                         btn.className = "venue-btn py-1.5 text-[11px] font-black rounded-lg border border-slate-700/60 bg-slate-900/60 text-white cursor-pointer hover:border-slate-500 transition-all";
                     } else {
-                        btn.className = "py-1.5 text-[11px] font-bold rounded-lg border border-slate-900 bg-slate-950/20 text-slate-600 opacity-40 cursor-not-allowed select-none";
+                        btn.className = "venue-btn py-1.5 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:border-slate-600 transition-all";
                     }
                 }
             }
