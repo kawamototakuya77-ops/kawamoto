@@ -893,15 +893,15 @@
                 
                 const btn = document.createElement('div');
                 btn.dataset.jcd = jcd;
-                
-                // Force all venues to be active visually, but visually distinguish slightly if not in activeJcds
                 btn.dataset.active = isActive ? "true" : "false";
-                btn.className = "venue-btn py-1.5 text-[11px] font-black rounded-lg border border-slate-700/60 bg-slate-900/60 text-white cursor-pointer hover:border-slate-500 transition-all";
-                if (!isActive) {
-                    btn.className = "venue-btn py-1.5 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:border-slate-600 transition-all";
-                }
                 btn.innerText = name;
-                btn.addEventListener('click', () => selectVenue(jcd));
+                
+                if (!isActive) {
+                    btn.className = "venue-btn py-1.5 text-[11px] font-bold rounded-lg border border-slate-800/50 bg-slate-900/20 text-slate-600 cursor-not-allowed transition-all opacity-40";
+                } else {
+                    btn.className = "venue-btn py-1.5 text-[11px] font-black rounded-lg border border-slate-700/60 bg-slate-900/60 text-white cursor-pointer hover:border-slate-500 transition-all";
+                    btn.addEventListener('click', () => selectVenue(jcd));
+                }
                 gridContainer.appendChild(btn);
             }
             
@@ -1350,254 +1350,189 @@
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
             window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
-                                    const slitStatus = document.getElementById('slit-status-badge');
+                                                                        const slitStatus = document.getElementById('slit-status-badge');
             const detailStatus = document.getElementById('detail-status-badge');
-            const raceResultAlert = document.getElementById('race-result-alert');
-
-            const finalFocus = get4Focus(result);
-
-            if (result.result && result.result.success) {
-                raceResultAlert.classList.remove('hidden');
-                const combo = result.result.combo;
-                const payout = result.result.payout;
-                const isHit = finalFocus.includes(combo);
-
-                if (isHit) {
-                    raceResultAlert.innerHTML = `
-                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm animate-pulse">
-                            <span>🎉 的中！ 確定結果: ${combo}</span>
-                            <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">払戻金: ${payout.toLocaleString()}円</span>
-                        </div>
-                    `;
-                } else {
-                    raceResultAlert.innerHTML = `
-                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-bold shadow-sm">
-                            <span>❌ 不的中 (確定結果: ${combo})</span>
-                            <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">払戻金: ${payout.toLocaleString()}円</span>
-                        </div>
-                    `;
-                }
-            } else {
-                raceResultAlert.classList.add('hidden');
-                raceResultAlert.innerHTML = '';
-            }
 
             if (phase === 3) {
                 // Phase 3: Weather shift update (Purple/Indigo styled)
-                
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
                 slitStatus.innerText = "⚡ 気象急変反映";
-                
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
                 detailStatus.innerText = "⚡ 気象急変反映";
             } else if (phase === 2) {
                 // Phase 2: Exhibition merge (Emerald/Green styled)
-                
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
                 slitStatus.innerText = "🟢 展示反映済";
-                
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
                 detailStatus.innerText = "🟢 展示反映済";
             } else {
                 // Phase 1: Pre-race (Amber/Gold styled)
-                
                 slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
                 slitStatus.innerText = "⚠️ 待機中（前情報）";
-                
                 detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
                 detailStatus.innerText = "⚠️ 展示未実施";
             }
 
-            let modeBadge = '';
-            if (phase === 3) {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">⚡ 第三次：気象急変対応</span>';
-            } else if (phase === 2) {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">🟢 第二次：直前展示</span>';
-            } else {
-                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">🌅 第一次：朝イチ事前</span>';
-            }
-                
-            document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">イン逃げ確度: ${ai.escape_rate}%</span>`;
-            const parsedComment = (ai.comment || '')
-                .replace(/\*\*/g, '') // 太字用のアスタリスクを削除
-                .replace(/\n/g, '<br>');
-            document.getElementById('ai-comment').innerHTML = parsedComment;
+            // 1. AI Predictions Data
+            const firstAiCard = document.getElementById('first-ai-card');
+            const liveAiCard = document.getElementById('live-ai-card');
+            const raceResultAlert = document.getElementById('race-result-alert');
             
-            const focusContainer = document.getElementById('ai-focus');
-            focusContainer.innerHTML = '';
-            focusContainer.className = 'flex flex-col gap-3 w-full';
-
-            let solidFocus = [];
-            let upsetFocus = [];
-            if (ai.solid_focus && Array.isArray(ai.solid_focus)) {
-                solidFocus = ai.solid_focus.filter(f => f && f !== "-");
-            }
-            if (ai.upset_focus && Array.isArray(ai.upset_focus)) {
-                upsetFocus = ai.upset_focus.filter(f => f && f !== "-");
-            }
-            if (solidFocus.length < 4) {
-                solidFocus = get4Focus(result);
-            }
-            if (upsetFocus.length < 4) {
-                if (result.data && result.data.length >= 6) {
-                    const dynamicCombos = getDynamicPredictions(result.data);
-                    upsetFocus = [];
-                    for (let i = 0; i < dynamicCombos.length; i++) {
-                        const combo = dynamicCombos[i].combo;
-                        if (!combo.startsWith("1-")) {
-                            upsetFocus.push(combo);
-                        }
-                        if (upsetFocus.length >= 4) break;
-                    }
-                }
-                while (upsetFocus.length < 4) {
-                    upsetFocus.push("2-1-3");
-                }
-            }
-
-            function renderFocusGroup(title, items, isUpset) {
-                const groupWrapper = document.createElement('div');
-                groupWrapper.className = isUpset 
-                    ? 'bg-purple-500/5 p-3 rounded-xl border border-purple-500/10 space-y-2 w-full'
-                    : 'bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2 w-full';
+            const firstPred = result.first_prediction || null;
+            const secondPred = result.second_prediction || null;
+            
+            if (result.result && result.result.success) {
+                const combo = result.result.combo;
+                const payout = result.result.payout || 0;
                 
-                const titleSpan = document.createElement('span');
-                titleSpan.className = isUpset
-                    ? 'text-[10px] text-purple-400 font-bold tracking-wider uppercase block'
-                    : 'text-[10px] text-indigo-400 font-bold tracking-wider uppercase block';
-                titleSpan.innerText = title;
-                groupWrapper.appendChild(titleSpan);
-
-                const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
-
-                items.slice(0, 4).forEach((f, index) => {
-                    const itemWrapper = document.createElement('div');
-                    itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
-                    
-                    let labelText = '抑え';
-                    let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
-                    if (!isUpset) {
-                        if (index === 0) {
-                            labelText = '大本線';
-                            labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-                        } else if (index === 1) {
-                            labelText = '本線';
-                            labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                        } else if (index === 2) {
-                            labelText = '抑え1';
-                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
-                        } else if (index === 3) {
-                            labelText = '抑え2';
-                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
-                        }
-                    } else {
-                        if (index === 0) {
-                            labelText = '中穴';
-                            labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-                        } else if (index === 1) {
-                            labelText = '穴狙い';
-                            labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-                        } else if (index === 2) {
-                            labelText = '大穴1';
-                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
-                        } else if (index === 3) {
-                            labelText = '大穴2';
-                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                const activeAiResult = result.ai || (secondPred && secondPred.ai) || (firstPred && firstPred.ai) || null;
+                let isHit = false;
+                if (activeAiResult) {
+                    let sFocus = (activeAiResult.solid_focus || []).filter(f => f && f !== "-");
+                    if (sFocus.length < 4) sFocus = get4Focus(result).slice(0, 4);
+                    let uFocus = (activeAiResult.upset_focus || []).filter(f => f && f !== "-");
+                    if (uFocus.length < 4) {
+                        const dynamicCombos = getDynamicPredictions(result.data || []);
+                        uFocus = [];
+                        for (let i = 0; i < dynamicCombos.length; i++) {
+                            const c = dynamicCombos[i].combo;
+                            if (!c.startsWith("1-")) uFocus.push(c);
+                            if (uFocus.length >= 4) break;
                         }
                     }
-
-                    const labelSpan = document.createElement('span');
-                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center flex-shrink-0`;
-                    labelSpan.innerText = labelText;
-                    
-                    const focusBadgeWrapper = createPremiumFocusElement(f);
-                    focusBadgeWrapper.className = 'flex items-center gap-1 justify-end flex-1 min-w-0 transition-all duration-500';
-
-                    const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
-                                     window.location.hostname.indexOf('googleusercontent') !== -1;
-
-                    if (index >= 1 && !isGasApp) {
-                        focusBadgeWrapper.classList.add('premium-blur');
-                        
-                        const lockOverlay = document.createElement('div');
-                        lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
-                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
-                        
-                        itemWrapper.classList.add('relative');
-                        itemWrapper.appendChild(lockOverlay);
-                        
-                        lockOverlay.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            if (typeof window.triggerAdUnlock === 'function') {
-                                window.triggerAdUnlock(focusBadgeWrapper, lockOverlay, function() {
-                                    itemWrapper.click();
-                                });
-                            } else {
-                                focusBadgeWrapper.classList.remove('premium-blur');
-                                focusBadgeWrapper.classList.add('premium-unlocked');
-                                lockOverlay.remove();
-                                itemWrapper.click();
-                            }
-                        });
+                    if (sFocus.includes(combo) || uFocus.includes(combo)) {
+                        isHit = true;
                     }
+                }
+                
+                raceResultAlert.classList.remove('hidden');
+                raceResultAlert.innerHTML = `
+                    <div class="p-3 mt-4 mb-2 rounded-xl bg-slate-900 border ${isHit ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-slate-700'} flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-slate-400 font-bold">レース結果</span>
+                                ${isHit ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-black border border-emerald-500/30">的中 🎉</span>' : '<span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black border border-slate-700">不的中</span>'}
+                            </div>
+                            <div class="font-mono text-xl font-black text-white">${combo}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-slate-400 font-bold mb-1">払戻金</div>
+                            <div class="font-mono text-xl font-black ${isHit ? 'text-emerald-400' : 'text-slate-300'}">${payout.toLocaleString()}円</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                raceResultAlert.classList.add('hidden');
+                raceResultAlert.innerHTML = '';
+            }
+            
+            if (firstPred && firstPred.ai) {
+                document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-200">${firstPred.ai.escape_rate || '--'}%</span>`;
+                if(firstPred.confidence) {
+                    document.getElementById('first-ai-confidence-stars').innerHTML = firstPred.confidence.stars || '☁️☁️☁️';
+                }
+                document.getElementById('first-ai-comment-content').innerText = firstPred.ai.comment || '解説データがありません。';
+                
+                const firstSolidContainer = document.getElementById('first-ai-solid-focus');
+                const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
+                const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
+                
+                if (firstSolidContainer) firstSolidContainer.innerHTML = '';
+                if (firstUpsetContainer) firstUpsetContainer.innerHTML = '';
+                
+                const isPremium = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass();
+                const currentRaceKey = window.currentJCD + "_" + window.currentRNO;
+                const isAdUnlocked = sessionStorage.getItem('ad_unlocked_' + currentRaceKey) === 'true';
+                
+                if (!isPremium && !isAdUnlocked && firstAdOverlay) {
+                    firstAdOverlay.classList.remove('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.add('premium-blur');
+                } else if (firstAdOverlay) {
+                    firstAdOverlay.classList.add('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
+                }
 
-                    // 初期状態で本命の1番目(大本線)をハイライト
-                    if (!isUpset && index === 0) {
-                        itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
-                    }
-
-                    // 買い目クリックでシミュレーション起動
-                    itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
-                    itemWrapper.addEventListener('click', function() {
-                        if (focusBadgeWrapper.classList.contains('premium-blur')) {
-                            return; 
-                        }
-
-                        // すべての買い目のハイライト枠を除去
-                        document.querySelectorAll('.focus-item-active').forEach(el => {
-                            el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
-                        });
-
-                        // 選択されたものをハイライト
-                        if (isUpset) {
-                            itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
-                        } else {
-                            itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
-                        }
-
-                        // 物理シミュレータをこの展開(f)で即座に再起動
-                        try {
-                            initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
-                            if (window.setSimCombo) {
-                                window.setSimCombo(f);
-                            }
-                        } catch (e) {
-                            console.error("Click-to-simulate error:", e);
+                let firstFocusArr = [];
+                if (firstPred.ai.solid_focus && firstPred.ai.upset_focus) {
+                    firstFocusArr = [...firstPred.ai.solid_focus, ...firstPred.ai.upset_focus];
+                } else if (firstPred.ai.focus) {
+                    firstFocusArr = firstPred.ai.focus;
+                }
+                if(firstFocusArr.length > 0) {
+                    firstFocusArr.forEach((f, idx) => {
+                        const isUpset = idx >= 4; 
+                        const badgeStr = isUpset ? '穴' : '本命';
+                        const w = document.createElement('div');
+                        w.className = 'focus-badge-wrapper w-full';
+                        w.innerHTML = `
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
+                            </div>
+                        `;
+                        if (isUpset && firstUpsetContainer) {
+                            firstUpsetContainer.appendChild(w);
+                        } else if (!isUpset && firstSolidContainer) {
+                            firstSolidContainer.appendChild(w);
                         }
                     });
-
-                    itemWrapper.appendChild(labelSpan);
-                    itemWrapper.appendChild(focusBadgeWrapper);
-                    grid.appendChild(itemWrapper);
-                });
-
-                groupWrapper.appendChild(grid);
-                return groupWrapper;
-            }
-
-            if (solidFocus.length > 0 || upsetFocus.length > 0) {
-                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
-                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
+                }
             } else {
-                focusContainer.className = 'flex flex-wrap gap-2 w-full';
-                const emptySpan = document.createElement('span');
-                emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
-                emptySpan.innerText = '待機中...';
-                focusContainer.appendChild(emptySpan);
+                document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">事前AI解析中</span>`;
+                document.getElementById('first-ai-confidence-stars').innerHTML = '---';
+                document.getElementById('first-ai-comment-content').innerText = 'ただいま朝一のAI解析データを集計中です。しばらくお待ちください。';
+                if(document.getElementById('first-ai-solid-focus')) document.getElementById('first-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                if(document.getElementById('first-ai-upset-focus')) document.getElementById('first-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
             }
+            
+            const liveAiContainer = document.getElementById('live-ai-container');
+            const premiumOverlay = document.getElementById('premium-overlay');
+            
+            if (secondPred && secondPred.ai) {
+                document.getElementById('live-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-white">${secondPred.ai.escape_rate || '--'}%</span>`;
+                if(secondPred.confidence) {
+                    document.getElementById('live-ai-confidence-stars').innerHTML = secondPred.confidence.stars || '☁️☁️☁️';
+                }
+                document.getElementById('live-ai-comment-content').innerText = secondPred.ai.comment || '解説データがありません。';
+                
+                const liveSolidContainer = document.getElementById('live-ai-solid-focus');
+                const liveUpsetContainer = document.getElementById('live-ai-upset-focus');
+                if (liveSolidContainer) liveSolidContainer.innerHTML = '';
+                if (liveUpsetContainer) liveUpsetContainer.innerHTML = '';
+                
+                let secondFocusArr = [];
+                if (secondPred.ai.solid_focus && secondPred.ai.upset_focus) {
+                    secondFocusArr = [...secondPred.ai.solid_focus, ...secondPred.ai.upset_focus];
+                } else if (secondPred.ai.focus) {
+                    secondFocusArr = secondPred.ai.focus;
+                }
+                if(secondFocusArr.length > 0) {
+                    secondFocusArr.forEach((f, idx) => {
+                        const isUpset = idx >= 4;
+                        const badgeStr = isUpset ? '穴' : '本命';
+                        const w = document.createElement('div');
+                        w.className = 'focus-badge-wrapper w-full';
+                        w.innerHTML = `
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
+                            </div>
+                        `;
+                        if (isUpset && liveUpsetContainer) {
+                            liveUpsetContainer.appendChild(w);
+                        } else if (!isUpset && liveSolidContainer) {
+                            liveSolidContainer.appendChild(w);
+                        }
+                    });
+                }
+            } else {
+                document.getElementById('live-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">展示待機中</span>`;
+                document.getElementById('live-ai-confidence-stars').innerHTML = '---';
+                document.getElementById('live-ai-comment-content').innerText = '展示航走が終了後、約5〜10分で自動的に直前予想が計算されます。';
+                if(document.getElementById('live-ai-solid-focus')) document.getElementById('live-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                if(document.getElementById('live-ai-upset-focus')) document.getElementById('live-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+            }
+            
 
-            // Populate Confidence Stars
+                        // Populate Confidence Stars
             const confidenceStarsEl = document.getElementById('ai-confidence-stars');
             if (confidenceStarsEl && result.confidence) {
                 confidenceStarsEl.innerText = result.confidence.stars || '★★★☆☆';
@@ -1932,7 +1867,7 @@
 
             } catch (err) {
                 console.error("Dashboard render error:", err);
-                const commentEl = document.getElementById('first-ai-comment-content');
+                const commentEl = document.getElementById('live-ai-comment-content');
                 if (commentEl) commentEl.innerText = "描画エラーが発生しました: " + err.message;
             } finally {
                 // 絶対に透明度を元に戻す
