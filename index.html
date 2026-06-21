@@ -2293,7 +2293,7 @@
             let tacticLabel = "";
             let simRacers = [];
             let frame = 0;
-            const maxFrames = 260;
+            const maxFrames = 450;
 
             function getTacticLabel(wl) {
                 if (wl === 1) return "1号艇 イン逃げ快勝パターン";
@@ -2409,15 +2409,15 @@
                     const exTime = parseFloat(r.ex_time) || 6.80;
                     const rate = parseFloat(r.rate) || 5.00;
 
-                    let straightSpeed = 2.3 + (rate * 0.02) - (exTime - 6.70) * 0.8;
+                    let straightSpeed = (2.3 + (rate * 0.02) - (exTime - 6.70) * 0.8) * 0.6;
                     const baseRadius = 16 + (course - 1) * 9.5; 
                     
                     const role = roles[laneNum];
-                    if (role === "MAKURI") straightSpeed += 0.35;
-                    else if (role === "NIGE") straightSpeed += 0.08;
+                    if (role === "MAKURI") straightSpeed += 0.35 * 0.6;
+                    else if (role === "NIGE") straightSpeed += 0.08 * 0.6;
 
                     const turnSpeed = straightSpeed * (0.80 - (rank - 1) * 0.05);
-                    const exitSpeed = 1.6 + (6 - rank) * 0.4;
+                    const exitSpeed = (1.6 + (6 - rank) * 0.4) * 0.6;
                     
                     let stOffset = (0.15 - stVal) * 180; 
                     if (role === "DELAYED" || (course === 1 && stVal > 0.22)) {
@@ -2654,19 +2654,14 @@ function draw() {
                         ctx.fillText(badgeText, sr.x, sr.y - 13);
                         ctx.restore();
                     }
-                    
-                    if (frame > 180 && sr.rank <= 3) {
-                        ctx.font = '8px Outfit';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(sr.rank === 1 ? '🥇' : (sr.rank === 2 ? '🥈' : '🥉'), sr.x, sr.y - 11);
-                    }
+
                 });
 
                 let hudStatus = "";
                 let hudColor = "rgba(255, 255, 255, 0.4)";
-                if (frame < 80) {
+                if (frame < 140) {
                     hudStatus = "ホームストレッチ - スリット通過";
-                } else if (frame >= 80 && frame < 165) {
+                } else if (frame >= 140 && frame < 280) {
                     hudStatus = "第1ターンマーク - 旋回攻防";
                     hudColor = "#f43f5e";
                 } else {
@@ -2683,9 +2678,9 @@ function draw() {
                 ctx.textAlign = 'left';
                 ctx.fillText("📡 " + hudStatus, 14, 14);
 
-                if (frame > 90 && frame < 225) {
+                if (frame > 160 && frame < 400) {
                     let descText = "";
-                    if (frame < 145) {
+                    if (frame < 260) {
                         if (winnerLane === 1) descText = "1号艇がインから先マイ逃げ体制！";
                         else if (winnerLane === 2) descText = "2号艇が内を狙って鋭く切り込む！";
                         else if (winnerLane === 3) descText = "3号艇が全速で外から握ってまわる！";
