@@ -1840,7 +1840,25 @@
             
             // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
             try {
-                initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+                let simSolidFocus = [];
+                let simUpsetFocus = [];
+                const activeAi = result.ai || (result.second_prediction && result.second_prediction.ai) || (result.first_prediction && result.first_prediction.ai) || null;
+                if (activeAi) {
+                    simSolidFocus = (activeAi.solid_focus || []).filter(f => f && f !== "-");
+                    if (simSolidFocus.length < 4) simSolidFocus = get4Focus(result).slice(0, 4);
+                    simUpsetFocus = (activeAi.upset_focus || []).filter(f => f && f !== "-");
+                    if (simUpsetFocus.length < 4) {
+                        const dynamicCombos = getDynamicPredictions(result.data || []);
+                        for (let i = 0; i < dynamicCombos.length; i++) {
+                            const c = dynamicCombos[i].combo;
+                            if (!c.startsWith("1-")) simUpsetFocus.push(c);
+                            if (simUpsetFocus.length >= 4) break;
+                        }
+                    }
+                } else {
+                    simSolidFocus = get4Focus(result).slice(0, 4);
+                }
+                initTurnSimulation(racers, simSolidFocus, simUpsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
             }
