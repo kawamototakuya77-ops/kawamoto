@@ -508,14 +508,11 @@
                     </button>
                 </div>
                 
-                <div class="relative bg-slate-950/80 rounded-xl overflow-hidden border border-white/5">
-                    <canvas id="turn-sim-canvas" class="w-full h-48 block"></canvas>
-                    
-                    <!-- Tactical overlay indicators -->
-                    <div class="absolute bottom-2 left-3 text-[8px] text-slate-500 font-bold leading-normal font-mono flex gap-2">
-                        <span>● 赤白コーン: 1マーク</span>
-                        <span>● 点線: 旋回航跡</span>
-                    </div>
+                <div class="relative bg-slate-950/80 rounded-xl overflow-hidden border border-white/5 flex flex-col items-center justify-center h-48">
+                    <!-- <canvas id="turn-sim-canvas" class="w-full h-48 block"></canvas> -->
+                    <span class="text-3xl mb-2 animate-bounce">🚧</span>
+                    <span class="text-amber-400 font-bold tracking-widest block text-lg">準備中</span>
+                    <span class="text-slate-500 text-xs mt-1 block">シミュレータ調整中</span>
                 </div>
                 <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
