@@ -473,6 +473,9 @@
                 </div>
             </section>
 
+            <!-- PREMIUM ZONE (Hidden for non-premium by default or blurred) -->
+            <div id="premium-zone" class="space-y-4">
+
             <!-- START EXHIBITION SLIT SIMULATOR -->
             <section class="p-4 rounded-2xl glass shadow-md space-y-3">
                 <div class="flex items-center justify-between">
@@ -513,15 +516,6 @@
                     <span class="text-3xl mb-2 animate-bounce">🚧</span>
                     <span class="text-amber-400 font-bold tracking-widest block text-lg">準備中</span>
                     <span class="text-slate-500 text-xs mt-1 block">シミュレータ調整中</span>
-                </div>
-                <!-- SIMULATOR CONTROLLER -->
-                <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
-                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                        <span>👁️ 展開シミュレーション切り替え</span>
-                        <span class="text-[8px] text-slate-500">買い目選択で展開が切り替わります</span>
-                    </div>
-                    <div id="sim-controls-solid" class="flex flex-wrap gap-1.5"></div>
-                    <div id="sim-controls-upset" class="flex flex-wrap gap-1.5"></div>
                 </div>
                 <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
@@ -1391,9 +1385,9 @@
                         const isUpset = idx >= 4; 
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full shrink-0 min-h-[36px] flex flex-col justify-center';
+                        w.className = 'focus-badge-wrapper w-full';
                         w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full h-full flex items-center justify-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
                                 <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
                             </div>
                         `;
@@ -1438,9 +1432,9 @@
                         const isUpset = idx >= 4;
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full shrink-0 min-h-[36px] flex flex-col justify-center';
+                        w.className = 'focus-badge-wrapper w-full';
                         w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full h-full flex items-center justify-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
                                 <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
                             </div>
                         `;
