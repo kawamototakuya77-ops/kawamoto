@@ -511,11 +511,14 @@
                     </button>
                 </div>
                 
-                <div class="relative bg-slate-950/80 rounded-xl overflow-hidden border border-white/5 flex flex-col items-center justify-center h-48">
-                    <!-- <canvas id="turn-sim-canvas" class="w-full h-48 block"></canvas> -->
-                    <span class="text-3xl mb-2 animate-bounce">🚧</span>
-                    <span class="text-amber-400 font-bold tracking-widest block text-lg">準備中</span>
-                    <span class="text-slate-500 text-xs mt-1 block">シミュレータ調整中</span>
+                <div class="relative bg-slate-950/80 rounded-xl overflow-hidden border border-white/5">
+                    <canvas id="turn-sim-canvas" class="w-full h-48 block"></canvas>
+                    
+                    <!-- Tactical overlay indicators -->
+                    <div class="absolute bottom-2 left-3 text-[8px] text-slate-500 font-bold leading-normal font-mono flex gap-2">
+                        <span>● 赤白コーン: 1マーク</span>
+                        <span>● 点線: 旋回航跡</span>
+                    </div>
                 </div>
                 <!-- SIMULATOR CONTROLLER -->
                 <div id="sim-controls-container" class="mt-2.5 p-2 rounded-xl bg-slate-950/40 border border-white/5 space-y-1.5">
@@ -1283,191 +1286,675 @@
             return finalFocus.slice(0, 4);
         }
 
+        function renderSlitSimulator(racers) {
+            const slitRows = document.getElementById('slit-rows');
+            const badge = document.getElementById('slit-status-badge');
+            if (!slitRows) return;
+            
+            if (!racers || racers.length === 0) {
+                slitRows.innerHTML = '<div class="text-center text-xs text-slate-500 mt-10">展示データがありません</div>';
+                if(badge) badge.innerText = '待機中';
+                return;
+            }
+            
+            if(badge) {
+                badge.innerText = '展示完了';
+                badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            }
+
+            slitRows.innerHTML = '';
+            
+            const sortedRacers = [...racers].sort((a,b) => (parseInt(a.st_course)||99) - (parseInt(b.st_course)||99));
+            
+            sortedRacers.forEach(racer => {
+                let isF = false;
+                let stNum = 0.15;
+                let stStr = racer.st_val || '-';
+                if (stStr.includes('F')) {
+                    isF = true;
+                    stNum = parseFloat(stStr.replace('F', '')) || 0.05;
+                    stNum = -stNum;
+                } else if (stStr.includes('L')) {
+                    stNum = 0.50;
+                } else if (stStr !== '-') {
+                    stNum = parseFloat(stStr.replace('.', '0.')) || 0.15;
+                }
+                
+                let leftPos = 68 - (stNum * 150);
+                leftPos = Math.max(0, Math.min(leftPos, 90));
+                
+                let stColor = 'text-slate-300';
+                if (isF) stColor = 'text-red-400 font-bold animate-pulse';
+                else if (stNum <= 0.10) stColor = 'text-emerald-400 font-bold';
+                else if (stNum > 0.20) stColor = 'text-amber-500';
+
+                const row = document.createElement('div');
+                row.className = 'relative h-4 w-full flex items-center';
+                row.innerHTML = `
+                    <div class="absolute text-[9px] font-mono whitespace-nowrap flex items-center gap-1 transition-all duration-1000" style="left: ${leftPos}%; transform: translateX(-100%);">
+                        <span class="${stColor} w-8 text-right pr-1">${stStr}</span>
+                        <span class="w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-black shadow-md boat-${racer.lane} text-center leading-none" style="padding-top: 1px;">${racer.lane}</span>
+                        <span class="text-[9px] text-slate-400 truncate w-16 ml-1">${(racer.name||'').split(' ')[0]}</span>
+                    </div>
+                `;
+                slitRows.appendChild(row);
+            });
+        }
+
         function renderDashboard(result) {
             try {
-            const isUnlocked = result && result.access !== "denied" && result.status !== 403;
-            // Removed early exit; we want to render the data behind the blur.
-
-            const racers = result.data || [];
+            const racers = result.data;
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
-            window.currentPhase = phase; 
+            window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
 
-            
-            const firstAiCard = document.getElementById('first-ai-card');
-            const liveAiCard = document.getElementById('live-ai-card');
+            const aiCard = document.getElementById('ai-card');
+            const aiModeAlert = document.getElementById('ai-mode-alert');
+            const slitStatus = document.getElementById('slit-status-badge');
+            const detailStatus = document.getElementById('detail-status-badge');
             const raceResultAlert = document.getElementById('race-result-alert');
-            
-            const firstPred = result.first_prediction || null;
-            const secondPred = result.second_prediction || null;
-            
+
+            const finalFocus = get4Focus(result);
+
             if (result.result && result.result.success) {
-                const combo = result.result.combo;
-                const payout = result.result.payout || 0;
-                
-                const activeAiResult = result.ai || (secondPred && secondPred.ai) || (firstPred && firstPred.ai) || null;
-                let isHit = false;
-                if (activeAiResult) {
-                    let sFocus = (activeAiResult.solid_focus || []).filter(f => f && f !== "-");
-                    if (sFocus.length < 4) sFocus = get4Focus(result).slice(0, 4);
-                    let uFocus = (activeAiResult.upset_focus || []).filter(f => f && f !== "-");
-                    if (uFocus.length < 4) {
-                        const dynamicCombos = getDynamicPredictions(result.data || []);
-                        uFocus = [];
-                        for (let i = 0; i < dynamicCombos.length; i++) {
-                            const c = dynamicCombos[i].combo;
-                            if (!c.startsWith("1-")) uFocus.push(c);
-                            if (uFocus.length >= 4) break;
-                        }
-                    }
-                    if (sFocus.includes(combo) || uFocus.includes(combo)) {
-                        isHit = true;
-                    }
-                }
-                
                 raceResultAlert.classList.remove('hidden');
-                raceResultAlert.innerHTML = `
-                    <div class="p-3 mt-4 mb-2 rounded-xl bg-slate-900 border ${isHit ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-slate-700'} flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] text-slate-400 font-bold">レース結果</span>
-                                ${isHit ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-black border border-emerald-500/30">的中 🎉</span>' : '<span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black border border-slate-700">不的中</span>'}
-                            </div>
-                            <div class="font-mono text-xl font-black text-white">${combo}</div>
+                const combo = result.result.combo;
+                const payout = result.result.payout;
+                const isHit = finalFocus.includes(combo);
+
+                if (isHit) {
+                    raceResultAlert.innerHTML = `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm animate-pulse">
+                            <span>🎉 的中！ 確定結果: ${combo}</span>
+                            <span class="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-slate-400 font-bold mb-1">払戻金</div>
-                            <div class="font-mono text-xl font-black ${isHit ? 'text-emerald-400' : 'text-slate-300'}">${payout.toLocaleString()}円</div>
+                    `;
+                } else {
+                    raceResultAlert.innerHTML = `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-bold shadow-sm">
+                            <span>❌ 不的中 (確定結果: ${combo})</span>
+                            <span class="font-mono bg-slate-900/50 px-2 py-0.5 rounded text-[10px] text-slate-400">払戻金: ${payout.toLocaleString()}円</span>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             } else {
                 raceResultAlert.classList.add('hidden');
                 raceResultAlert.innerHTML = '';
             }
-            
-            if (firstPred && firstPred.ai) {
-                document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-200">${firstPred.ai.escape_rate || '--'}%</span>`;
-                if(firstPred.confidence) {
-                    document.getElementById('first-ai-confidence-stars').innerHTML = firstPred.confidence.stars || '☁️☁️☁️';
-                }
-                document.getElementById('first-ai-comment-content').innerText = firstPred.ai.comment || '解説データがありません。';
-                
-                const firstSolidContainer = document.getElementById('first-ai-solid-focus');
-                const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
-                const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
-                
-                if (firstSolidContainer) firstSolidContainer.innerHTML = '';
-                if (firstUpsetContainer) firstUpsetContainer.innerHTML = '';
-                
-                const isPremium = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass();
-                const currentRaceKey = window.currentJCD + "_" + window.currentRNO;
-                const isAdUnlocked = sessionStorage.getItem('ad_unlocked_' + currentRaceKey) === 'true';
-                
-                if (!isPremium && !isAdUnlocked && firstAdOverlay) {
-                    firstAdOverlay.classList.remove('hidden');
-                    if (firstUpsetContainer) firstUpsetContainer.classList.add('premium-blur');
-                } else if (firstAdOverlay) {
-                    firstAdOverlay.classList.add('hidden');
-                    if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
-                }
 
-                let firstFocusArr = [];
-                if (firstPred.ai.solid_focus && firstPred.ai.upset_focus) {
-                    firstFocusArr = [...firstPred.ai.solid_focus, ...firstPred.ai.upset_focus];
-                } else if (firstPred.ai.focus) {
-                    firstFocusArr = firstPred.ai.focus;
+            if (phase === 3) {
+                // Phase 3: Weather shift update (Purple/Indigo styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/60 border border-purple-500/40 shadow-xl shadow-purple-500/5 space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold leading-normal shadow-sm animate-pulse">
+                        <span class="text-sm">⚡</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第三次予想：直前気象急変対応モデル</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">展示公開後、本番直前に【風速2m以上・風向・天候】に大きな変動を検知したため、AIが物理展開シミュレーションを緊急更新した最終結論です。</span>
+                        </div>
+                    </div>
+                `;
+                
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
+                slitStatus.innerText = "⚡ 気象急変反映";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/20";
+                detailStatus.innerText = "⚡ 気象急変反映";
+            } else if (phase === 2) {
+                // Phase 2: Exhibition merge (Emerald/Green styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-emerald-950/25 to-slate-900/60 border border-emerald-500/30 shadow-xl space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold leading-normal shadow-sm">
+                        <span class="text-sm">🟢</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第二次予想：直前展示すり合わせ完了</strong>
+                            <span class="text-slate-300 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示タイム、スタート展示スリット、チルト調整の気配をマージした最終結論です。</span>
+                        </div>
+                    </div>
+                `;
+                
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
+                slitStatus.innerText = "🟢 展示反映済";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/20";
+                detailStatus.innerText = "🟢 展示反映済";
+            } else {
+                // Phase 1: Pre-race (Amber/Gold styled)
+                aiCard.className = "p-4 rounded-2xl bg-gradient-to-br from-amber-950/20 to-slate-900/60 border border-amber-500/20 shadow-xl space-y-3 transition-all duration-300";
+                aiModeAlert.innerHTML = `
+                    <div class="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold leading-normal shadow-sm">
+                        <span class="text-sm">🌅</span>
+                        <div>
+                            <strong class="font-outfit text-xs tracking-wide">第一次予想：朝イチ事前予想</strong>
+                            <span class="text-slate-400 font-medium text-[10px] block mt-0.5 leading-relaxed">直前展示は未実施です。選手勝率とモーター性能のみによる前情報予想です。本番15分前のアラーム巡回後に自動で第二次（直前展示）に上書き更新されます。</span>
+                        </div>
+                    </div>
+                `;
+                
+                slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
+                slitStatus.innerText = "⚠️ 待機中（前情報）";
+                
+                detailStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/20";
+                detailStatus.innerText = "⚠️ 展示未実施";
+            }
+
+            let modeBadge = '';
+            if (phase === 3) {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-purple-500/20 text-purple-300 font-extrabold rounded border border-purple-500/30 mr-1 animate-pulse">⚡ 第三次：気象急変対応</span>';
+            } else if (phase === 2) {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 font-extrabold rounded border border-emerald-500/30 mr-1">🟢 第二次：直前展示</span>';
+            } else {
+                modeBadge = '<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 font-extrabold rounded border border-amber-500/30 mr-1">🌅 第一次：朝イチ事前</span>';
+            }
+                
+            document.getElementById('ai-accuracy').innerHTML = modeBadge + `<span class="ml-1 text-slate-200">イン逃げ確度: ${ai.escape_rate}%</span>`;
+            const parsedComment = (ai.comment || '')
+                .replace(/\*\*/g, '') // 太字用のアスタリスクを削除
+                .replace(/\n/g, '<br>');
+            document.getElementById('ai-comment').innerHTML = parsedComment;
+            
+            const focusContainer = document.getElementById('ai-focus');
+            focusContainer.innerHTML = '';
+            focusContainer.className = 'flex flex-col gap-3 w-full';
+
+            let solidFocus = [];
+            let upsetFocus = [];
+            if (ai.solid_focus && Array.isArray(ai.solid_focus)) {
+                solidFocus = ai.solid_focus.filter(f => f && f !== "-");
+            }
+            if (ai.upset_focus && Array.isArray(ai.upset_focus)) {
+                upsetFocus = ai.upset_focus.filter(f => f && f !== "-");
+            }
+            if (solidFocus.length < 4) {
+                solidFocus = get4Focus(result);
+            }
+            if (upsetFocus.length < 4) {
+                if (result.data && result.data.length >= 6) {
+                    const dynamicCombos = getDynamicPredictions(result.data);
+                    upsetFocus = [];
+                    for (let i = 0; i < dynamicCombos.length; i++) {
+                        const combo = dynamicCombos[i].combo;
+                        if (!combo.startsWith("1-")) {
+                            upsetFocus.push(combo);
+                        }
+                        if (upsetFocus.length >= 4) break;
+                    }
                 }
-                if(firstFocusArr.length > 0) {
-                    firstFocusArr.forEach((f, idx) => {
-                        const isUpset = idx >= 4; 
-                        const badgeStr = isUpset ? '穴' : '本命';
-                        const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full';
-                        w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
-                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
-                            </div>
-                        `;
-                        if (isUpset && firstUpsetContainer) {
-                            firstUpsetContainer.appendChild(w);
-                        } else if (!isUpset && firstSolidContainer) {
-                            firstSolidContainer.appendChild(w);
+                while (upsetFocus.length < 4) {
+                    upsetFocus.push("2-1-3");
+                }
+            }
+
+            function renderFocusGroup(title, items, isUpset) {
+                const groupWrapper = document.createElement('div');
+                groupWrapper.className = isUpset 
+                    ? 'bg-purple-500/5 p-3 rounded-xl border border-purple-500/10 space-y-2 w-full'
+                    : 'bg-indigo-500/5 p-3 rounded-xl border border-indigo-500/10 space-y-2 w-full';
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.className = isUpset
+                    ? 'text-[10px] text-purple-400 font-bold tracking-wider uppercase block'
+                    : 'text-[10px] text-indigo-400 font-bold tracking-wider uppercase block';
+                titleSpan.innerText = title;
+                groupWrapper.appendChild(titleSpan);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 w-full';
+
+                items.slice(0, 4).forEach((f, index) => {
+                    const itemWrapper = document.createElement('div');
+                    itemWrapper.className = 'flex items-center justify-between p-2 rounded-xl bg-slate-950/50 border border-white/5 shadow-inner hover:border-slate-800 transition-all gap-3';
+                    
+                    let labelText = '抑え';
+                    let labelColor = 'text-slate-400 bg-slate-800/40 border-slate-700/30';
+                    if (!isUpset) {
+                        if (index === 0) {
+                            labelText = '大本線';
+                            labelColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 1) {
+                            labelText = '本線';
+                            labelColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                        } else if (index === 2) {
+                            labelText = '抑え1';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                        } else if (index === 3) {
+                            labelText = '抑え2';
+                            labelColor = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                        }
+                    } else {
+                        if (index === 0) {
+                            labelText = '中穴';
+                            labelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                        } else if (index === 1) {
+                            labelText = '穴狙い';
+                            labelColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+                        } else if (index === 2) {
+                            labelText = '大穴1';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        } else if (index === 3) {
+                            labelText = '大穴2';
+                            labelColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                        }
+                    }
+
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = `text-[9px] font-black tracking-wider px-2 py-1 rounded-lg border ${labelColor} uppercase font-outfit min-w-[55px] text-center flex-shrink-0`;
+                    labelSpan.innerText = labelText;
+                    
+                    const focusBadgeWrapper = createPremiumFocusElement(f);
+                    focusBadgeWrapper.className = 'flex items-center gap-1 justify-end flex-1 min-w-0 transition-all duration-500';
+
+                    const isGasApp = window.location.hostname.indexOf('script.google') !== -1 || 
+                                     window.location.hostname.indexOf('googleusercontent') !== -1;
+
+                    if (index >= 1 && !isGasApp) {
+                        focusBadgeWrapper.classList.add('premium-blur');
+                        
+                        const lockOverlay = document.createElement('div');
+                        lockOverlay.className = 'absolute inset-0 flex items-center justify-center cursor-pointer z-10 rounded-xl bg-slate-900/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-900/60';
+                        lockOverlay.innerHTML = '<span class="text-[9px] bg-indigo-500/90 text-white px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 font-bold border border-indigo-400/50 hover:bg-indigo-400 transition-colors">🔒 広告を見て予想を見る</span>';
+                        
+                        itemWrapper.classList.add('relative');
+                        itemWrapper.appendChild(lockOverlay);
+                        
+                        lockOverlay.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            if (typeof window.triggerAdUnlock === 'function') {
+                                window.triggerAdUnlock(focusBadgeWrapper, lockOverlay, function() {
+                                    itemWrapper.click();
+                                });
+                            } else {
+                                focusBadgeWrapper.classList.remove('premium-blur');
+                                focusBadgeWrapper.classList.add('premium-unlocked');
+                                lockOverlay.remove();
+                                itemWrapper.click();
+                            }
+                        });
+                    }
+
+                    // 初期状態で本命の1番目(大本線)をハイライト
+                    if (!isUpset && index === 0) {
+                        itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
+                    }
+
+                    // 買い目クリックでシミュレーション起動
+                    itemWrapper.classList.add('cursor-pointer', 'transition-all', 'duration-200');
+                    itemWrapper.addEventListener('click', function() {
+                        if (focusBadgeWrapper.classList.contains('premium-blur')) {
+                            return; 
+                        }
+
+                        // すべての買い目のハイライト枠を除去
+                        document.querySelectorAll('.focus-item-active').forEach(el => {
+                            el.classList.remove('focus-item-active', 'border-indigo-500/50', 'border-purple-500/50', 'bg-indigo-500/10', 'bg-purple-500/10');
+                        });
+
+                        // 選択されたものをハイライト
+                        if (isUpset) {
+                            itemWrapper.classList.add('focus-item-active', 'border-purple-500/50', 'bg-purple-500/10');
+                        } else {
+                            itemWrapper.classList.add('focus-item-active', 'border-indigo-500/50', 'bg-indigo-500/10');
+                        }
+
+                        // 物理シミュレータをこの展開(f)で即座に再起動
+                        try {
+                            initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+                            if (window.setSimCombo) {
+                                window.setSimCombo(f);
+                            }
+                        } catch (e) {
+                            console.error("Click-to-simulate error:", e);
                         }
                     });
-                }
+
+                    itemWrapper.appendChild(labelSpan);
+                    itemWrapper.appendChild(focusBadgeWrapper);
+                    grid.appendChild(itemWrapper);
+                });
+
+                groupWrapper.appendChild(grid);
+                return groupWrapper;
+            }
+
+            if (solidFocus.length > 0 || upsetFocus.length > 0) {
+                focusContainer.appendChild(renderFocusGroup('本命推奨フォーカス (3連単)', solidFocus, false));
+                focusContainer.appendChild(renderFocusGroup('穴推奨フォーカス (3連単)', upsetFocus, true));
             } else {
-                document.getElementById('first-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">事前AI解析中</span>`;
-                document.getElementById('first-ai-confidence-stars').innerHTML = '---';
-                document.getElementById('first-ai-comment-content').innerText = 'ただいま朝一のAI解析データを集計中です。しばらくお待ちください。';
-                if(document.getElementById('first-ai-solid-focus')) document.getElementById('first-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
-                if(document.getElementById('first-ai-upset-focus')) document.getElementById('first-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                focusContainer.className = 'flex flex-wrap gap-2 w-full';
+                const emptySpan = document.createElement('span');
+                emptySpan.className = 'text-xs font-bold text-slate-500 font-mono';
+                emptySpan.innerText = '待機中...';
+                focusContainer.appendChild(emptySpan);
+            }
+
+            // Populate Confidence Stars
+            const confidenceStarsEl = document.getElementById('ai-confidence-stars');
+            if (confidenceStarsEl && result.confidence) {
+                confidenceStarsEl.innerText = result.confidence.stars || '★★★☆☆';
+            }
+
+            // Populate Weather Details
+            if (result.weather) {
+                const w = result.weather;
+                const showRealWeather = exhibitionCompleted;
+                
+                document.getElementById('weather-txt').innerText = showRealWeather ? (w.weather || '曇り') : '計測中...';
+                document.getElementById('temp-txt').innerText = showRealWeather ? ((w.temp !== undefined ? w.temp : '--') + '℃') : '--℃';
+                document.getElementById('wind-dir-txt').innerText = showRealWeather ? (w.wind_dir_name || '--') : '--';
+                document.getElementById('wind-speed-txt').innerText = showRealWeather ? ((w.wind_speed !== undefined ? w.wind_speed : '--') + 'm') : '--m';
+                document.getElementById('wave-txt').innerText = showRealWeather ? ((w.wave_height !== undefined ? w.wave_height : '--') + 'cm') : '--cm';
+                document.getElementById('water-temp-txt').innerText = showRealWeather ? ((w.water_temp !== undefined ? w.water_temp : '--') + '℃') : '--℃';
+                
+                const windEffectBanner = document.getElementById('wind-effect-banner');
+                if (windEffectBanner) {
+                    windEffectBanner.innerText = showRealWeather ? `物理補正判定: ${w.wind_effect || '補正なし'}` : '物理補正判定: 展示公開時にリアルタイム計算';
+                }
+
+                // 気象データの取得時刻を表示
+                const weatherStatusBadge = document.getElementById('weather-status-badge');
+                if (weatherStatusBadge) {
+                    if (showRealWeather) {
+                        const now = new Date();
+                        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        weatherStatusBadge.innerText = `${timeStr} 取得`;
+                    } else {
+                        weatherStatusBadge.innerText = `待機中`;
+                    }
+                }
+
+                // Rotate Wind Arrow
+                const windDirArrow = document.getElementById('wind-dir-arrow');
+                if (windDirArrow && w.wind_dir_num !== undefined) {
+                    const angles = {
+                        1: 180, 2: 202.5, 3: 225, 4: 247.5,
+                        5: 270, 6: 292.5, 7: 315, 8: 337.5,
+                        9: 0, 10: 22.5, 11: 45, 12: 67.5,
+                        13: 90, 14: 112.5, 15: 135, 16: 157.5
+                    };
+                    const deg = showRealWeather && angles[w.wind_dir_num] !== undefined ? angles[w.wind_dir_num] : 0;
+                    windDirArrow.style.transform = `rotate(${deg}deg)`;
+                }
+            }
+
+            // 展示情報未公開時のカードグレーアウト表示
+            const weatherCard = document.getElementById('weather-card');
+            if (weatherCard) {
+                if (exhibitionCompleted) {
+                    weatherCard.classList.remove('opacity-40');
+                } else {
+                    weatherCard.classList.add('opacity-40');
+                }
+            }
+
+            const tacticalSimCard = document.getElementById('tactical-sim-card');
+            const replaySimBtn = document.getElementById('replay-sim-btn');
+            if (tacticalSimCard) {
+                if (exhibitionCompleted) {
+                    tacticalSimCard.classList.remove('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = false;
+                        replaySimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } else {
+                    tacticalSimCard.classList.add('opacity-40');
+                    if (replaySimBtn) {
+                        replaySimBtn.disabled = true;
+                        replaySimBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            }
+
+            // 2. Render Slit Simulator (進入崩れ自動検知＆好ST強調・バグ完全排除版)
+            const slitContainer = document.getElementById('slit-rows');
+            slitContainer.innerHTML = '';
+            
+            const hasExhibition = exhibitionCompleted && !isPlaceholder;
+            
+            if (!hasExhibition) {
+                slitContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full w-full text-slate-500 gap-1 text-center py-8">
+                        <span class="text-lg">🔒</span>
+                        <span class="text-[11px] font-bold">直前展示データ公開までシミュレーション待機中</span>
+                        <span class="text-[9px] text-slate-600">本番約15分前の展示情報取得後にスタート再現が表示されます</span>
+                    </div>
+                `;
+            } else {
+                const slitItems = racers.map(r => {
+                    const isNA = r.st_val === "N/A" || r.st_val === "";
+                    return {
+                        lane: r.lane,
+                        st: isNA ? "待機中" : r.st_val,
+                        course: isNA ? r.lane.toString() : r.st_course,
+                        is_flying: isNA ? false : r.st_val.includes('F'),
+                        val: isNA ? 0.15 : (parseFloat(r.st_val.replace('F', '')) || 0.15)
+                    };
+                });
+
+                // 進入コース（course）の昇順でソート（前づけ時にも現実に則したコース順に並び替わります）
+                slitItems.sort((a, b) => {
+                    const cA = parseFloat(a.course) || 99;
+                    const cB = parseFloat(b.course) || 99;
+                    return cA - cB;
+                });
+
+                // 進入崩れ（枠なり崩れ）を自動検出
+                const isWakunariKuzure = hasExhibition && slitItems.map(item => item.lane).join('') !== "123456";
+                
+                // 進入崩れがある場合、ステータスバッジの横に「進入崩れ」の警告バッジを追加表示
+                if (isWakunariKuzure) {
+                    const currentText = slitStatus.innerText;
+                    if (!currentText.includes("進入崩れ")) {
+                        slitStatus.className = "px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse";
+                        slitStatus.innerText = currentText + " ⚠️進入崩れ";
+                    }
+                }
+
+                slitItems.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center w-full h-6 relative';
+                    
+                    const courseLabel = document.createElement('span');
+                    courseLabel.className = 'text-[10px] font-black text-slate-500 w-6 z-20 font-mono';
+                    courseLabel.innerText = `C${item.course}`;
+                    row.appendChild(courseLabel);
+
+                    // スタートタイミングと進入状態に応じた艇バッジの拡張クラス
+                    let badgeClass = `w-4.5 h-4.5 rounded-full text-[9px] font-black flex items-center justify-center z-20 font-outfit boat-${item.lane} shadow-md`;
+                    if (item.is_flying) {
+                        badgeClass += ' ring-2 ring-red-500 animate-pulse scale-[1.05]'; // F艇は赤パルスで明滅
+                    } else if (hasExhibition && item.val > 0 && item.val < 0.10) {
+                        badgeClass += ' ring-2 ring-amber-400 scale-[1.03]'; // 好スタート(0.10未満)はゴールドリング
+                    }
+
+                    const boatBadge = document.createElement('span');
+                    boatBadge.className = badgeClass;
+                    boatBadge.innerText = item.lane;
+                    
+                    let leftPercent = 66; // スリットライン(赤点線)の位置
+                    if (!hasExhibition) {
+                        leftPercent = 48; // 展示未実施時は中央付近に整列
+                    } else if (item.is_flying) {
+                        leftPercent += (item.val * 100); // フライングは右に突き抜け
+                        if (leftPercent > 92) leftPercent = 92;
+                    } else {
+                        leftPercent -= (item.val * 100); // 通常STは、タイミング値が大きい(遅い)ほど左へ、小さい(早い)ほどスリットに接近
+                        if (leftPercent < 20) leftPercent = 20;
+                    }
+
+                    const boatWrapper = document.createElement('div');
+                    boatWrapper.className = 'absolute transition-all duration-500 ease-out flex items-center gap-1.5';
+                    boatWrapper.style.left = `${leftPercent}%`;
+                    
+                    // スタートタイミング（タイミングテキスト）のクラスと文字の拡張
+                    let timingTextClass = 'text-[9px] font-bold font-mono px-1 py-0.5 rounded ';
+                    let timingTextContent = item.st;
+                    
+                    if (!hasExhibition) {
+                        timingTextClass += 'text-slate-500 bg-slate-900/30';
+                    } else if (item.is_flying) {
+                        timingTextClass += 'text-red-400 bg-red-500/10 border border-red-500/30 font-black animate-pulse';
+                        timingTextContent = '🔥 F' + item.st.replace('F', '');
+                    } else if (item.val < 0.10) {
+                        timingTextClass += 'text-amber-400 bg-amber-500/10 border border-amber-500/30 font-black';
+                        timingTextContent = '⚡ ' + item.st;
+                    } else {
+                        timingTextClass += 'text-slate-300 bg-slate-900/40';
+                    }
+                    
+                    const timingText = document.createElement('span');
+                    timingText.className = timingTextClass;
+                    timingText.innerText = timingTextContent;
+
+                    boatWrapper.appendChild(boatBadge);
+                    boatWrapper.appendChild(timingText);
+                    row.appendChild(boatWrapper);
+                    slitContainer.appendChild(row);
+                });
+            }
+
+            // 3. Render Racer Table Details
+            const racerList = document.getElementById('racer-list');
+            racerList.innerHTML = '';
+            
+            if (isPlaceholder) {
+                racerList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
+                        <svg class="w-6 h-6 text-slate-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
+                        <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
+                    </div>
+                `;
+            } else {
+                const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
+            const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
+
+            // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
+            const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
+            const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
+
+            const turnTimes = racers.map(r => parseFloat(r.turn_time)).filter(t => !isNaN(t) && t > 0);
+            const minTurn = turnTimes.length > 0 ? Math.min(...turnTimes) : 999;
+
+            const straightTimes = racers.map(r => parseFloat(r.straight_time)).filter(t => !isNaN(t) && t > 0);
+            const minStraight = straightTimes.length > 0 ? Math.min(...straightTimes) : 999;
+
+            racers.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'p-3 flex items-center justify-between gap-2';
+
+                const leftArea = document.createElement('div');
+                leftArea.className = 'flex items-center gap-2.5 w-full';
+                
+                const badge = document.createElement('div');
+                badge.className = `w-7 h-7 rounded-xl flex items-center justify-center font-black font-outfit text-sm shadow-sm boat-${r.lane} flex-shrink-0`;
+                badge.innerText = r.lane;
+                
+                // オリジナル展示タイムがある場（鳴門・三国など）の追加HTML生成
+                let originalHtml = '';
+                const hasOriginalTimes = (r.loop_time && r.loop_time !== "N/A" && r.loop_time !== "");
+                if (hasOriginalTimes) {
+                    const lVal = parseFloat(r.loop_time) || 0;
+                    const tVal = parseFloat(r.turn_time) || 0;
+                    const sVal = parseFloat(r.straight_time) || 0;
+
+                    const lColor = (lVal === minLoop) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const tColor = (tVal === minTurn) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const sColor = (sVal === minStraight) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+
+                    const lBadge = (lVal === minLoop) ? '👑' : '';
+                    const tBadge = (tVal === minTurn) ? '👑' : '';
+                    const sBadge = (sVal === minStraight) ? '👑' : '';
+
+                    originalHtml = `
+                        <div class="flex gap-2.5 mt-1.5 text-[9px] bg-slate-950/50 px-2 py-0.5 rounded-lg border border-white/5 w-fit">
+                            <span class="text-slate-400 font-medium">一周: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">まわり: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">直線: <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
+                        </div>
+                    `;
+                }
+
+                const details = document.createElement('div');
+                details.className = 'w-full';
+                details.innerHTML = `
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-black text-white">${r.name}</span>
+                        <span class="text-[8px] px-1 py-0.2 bg-slate-800 text-slate-400 font-bold rounded">${r.cls}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-medium">
+                        勝率:${parseFloat(r.rate).toFixed(2)} | モーター:${parseFloat(r.motor_rate).toFixed(1)}%
+                    </div>
+                    ${originalHtml}
+                `;
+                
+                leftArea.appendChild(badge);
+                leftArea.appendChild(details);
+                card.appendChild(leftArea);
+
+                const rightArea = document.createElement('div');
+                rightArea.className = 'text-right flex flex-col items-end gap-1 w-28 flex-shrink-0';
+                
+                const isNA = r.ex_time === "N/A" || r.ex_time === "";
+                const exTimeVal = parseFloat(r.ex_time) || 0.0;
+                const offset = (exTimeVal - minTime).toFixed(2);
+                
+                let gaugeColor = 'bg-emerald-500';
+                let offsetText = `±0.00`;
+                let displayTimeText = r.ex_time;
+                let gaugeWidth = 100;
+
+                if (isNA) {
+                    gaugeColor = 'bg-slate-700/50';
+                    offsetText = '未実施';
+                    displayTimeText = '--.--';
+                    gaugeWidth = 50; 
+                } else if (offset > 0) {
+                    offsetText = `+${offset}`;
+                    if (offset > 0.08) gaugeColor = 'bg-red-500 animate-pulse';
+                    else if (offset > 0.04) gaugeColor = 'bg-amber-500';
+                    gaugeWidth = Math.max(10, 100 - (offset * 500));
+                }
+
+                rightArea.innerHTML = `
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xs font-black font-mono ${isNA ? 'text-slate-500' : 'text-white'}">${displayTimeText}</span>
+                        <span class="text-[8px] font-black font-mono ${isNA ? 'text-slate-500' : (offset > 0.08 ? 'text-red-400' : 'text-emerald-400')}">(${offsetText})</span>
+                    </div>
+                    <div class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden">
+                        <div class="h-full ${gaugeColor}" style="width: ${gaugeWidth}%"></div>
+                    </div>
+                    <div class="text-[8px] ${isNA ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase tracking-wider">TILT: ${isNA ? '--' : r.tilt}</div>
+                `;
+                
+                card.appendChild(rightArea);
+                racerList.appendChild(card);
+            });
             }
             
-            const liveAiContainer = document.getElementById('live-ai-container');
+            // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
+            try {
+                initTurnSimulation(racers, solidFocus, upsetFocus, exhibitionCompleted && !isPlaceholder);
+            } catch (e) {
+                console.error("Simulation init failed:", e);
+            }
+
+            
+            // プレミアム状態のUI反映 (データコンテナ描画後)
+            const isPremium = checkPremiumStatusFromData(result);
             const premiumOverlay = document.getElementById('premium-overlay');
-            
-            if (secondPred && secondPred.ai) {
-                document.getElementById('live-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-white">${secondPred.ai.escape_rate || '--'}%</span>`;
-                if(secondPred.confidence) {
-                    document.getElementById('live-ai-confidence-stars').innerHTML = secondPred.confidence.stars || '☁️☁️☁️';
-                }
-                document.getElementById('live-ai-comment-content').innerText = secondPred.ai.comment || '解説データがありません。';
-                
-                const liveSolidContainer = document.getElementById('live-ai-solid-focus');
-                const liveUpsetContainer = document.getElementById('live-ai-upset-focus');
-                if (liveSolidContainer) liveSolidContainer.innerHTML = '';
-                if (liveUpsetContainer) liveUpsetContainer.innerHTML = '';
-                
-                let secondFocusArr = [];
-                if (secondPred.ai.solid_focus && secondPred.ai.upset_focus) {
-                    secondFocusArr = [...secondPred.ai.solid_focus, ...secondPred.ai.upset_focus];
-                } else if (secondPred.ai.focus) {
-                    secondFocusArr = secondPred.ai.focus;
-                }
-                if(secondFocusArr.length > 0) {
-                    secondFocusArr.forEach((f, idx) => {
-                        const isUpset = idx >= 4;
-                        const badgeStr = isUpset ? '穴' : '本命';
-                        const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full';
-                        w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
-                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
-                            </div>
-                        `;
-                        if (isUpset && liveUpsetContainer) {
-                            liveUpsetContainer.appendChild(w);
-                        } else if (!isUpset && liveSolidContainer) {
-                            liveSolidContainer.appendChild(w);
-                        }
-                    });
-                }
-            } else {
-                document.getElementById('live-ai-accuracy').innerHTML = `イン逃げ確度: <span class="text-slate-500">展示待機中</span>`;
-                document.getElementById('live-ai-confidence-stars').innerHTML = '---';
-                document.getElementById('live-ai-comment-content').innerText = '展示航走が終了後、約5〜10分で自動的に直前予想が計算されます。';
-                if(document.getElementById('live-ai-solid-focus')) document.getElementById('live-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
-                if(document.getElementById('live-ai-upset-focus')) document.getElementById('live-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
-            }
-            
-            const premiumZone = document.getElementById('premium-zone');
-            
             const cardsToBlur = [
-                document.getElementById('live-ai-card'),
-                document.getElementById('live-ai-comment-container'),
                 document.getElementById('weather-card'),
-                document.querySelector('#premium-zone > section:nth-of-type(3)'), 
-                document.getElementById('tactical-sim-card'),
-                document.querySelector('#premium-zone > section:last-of-type') 
+                document.getElementById('sim-controls-container'),
+                document.getElementById('turn-animation-container'),
+                document.getElementById('turn-controls')
             ];
-            
-            const premiumOverlayEl = document.getElementById('premium-overlay');
 
-            
-            if (!isUnlocked) {
+            if (!isPremium) {
                 cardsToBlur.forEach(card => { if(card) card.classList.add('premium-blur'); });
                 if (premiumOverlay) premiumOverlay.classList.remove('hidden');
             } else {
@@ -1477,7 +1964,7 @@
 
             } catch (err) {
                 console.error("Dashboard render error:", err);
-                const commentEl = document.getElementById('ai-comment');
+                const commentEl = document.getElementById('first-ai-comment-content');
                 if (commentEl) commentEl.innerText = "描画エラーが発生しました: " + err.message;
             } finally {
                 // 絶対に透明度を元に戻す
