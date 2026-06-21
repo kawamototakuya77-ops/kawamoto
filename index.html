@@ -3702,8 +3702,8 @@ function draw() {
                 isUnlocked = hasLocalAuth;
             }
             updateLoginIcon(isUnlocked);
+            return isUnlocked;
         }
-
         window.submitLogout = function() {
             if (confirm("ログアウトしますか？")) {
                 localStorage.removeItem('PREMIUM_PASS_KEY');
