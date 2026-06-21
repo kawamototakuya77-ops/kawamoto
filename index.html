@@ -1877,7 +1877,7 @@
 
             
             // プレミアム状態のUI反映 (データコンテナ描画後)
-            const isPremium = checkPremiumStatusFromData(result);
+            const isPremium = window.getPremiumPass && window.getPremiumPass() !== "";
             const premiumOverlay = document.getElementById('premium-overlay');
             const cardsToBlur = [
                 document.getElementById('weather-card'),
@@ -3679,15 +3679,17 @@ function draw() {
             const email = window.getPremiumEmail();
             const hasLocalAuth = (!!pass && !!email);
 
-            if (payload) {
+            if (hasLocalAuth) {
+                if (payload && payload.access === "denied") {
+                    isUnlocked = false;
+                } else {
+                    isUnlocked = true;
+                }
+            } else if (payload) {
                 if (payload.access === "granted" || payload.status === 200 || payload.is_premium === true) {
                     isUnlocked = true;
-                    
                     if (payload.username) {
                         localStorage.setItem('PREMIUM_USERNAME_KEY', payload.username);
-                    } else if (hasLocalAuth) {
-                        // 認証済だがユーザー名未登録の場合はポップアップを出す
-                        window.showUsernameModal();
                     }
                 } else if (payload.predictions && Object.keys(payload.predictions).length > 0) {
                     const firstKey = Object.keys(payload.predictions)[0];
@@ -3695,12 +3697,9 @@ function draw() {
                     if (pred && pred.predictions && pred.predictions.length > 0) {
                         isUnlocked = (pred.predictions[0].combo !== "🔒-🔒-🔒");
                     }
-                } else {
-                    isUnlocked = hasLocalAuth;
                 }
-            } else {
-                isUnlocked = hasLocalAuth;
             }
+            
             updateLoginIcon(isUnlocked);
             return isUnlocked;
         }
