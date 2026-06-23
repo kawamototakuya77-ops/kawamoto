@@ -333,16 +333,16 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 mt-2">
+                    <div class="grid grid-cols-1 gap-2 mt-2">
                         <!-- 本命（大本線）ボックス -->
-                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-indigo-500/20 space-y-2 relative">
-                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block">🟦 本命（大本線）</span>
-                            <div id="first-ai-solid-focus" class="flex flex-col gap-1"></div>
+                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-indigo-500/20 relative">
+                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block mb-1.5">🟦 本命（大本線）</span>
+                            <div id="first-ai-solid-focus" class="flex flex-wrap gap-1.5"></div>
                         </div>
                         <!-- 穴狙い（中大穴）ボックス -->
-                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-amber-500/20 space-y-2 relative overflow-hidden">
-                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block">🟧 穴狙い（中大穴）</span>
-                            <div id="first-ai-upset-focus" class="flex flex-col gap-1"></div>
+                        <div class="bg-slate-800/30 p-2.5 rounded-xl border border-amber-500/20 relative overflow-hidden">
+                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block mb-1.5">🟧 穴狙い（中大穴）</span>
+                            <div id="first-ai-upset-focus" class="flex flex-wrap gap-1.5"></div>
                             
                             <!-- Ad Unlock Mosaic overlay for Upset Focus -->
                             <div id="first-ai-ad-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px] z-10 flex flex-col items-center justify-center p-2 text-center transition-all border border-amber-500/30 rounded-xl hidden">
@@ -407,16 +407,16 @@
                         <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
                         <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-2">
                         <!-- 本命（大本線）ボックス -->
-                        <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20 space-y-2 relative">
-                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block">🟦 本命（大本線）</span>
-                            <div id="live-ai-solid-focus" class="flex flex-col gap-1"></div>
+                        <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20 relative">
+                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block mb-1.5">🟦 本命（大本線）</span>
+                            <div id="live-ai-solid-focus" class="flex flex-wrap gap-1.5"></div>
                         </div>
                         <!-- 穴狙い（中大穴）ボックス -->
-                        <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/20 space-y-2 relative">
-                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block">🟧 穴狙い（中大穴）</span>
-                            <div id="live-ai-upset-focus" class="flex flex-col gap-1"></div>
+                        <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/20 relative">
+                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block mb-1.5">🟧 穴狙い（中大穴）</span>
+                            <div id="live-ai-upset-focus" class="flex flex-wrap gap-1.5"></div>
                         </div>
                     </div>
                 </section>
@@ -1523,9 +1523,9 @@
                         const isUpset = idx >= 4; 
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full';
+                        w.className = 'focus-badge-wrapper';
                         w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
                                 <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
                             </div>
                         `;
@@ -1569,9 +1569,9 @@
                         const isUpset = idx >= 4;
                         const badgeStr = isUpset ? '穴' : '本命';
                         const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper w-full';
+                        w.className = 'focus-badge-wrapper';
                         w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform w-full text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
+                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
                                 <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
                             </div>
                         `;
