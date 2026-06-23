@@ -366,65 +366,34 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- 【第二次評価】最終決断 (Live AI) エリア (Premium Zone Start) -->
+            <!-- 【第2次評価】直前物理AI (Live EV Filter) エリア -->
             <!-- ============================================== -->
             <div id="live-ai-container" class="space-y-4 relative">
-                <!-- Global Premium Overlay -->
-            <div id="premium-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden" style="margin-top: 0; height: 100%;">
-                <div class="p-6 text-center space-y-4 max-w-sm w-full sticky top-1/3">
-                    <span class="text-4xl block animate-bounce">🔒</span>
-                    <h3 class="text-lg font-bold text-white tracking-wider">プレミアム会員限定</h3>
-                    <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">ここから先は、展示情報を受けた<strong class="text-amber-400">最終決断（第二次予想）</strong>と、AIの<strong class="text-emerald-400">最終フォーカス</strong>、全シミュレータが表示されます。</p>
-                    
-                    <div class="pt-3 w-full">
-                        <button onclick="window.showLoginModal()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-[1.02]">
-                            🔐 ログインしてロックを解除する
-                        </button>
-                    </div>
-                </div>
-            </div>
-
                 <div class="flex items-center justify-between mb-[-8px] pt-4">
-                    <span class="text-xs font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">【第2次評価】最終決断 (Live AI)</span>
-                    <span id="detail-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">展示確定</span>
+                    <span class="text-xs font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">【第2次評価】直前物理AI (Live EV Filter)</span>
+                    <span id="detail-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700/30">待機中</span>
                 </div>
-                <section id="live-ai-card" class="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-slate-900/60 border border-indigo-500/20 shadow-xl space-y-3.5 transition-all duration-300">
+                
+                <div id="race-result-alert" class="hidden my-2"></div>
+                
+                <!-- 直前物理AI メインカード -->
+                <section id="live-ai-card" class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 shadow-xl space-y-3.5 transition-all duration-300 relative min-h-[160px]">
                     <div id="live-ai-mode-alert"></div>
-                    <div id="race-result-alert" class="hidden my-2"></div>
-                    
-                    <div class="flex items-center justify-between gap-2 bg-slate-950/50 p-3 rounded-xl border border-white/5">
-                        <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">イン逃げ期待度</span>
-                            <div id="live-ai-accuracy" class="text-lg font-black font-outfit text-indigo-300 tracking-tight">--%</div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">AI予想信頼度</span>
-                            <div id="live-ai-confidence-stars" class="text-xs text-amber-400 font-extrabold font-mono">☁️☁️☁️</div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between mb-1 mt-3">
-                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
-                        <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
-                    </div>
-                    <div class="grid grid-cols-1 gap-2">
-                        <!-- 本命（大本線）ボックス -->
-                        <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20 relative">
-                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider block mb-1.5">🟦 本命（大本線）</span>
-                            <div id="live-ai-solid-focus" class="flex flex-wrap gap-1.5"></div>
-                        </div>
-                        <!-- 穴狙い（中大穴）ボックス -->
-                        <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/20 relative">
-                            <span class="text-[10px] text-amber-400 font-bold tracking-wider block mb-1.5">🟧 穴狙い（中大穴）</span>
-                            <div id="live-ai-upset-focus" class="flex flex-wrap gap-1.5"></div>
+                    <div id="live-ai-card-content">
+                        <!-- ここに JS で3つの状態が描画されます -->
+                        <div class="flex flex-col items-center justify-center py-6 text-center space-y-2">
+                            <div class="text-2xl animate-pulse">🔒</div>
+                            <span class="text-xs text-slate-400 font-bold">オッズ解析待機中...</span>
+                            <span class="text-[10px] text-slate-500">展示航走データとリアルタイムオッズの取得をお待ちください。</span>
                         </div>
                     </div>
                 </section>
 
-                <section id="live-ai-comment-container" class="p-4 rounded-2xl glass border border-white/5 shadow-md space-y-2.5">
+                <!-- 解説カード -->
+                <section id="live-ai-comment-container" class="p-4 rounded-2xl glass border border-white/5 shadow-md space-y-2.5 transition-all">
                     <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit block">プロAI物理展開シミュレーション解説</span>
                     <div id="live-ai-comment-content" class="break-words text-xs leading-relaxed text-slate-200 transition-all duration-500 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-800">
-                        データを読み込み中...
+                        展示情報が確定後、AIの物理シミュレーション解説がここに開示されます。
                     </div>
                 </section>
             </div>
@@ -495,7 +464,21 @@
             </section>
 
             <!-- PREMIUM ZONE (Hidden for non-premium by default or blurred) -->
-            <div id="premium-zone" class="space-y-4">
+            <div id="premium-zone" class="space-y-4 relative">
+                <!-- Global Premium Overlay for Simulator/Details -->
+                <div id="premium-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden" style="margin-top: 0; height: 100%;">
+                    <div class="p-6 text-center space-y-4 max-w-sm w-full sticky top-1/3">
+                        <span class="text-4xl block animate-bounce">🔒</span>
+                        <h3 class="text-lg font-bold text-white tracking-wider">プレミアム会員限定</h3>
+                        <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">ここから先は、展示情報を受けた詳細スリット再現、AI戦術展開シミュレータ、展示マージデータが表示されます。</p>
+                        
+                        <div class="pt-3 w-full">
+                            <button onclick="window.showLoginModal()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3 rounded-xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-[1.02]">
+                                🔐 ログインしてロックを解除する
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
             <!-- START EXHIBITION SLIT SIMULATOR -->
             <section class="p-4 rounded-2xl glass shadow-md space-y-3">
@@ -1545,49 +1528,199 @@
             }
             
             const liveAiContainer = document.getElementById('live-ai-container');
+            const liveAiCardContent = document.getElementById('live-ai-card-content');
+            const liveCommentContainer = document.getElementById('live-ai-comment-container');
+            const liveCommentContent = document.getElementById('live-ai-comment-content');
+            const detailStatusBadge = document.getElementById('detail-status-badge');
             
             if (secondPred && secondPred.ai) {
-                document.getElementById('live-ai-accuracy').innerHTML = `本命信頼度: <span class="text-white">${formatAiRate(secondPred.ai.escape_rate)}%</span>`;
-                if(secondPred.confidence) {
-                    document.getElementById('live-ai-confidence-stars').innerHTML = secondPred.confidence.stars || '☁️☁️☁️';
-                }
-                document.getElementById('live-ai-comment-content').innerText = secondPred.ai.comment || '解説データがありません。';
+                // 買い目・EVがあるかどうか
+                const hasSolid = secondPred.ai.solid_focus && secondPred.ai.solid_focus.length > 0;
+                const hasUpset = secondPred.ai.upset_focus && secondPred.ai.upset_focus.length > 0;
+                const isKen = !hasSolid && !hasUpset; // 見判定
                 
-                const liveSolidContainer = document.getElementById('live-ai-solid-focus');
-                const liveUpsetContainer = document.getElementById('live-ai-upset-focus');
-                if (liveSolidContainer) liveSolidContainer.innerHTML = '';
-                if (liveUpsetContainer) liveUpsetContainer.innerHTML = '';
-                
-                let secondFocusArr = [];
-                if (secondPred.ai.solid_focus && secondPred.ai.upset_focus) {
-                    secondFocusArr = [...secondPred.ai.solid_focus, ...secondPred.ai.upset_focus];
-                } else if (secondPred.ai.focus) {
-                    secondFocusArr = secondPred.ai.focus;
-                }
-                if(secondFocusArr.length > 0) {
-                    secondFocusArr.forEach((f, idx) => {
-                        const isUpset = idx >= 4;
-                        const badgeStr = isUpset ? '穴' : '本命';
-                        const w = document.createElement('div');
-                        w.className = 'focus-badge-wrapper';
-                        w.innerHTML = `
-                            <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform text-center ${isUpset ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'}" onclick="simulateFocus('${f}')">
-                                <span class="text-[9px] mr-1 opacity-70">${badgeStr}</span>${f}
+                if (isKen) {
+                    // --- 状態3: 見（ケン）判定 ---
+                    if (detailStatusBadge) {
+                        detailStatusBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700/30";
+                        detailStatusBadge.innerText = "見送り推奨";
+                    }
+                    
+                    if (liveAiCardContent) {
+                        liveAiCardContent.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-6 text-center space-y-3 bg-slate-950/40 p-4 rounded-xl border border-dashed border-slate-700">
+                                <div class="text-3xl">🛡️</div>
+                                <span class="text-xs text-slate-300 font-extrabold tracking-wider uppercase">AI見送り推奨（ケン）</span>
+                                <p class="text-[11px] text-slate-400 leading-relaxed max-w-xs">
+                                    本レースは直前オッズの期待値を検証した結果、AI基準値（EV 1.2）を超える買い目が存在しませんでした。<br>
+                                    <strong class="text-amber-500/90 font-bold">「無駄な投資を避けること」</strong>が回収率向上の鉄則です。このレースは見送り（ケン）を強く推奨します。
+                                </p>
+                                <div class="text-[9px] bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">
+                                    Reason: ${secondPred.ai.recommendation_reason || '全買い目の期待値(EV)が1.2未満'}
+                                </div>
                             </div>
                         `;
-                        if (isUpset && liveUpsetContainer) {
-                            liveUpsetContainer.appendChild(w);
-                        } else if (!isUpset && liveSolidContainer) {
-                            liveSolidContainer.appendChild(w);
+                    }
+                    
+                    if (liveCommentContent) {
+                        liveCommentContent.innerText = secondPred.ai.comment || 'オッズ妙味が極めて低いため、AI展開解析は「見送り」と判断しました。';
+                    }
+                    if (liveCommentContainer) {
+                        liveCommentContainer.classList.remove('premium-blur'); // 見は全員に見せる
+                    }
+                } else {
+                    // --- 状態2: 買い判定（EV1.2以上） ---
+                    if (detailStatusBadge) {
+                        detailStatusBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse";
+                        detailStatusBadge.innerText = "展示確定・配信中";
+                    }
+                    
+                    const escapeRate = formatAiRate(secondPred.ai.escape_rate);
+                    const stars = (secondPred.confidence && secondPred.confidence.stars) ? secondPred.confidence.stars : '☁️☁️☁️';
+                    const isPremiumUser = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass() !== "";
+                    
+                    if (isPremiumUser) {
+                        if (liveCommentContainer) liveCommentContainer.classList.remove('premium-blur');
+                        if (liveCommentContent) liveCommentContent.innerText = secondPred.ai.comment || '解説データがありません。';
+                        
+                        let solidHtml = '';
+                        let upsetHtml = '';
+                        
+                        const getEvText = (f) => {
+                            let evVal = null;
+                            if (secondPred.ai.ev_details && secondPred.ai.ev_details[f] !== undefined) {
+                                evVal = secondPred.ai.ev_details[f];
+                            } else if (secondPred.ai.pseudo_ev) {
+                                // 配列から該当するcomboを探す
+                                const item = secondPred.ai.pseudo_ev.find(x => x.combo === f);
+                                if (item) evVal = item.pseudo_ev || item.ev;
+                            }
+                            return evVal ? `(EV: ${parseFloat(evVal).toFixed(2)})` : '';
+                        };
+                        
+                        if (secondPred.ai.solid_focus) {
+                            secondPred.ai.solid_focus.forEach(f => {
+                                solidHtml += `
+                                    <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform text-center bg-indigo-500/20 border-indigo-500/50 text-indigo-300" onclick="simulateFocus('${f}')">
+                                        <span class="text-[9px] mr-1 opacity-70">本命</span>${f} <span class="text-[10px] ml-1 text-indigo-400/80 font-normal font-mono">${getEvText(f)}</span>
+                                    </div>
+                                `;
+                            });
                         }
-                    });
+                        if (secondPred.ai.upset_focus) {
+                            secondPred.ai.upset_focus.forEach(f => {
+                                upsetHtml += `
+                                    <div class="px-2.5 py-1.5 rounded border shadow-sm font-black font-outfit text-sm cursor-pointer hover:scale-105 transition-transform text-center bg-amber-500/20 border-amber-500/50 text-amber-300" onclick="simulateFocus('${f}')">
+                                        <span class="text-[9px] mr-1 opacity-70">穴</span>${f} <span class="text-[10px] ml-1 text-amber-400/80 font-normal font-mono">${getEvText(f)}</span>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        if (liveAiCardContent) {
+                            liveAiCardContent.innerHTML = `
+                                <div class="flex items-center justify-between gap-2 bg-slate-950/50 p-3 rounded-xl border border-white/5">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">イン逃げ期待度</span>
+                                        <div class="text-lg font-black font-outfit text-indigo-300 tracking-tight">${escapeRate}%</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">AI予想信頼度</span>
+                                        <div class="text-xs text-amber-400 font-extrabold font-mono">${stars}</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mb-1 mt-3">
+                                    <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                                    <span class="text-[9px] text-emerald-400 font-bold animate-pulse">👈 タップで展開シミュレータ連動！</span>
+                                </div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <!-- 本命（大本線）ボックス -->
+                                    <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20 relative">
+                                        <span class="text-[10px] text-indigo-400 font-bold tracking-wider block mb-1.5">🟦 本命（大本線）</span>
+                                        <div class="flex flex-wrap gap-1.5">${solidHtml || '---'}</div>
+                                    </div>
+                                    <!-- 穴狙い（中大穴）ボックス -->
+                                    <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/20 relative">
+                                        <span class="text-[10px] text-amber-400 font-bold tracking-wider block mb-1.5">🟧 穴狙い（中大穴）</span>
+                                        <div class="flex flex-wrap gap-1.5">${upsetHtml || '---'}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // 未ログインの場合はブラー ＋ CTA表示
+                        if (liveCommentContainer) liveCommentContainer.classList.add('premium-blur');
+                        if (liveCommentContent) liveCommentContent.innerText = 'プレミアム会員限定の展開解説。ライセンスキー登録後に解除されます。';
+                        
+                        if (liveAiCardContent) {
+                            liveAiCardContent.innerHTML = `
+                                <div class="relative w-full">
+                                    <!-- Blur content background -->
+                                    <div class="premium-blur select-none pointer-events-none space-y-3.5">
+                                        <div class="flex items-center justify-between gap-2 bg-slate-950/50 p-3 rounded-xl border border-white/5">
+                                            <div>
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">イン逃げ期待度</span>
+                                                <div class="text-lg font-black font-outfit text-indigo-300 tracking-tight">${escapeRate}%</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">AI予想信頼度</span>
+                                                <div class="text-xs text-amber-400 font-extrabold font-mono">${stars}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between mb-1 mt-3">
+                                            <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase block">数学的推奨フォーカス (3連単)</span>
+                                        </div>
+                                        <div class="grid grid-cols-1 gap-2">
+                                            <div class="bg-indigo-500/5 p-2.5 rounded-xl border border-indigo-500/20">
+                                                <span class="text-[10px] text-indigo-400 font-bold tracking-wider block mb-1.5">🟦 本命（大本線）</span>
+                                                <div class="flex flex-wrap gap-1.5">
+                                                    <div class="px-2.5 py-1.5 rounded border bg-indigo-500/10 border-indigo-500/30 text-indigo-300 text-sm font-black font-outfit">1-2-3 (EV: 1.35)</div>
+                                                    <div class="px-2.5 py-1.5 rounded border bg-indigo-500/10 border-indigo-500/30 text-indigo-300 text-sm font-black font-outfit">1-2-4 (EV: 1.22)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Live EV CTA Overlay -->
+                                    <div class="absolute inset-0 bg-slate-950/85 backdrop-blur-[6px] rounded-xl flex flex-col items-center justify-center p-4 text-center z-30 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                                        <span class="text-3xl mb-2 animate-bounce">⚡</span>
+                                        <h4 class="text-xs font-black text-emerald-400 tracking-wider">直前物理AI Live EVフィルター発動中</h4>
+                                        <p class="text-[9px] text-slate-400 max-w-xs mt-1.5 mb-3.5 leading-relaxed">
+                                            展示タイム・スタートタイミング・直前オッズから期待値(<strong class="text-emerald-400 font-bold">EV 1.2以上</strong>)の買い目のみをリアルタイム抽出完了！
+                                        </p>
+                                        <button onclick="window.showLoginModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-[10px] font-black rounded-lg shadow-lg transition-all transform hover:scale-[1.03] active:scale-95">
+                                            🔐 プレミアム登録 (月額500円) で最終結論を見る
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
                 }
             } else {
-                document.getElementById('live-ai-accuracy').innerHTML = `本命信頼度: <span class="text-slate-500">展示待機中</span>`;
-                document.getElementById('live-ai-confidence-stars').innerHTML = '---';
-                document.getElementById('live-ai-comment-content').innerText = '展示航走が終了後、約5〜10分で自動的に直前予想が計算されます。';
-                if(document.getElementById('live-ai-solid-focus')) document.getElementById('live-ai-solid-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
-                if(document.getElementById('live-ai-upset-focus')) document.getElementById('live-ai-upset-focus').innerHTML = '<span class="text-xs text-slate-500 text-center block">---</span>';
+                // --- 状態1: 待機中（10分前まで） ---
+                if (detailStatusBadge) {
+                    detailStatusBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700/30";
+                    detailStatusBadge.innerText = "展示未完了";
+                }
+                
+                if (liveAiCardContent) {
+                    liveAiCardContent.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-6 text-center space-y-2">
+                            <div class="text-2xl animate-pulse text-slate-500">🔒</div>
+                            <span class="text-xs text-slate-400 font-bold">オッズ解析待機中...</span>
+                            <span class="text-[10px] text-slate-500 font-normal">展示航走データとリアルタイムオッズの取得をお待ちください。</span>
+                        </div>
+                    `;
+                }
+                if (liveCommentContent) {
+                    liveCommentContent.innerText = '展示航走が終了後、約5〜10分で自動的に直前予想が計算されます。';
+                }
+                if (liveCommentContainer) {
+                    liveCommentContainer.classList.remove('premium-blur'); // 待機中もブラーは不要
+                }
             }
             
 
