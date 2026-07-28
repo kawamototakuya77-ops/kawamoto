@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLivePrediction } from "@/hooks/useLivePrediction";
 import { useRacerScores } from "@/hooks/useRacerScores";
 import type { PredictionData } from "@/types/prediction";
+import { computeRacerScores } from "@/utils/scoreCalculator";
 
 const TABS = [
   { id: "prediction", label: "🎯 予想到着" },
@@ -198,7 +199,7 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
 
       {/* 選手一覧 */}
       {data.data.map((racer) => {
-        const rScore = racer.regNo ? globalScores[racer.regNo] : null;
+        const computed = computeRacerScores(racer, globalScores);
         return (
           <div
             key={racer.lane}
@@ -221,14 +222,14 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
             </div>
 
             {/* Row 2: AIスコアバー */}
-            {rScore ? (
+            {computed ? (
               <div className="space-y-2 py-1 px-1">
-                <ScoreBar label="勝率(走力)" score={rScore.win} color="bg-emerald-500" />
-                <ScoreBar label="スタート" score={rScore.start} color="bg-indigo-500" />
-                <ScoreBar label="旋回・捌き" score={rScore.turn} color="bg-amber-500" />
-                <ScoreBar label="整備・調整" score={rScore.maint} color="bg-rose-500" />
-                <ScoreBar label="イン逃げ率" score={rScore.escape} color="bg-orange-500" />
-                <ScoreBar label="安定感" score={rScore.safety} color="bg-blue-400" />
+                <ScoreBar label="総合力" score={computed.overall} color="bg-emerald-500" />
+                <ScoreBar label="モーター力" score={computed.motor} color="bg-rose-500" />
+                <ScoreBar label="スタート力" score={computed.start} color="bg-indigo-500" />
+                <ScoreBar label="旋回力" score={computed.turn} color="bg-amber-500" />
+                <ScoreBar label="直線力" score={computed.straight} color="bg-cyan-500" />
+                <ScoreBar label="イン信頼度" score={computed.escape} color="bg-orange-500" />
               </div>
             ) : (
               <p className="text-xs text-slate-500 px-1 py-2">※ AI評価データがありません</p>
