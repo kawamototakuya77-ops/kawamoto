@@ -4,7 +4,7 @@ import { useState } from "react";
 import VenueGrid from "@/components/dashboard/VenueGrid";
 
 export default function DashboardClient() {
-  const [selectedJcd, setSelectedJcd] = useState("14"); // 鳴門をデフォルト
+  const [selectedJcd, setSelectedJcd] = useState(""); // 初期値空
   const [selectedRno, setSelectedRno] = useState(1);
 
   return (

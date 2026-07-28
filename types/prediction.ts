@@ -26,6 +26,22 @@ export interface RacerData {
     maint: number;
     safety: number;
   };
+  
+  // 艇国データバンク等からの詳細統計
+  stats?: {
+    avg_st?: string | number;
+    course_st?: string | number;
+    course_st_rank?: string | number;
+    course_top2_rate?: string | number;
+    course_nige?: number;
+    course_sashi?: number;
+    course_makuri?: number;
+    course_makurizashi?: number;
+    course_runs?: number;
+    venue_st?: string | number;
+    venue_win_rate?: string | number;
+    venue_top2_rate?: string | number;
+  };
 }
 
 export interface WeatherData {

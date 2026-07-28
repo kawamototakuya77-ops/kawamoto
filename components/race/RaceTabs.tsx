@@ -196,82 +196,67 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
         </div>
       )}
 
-      {/* 選手一覧 */}
-      {data.data.map((racer) => {
-        const rScore = racer.regNo ? globalScores[racer.regNo] : null;
-        return (
-          <div
-            key={racer.lane}
-            className="p-3 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3"
-          >
-            {/* Row 1: コース・名前・グレード */}
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0 boat-${racer.lane}`}>
-                {racer.lane}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-base font-bold text-white truncate leading-tight">{racer.name}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{racer.cls}</p>
-              </div>
-              {racer.score_grade && (
-                <div className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm font-black shrink-0 ${gradeColor[racer.score_grade] ?? gradeColor.C}`}>
-                  {racer.score_grade}
-                </div>
-              )}
-            </div>
-
-            {/* Row 2: AIスコアバー */}
-            {rScore ? (
-              <div className="space-y-2 py-1 px-1">
-                <ScoreBar label="勝率(走力)" score={rScore.win} color="bg-emerald-500" />
-                <ScoreBar label="スタート" score={rScore.start} color="bg-indigo-500" />
-                <ScoreBar label="旋回・捌き" score={rScore.turn} color="bg-amber-500" />
-                <ScoreBar label="整備・調整" score={rScore.maint} color="bg-rose-500" />
-                <ScoreBar label="イン逃げ率" score={rScore.escape} color="bg-orange-500" />
-                <ScoreBar label="安定感" score={rScore.safety} color="bg-blue-400" />
-              </div>
-            ) : (
-              <p className="text-xs text-slate-500 px-1 py-2">※ AI評価データがありません</p>
-            )}
-
-            {/* Row 3: 展示情報（展示タイム・ST）*/}
-            {(hasExhibition || hasST) && (
-              <div className="grid grid-cols-2 gap-2">
-                {hasExhibition && (
-                  <div className="flex items-center justify-between bg-indigo-500/10 border border-indigo-500/30 rounded-xl px-3 py-2">
-                    <p className="text-xs text-indigo-300 font-bold">展示タイム</p>
-                    <p className="text-sm font-black font-outfit text-indigo-300">{racer.ex_time !== "N/A" ? racer.ex_time : "--"}</p>
+      {/* 選手一覧 (比較テーブルレイアウト) */}
+      <div className="overflow-x-auto rounded-2xl border border-white/5 bg-slate-900/60 mt-2 scrollbar-thin scrollbar-thumb-slate-700">
+        <table className="w-full text-left border-collapse min-w-[600px]">
+          <thead>
+            <tr className="bg-slate-800/80 text-[10px] text-slate-400">
+              <th className="p-2 font-bold w-24">枠 / 選手</th>
+              <th className="p-2 font-bold text-center">コース勝率</th>
+              <th className="p-2 font-bold text-center">当地勝率</th>
+              <th className="p-2 font-bold text-center">ST順位</th>
+              <th className="p-2 font-bold text-center">展示ST</th>
+              <th className="p-2 font-bold text-center text-indigo-300">展示T</th>
+              <th className="p-2 font-bold text-center text-amber-300">一周</th>
+              <th className="p-2 font-bold text-center text-amber-300">まわり足</th>
+              <th className="p-2 font-bold text-center text-amber-300">直線</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {data.data.map((racer) => (
+              <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors">
+                <td className="p-2 flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black shrink-0 boat-${racer.lane}`}>
+                    {racer.lane}
                   </div>
-                )}
-                {hasST && (
-                  <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2">
-                    <p className="text-xs text-emerald-400 font-bold">ST</p>
-                    <p className="text-sm font-black font-outfit text-emerald-400">{racer.st_val !== "N/A" ? `F${racer.st_val}` : "--"}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate leading-none">{racer.name}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{racer.cls}</p>
                   </div>
-                )}
-              </div>
-            )}
-            
-            {/* Row 4: オリ展 (Lap, Turn, Straight) */}
-            {hasOriEx && (
-              <div className="grid grid-cols-3 gap-2 text-center mt-1">
-                <div className="bg-slate-800/60 rounded-xl py-1 px-1">
-                  <p className="text-[10px] text-slate-500 font-bold">一周</p>
-                  <p className="text-xs font-black font-outfit text-slate-300">{racer.lap_time && racer.lap_time !== "N/A" ? racer.lap_time : "--"}</p>
-                </div>
-                <div className="bg-slate-800/60 rounded-xl py-1 px-1">
-                  <p className="text-[10px] text-slate-500 font-bold">まわり足</p>
-                  <p className="text-xs font-black font-outfit text-slate-300">{racer.turn_time && racer.turn_time !== "N/A" ? racer.turn_time : "--"}</p>
-                </div>
-                <div className="bg-slate-800/60 rounded-xl py-1 px-1">
-                  <p className="text-[10px] text-slate-500 font-bold">直線</p>
-                  <p className="text-xs font-black font-outfit text-slate-300">{racer.straight_time && racer.straight_time !== "N/A" ? racer.straight_time : "--"}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+                </td>
+                
+                {/* 艇国DBデータ */}
+                <td className="p-2 text-center text-xs font-bold text-white">
+                  {racer.stats?.course_top2_rate ? `${Number(racer.stats.course_top2_rate).toFixed(1)}%` : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-bold text-white">
+                  {racer.stats?.venue_win_rate ? `${Number(racer.stats.venue_win_rate).toFixed(1)}%` : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-bold text-white">
+                  {racer.stats?.course_st_rank ? Number(racer.stats.course_st_rank).toFixed(2) : "--"}
+                </td>
+
+                {/* 展示・オリ展データ */}
+                <td className="p-2 text-center text-xs font-black font-outfit text-emerald-400">
+                  {racer.st_val !== "N/A" && racer.st_val ? `F${racer.st_val}` : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-black font-outfit text-indigo-300">
+                  {racer.ex_time !== "N/A" && racer.ex_time ? racer.ex_time : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                  {racer.lap_time !== "N/A" && racer.lap_time ? racer.lap_time : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                  {racer.turn_time !== "N/A" && racer.turn_time ? racer.turn_time : "--"}
+                </td>
+                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                  {racer.straight_time !== "N/A" && racer.straight_time ? racer.straight_time : "--"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* 展示なし時の補足 */}
       {!hasExhibition && (

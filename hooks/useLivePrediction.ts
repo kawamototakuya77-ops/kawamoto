@@ -80,9 +80,12 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
     });
   }
 
+  const cutoffTimes = raw?.cutoffTimes ?? {};
+
   return {
     predictions,
     activeVenues,
+    cutoffTimes,
     loading: isLoading,
     error: error ? null : null,
     refresh: () => mutate(),

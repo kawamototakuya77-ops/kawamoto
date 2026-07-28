@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAllPredictions } from "@/hooks/useLivePrediction";
 import { useRouter } from "next/navigation";
 
@@ -28,8 +29,53 @@ interface Props {
 }
 
 export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props) {
-  const { activeVenues, predictions, loading } = useAllPredictions();
+  const { activeVenues, predictions, cutoffTimes, loading } = useAllPredictions();
   const router = useRouter();
+
+  // 直近のレース時間を計算する関数
+  const getNextCutoff = (jcd: string) => {
+    if (!cutoffTimes || !cutoffTimes[jcd]) return null;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    
+    let nextTime = "";
+    let minDiff = Infinity;
+    
+    Object.entries(cutoffTimes[jcd] as Record<string, string>).forEach(([rno, timeStr]) => {
+      const parts = timeStr.split(":");
+      if (parts.length === 2) {
+        const hh = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10);
+        const raceMins = hh * 60 + mm;
+        const diff = raceMins - currentMins;
+        if (diff > 0 && diff < minDiff) {
+          minDiff = diff;
+          nextTime = timeStr;
+        }
+      }
+    });
+    return { nextTime, minDiff };
+  };
+
+  // 初期ロード時に直近のレースがある場を自動選択
+  useEffect(() => {
+    if (!selectedJcd && activeVenues.length > 0 && cutoffTimes) {
+      let closestJcd = activeVenues[0];
+      let globalMinDiff = Infinity;
+      
+      activeVenues.forEach(jcd => {
+        const res = getNextCutoff(jcd);
+        if (res && res.minDiff < globalMinDiff) {
+          globalMinDiff = res.minDiff;
+          closestJcd = jcd;
+        }
+      });
+      
+      if (closestJcd) {
+        onSelect(closestJcd);
+      }
+    }
+  }, [selectedJcd, activeVenues, cutoffTimes, onSelect]);
 
   const handleVenueClick = (jcd: string) => {
     onSelect(jcd);
@@ -50,13 +96,15 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
           const key = `${jcd}_${selectedRno}`;
           const pred = predictions[key];
           const phase = pred?.phase ?? 0;
+          
+          const nextCutoff = isActive ? getNextCutoff(jcd) : null;
 
           return (
             <button
               key={jcd}
               onClick={() => handleVenueClick(jcd)}
               className={[
-                "relative py-2 px-1 rounded-xl text-sm font-bold transition-all text-center",
+                "relative py-2 px-1 rounded-xl text-sm font-bold transition-all text-center flex flex-col items-center justify-center min-h-[4rem]",
                 isSelected
                   ? "bg-emerald-500/20 border-2 border-emerald-500/70 text-emerald-300"
                   : isActive
@@ -65,14 +113,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
               ].join(" ")}
             >
               <span className="block">{name}</span>
-              {isActive && phase > 0 && (
-                <span
-                  className={[
-                    "block text-xs font-black mt-0.5",
-                    phase >= 2 ? "text-emerald-400" : "text-slate-500",
-                  ].join(" ")}
-                >
-                  {phase >= 2 ? "●LIVE" : "○事前"}
+              {isActive && nextCutoff?.nextTime && (
+                <span className="block text-[10px] text-emerald-400 mt-1 font-mono font-black tracking-widest bg-emerald-900/30 px-1.5 py-0.5 rounded">
+                  {nextCutoff.nextTime} 締切
                 </span>
               )}
             </button>
@@ -98,12 +141,16 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
               const key = `${selectedJcd}_${rno}`;
               const pred = predictions[key];
               const hasLive = pred?.phase === 2 || pred?.phase === 3;
+              
+              // このレースの締切時間
+              const rTime = cutoffTimes?.[selectedJcd]?.[rno.toString()];
+
               return (
                 <button
                   key={rno}
                   onClick={() => handleRaceLink(selectedJcd, rno)}
                   className={[
-                    "py-3 rounded-xl text-sm font-black transition-all border",
+                    "py-2 rounded-xl text-sm font-black transition-all border flex flex-col items-center justify-center",
                     hasLive
                       ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 animate-pulse"
                       : rno === selectedRno
@@ -111,9 +158,12 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
                       : "bg-slate-800 border-white/5 text-slate-400 hover:bg-slate-700 hover:text-white",
                   ].join(" ")}
                 >
-                  {rno}R
+                  <span>{rno}R</span>
+                  {rTime && (
+                    <span className="block text-[9px] font-mono opacity-60 mt-0.5">{rTime}</span>
+                  )}
                   {hasLive && (
-                    <span className="block text-xs font-bold text-emerald-400">LIVE</span>
+                    <span className="block text-xs font-bold text-emerald-400 mt-0.5">LIVE</span>
                   )}
                 </button>
               );
