@@ -99,7 +99,9 @@ function PredictionTab({ data, loading }: { data: PredictionData | null; loading
           {isLive ? "【第2次評価】LIVE AI 推論" : "【第1次評価】事前AI予想"}
         </span>
         {ai.confidence && (
-          <span className="text-sm text-amber-400 font-bold">信頼度: {ai.confidence}</span>
+          <span className="text-sm text-amber-400 font-bold">
+            信頼度: {typeof ai.confidence === 'string' ? ai.confidence : ai.confidence.stars}
+          </span>
         )}
       </div>
 

@@ -58,7 +58,7 @@ export interface AiResult {
   escape_rate: string | number | null;
   solid_focus: string[];
   upset_focus: string[];
-  confidence?: string | null;
+  confidence?: string | { level: string; stars: string } | null;
   ev_details?: Record<string, number>;
   recommendation_reason?: string;
 }
