@@ -95,35 +95,43 @@ function mapGasCache(
   meta: { has_phase1?: boolean; has_phase2?: boolean }
 ) {
   const phase = meta.has_phase2 ? 2 : meta.has_phase1 ? 1 : 0;
-  const fp = (cache.first_prediction || cache.ai || {}) as Record<string, unknown>;
-  const sp = (cache.second_prediction || {}) as Record<string, unknown>;
-  const active = meta.has_phase2 ? sp : fp;
 
-  // 選手データ
-  const racers = Array.isArray(cache.racers)
+  // GAS は first_prediction / second_prediction の中に ai が入っている
+  const fp = (cache.first_prediction ?? {}) as Record<string, unknown>;
+  const sp = (cache.second_prediction ?? {}) as Record<string, unknown>;
+  const active = meta.has_phase2 ? sp : fp;
+  // ai はトップレベルか active の中
+  const ai = (cache.ai ?? active.ai ?? fp.ai ?? {}) as Record<string, unknown>;
+
+  // 選手データ: GAS は cache.data または cache.racers
+  const racerArray = Array.isArray(cache.data)
+    ? (cache.data as Record<string, unknown>[])
+    : Array.isArray(cache.racers)
     ? (cache.racers as Record<string, unknown>[])
     : [];
 
   return {
     phase,
     ai: {
-      escape_rate: (active.escape_rate ?? fp.escape_rate ?? null) as string | null,
-      confidence: (active.confidence ?? fp.confidence ?? null) as string | null,
-      solid_focus: (active.solid_focus ?? fp.solid_focus ?? []) as string[],
-      upset_focus: (active.upset_focus ?? fp.upset_focus ?? []) as string[],
-      comment: (active.comment ?? active.ai_comment ?? fp.comment ?? "") as string,
-      recommendation_reason: (active.recommendation_reason ?? "") as string,
-      ev_details: (active.ev_details ?? {}) as Record<string, number>,
+      escape_rate: (ai.escape_rate ?? active.escape_rate ?? fp.escape_rate ?? null) as string | null,
+      confidence: (active.confidence ?? ai.confidence ?? null) as string | null,
+      solid_focus: ((ai.solid_focus ?? active.solid_focus ?? ai.focus ?? []) as string[]),
+      upset_focus: ((ai.upset_focus ?? active.upset_focus ?? []) as string[]),
+      comment: (active.comment ?? ai.comment ?? active.ai_comment ?? "") as string,
+      recommendation_reason: ((active.recommendation_reason ?? ai.recommendation_reason ?? "") as string),
+      ev_details: ((active.ev_details ?? ai.ev_details ?? {}) as Record<string, number>),
     },
-    data: racers.map((r) => ({
+    data: racerArray.map((r) => ({
       lane: r.lane as number,
       name: r.name as string,
       cls: r.cls as string,
       rate: r.rate as string,
       motor_rate: r.motor_rate as string,
-      ex_time: r.ex_time as string,
-      st_val: r.st_val as string,
+      ex_time: (r.ex_time ?? r.exhibition_time ?? "") as string,
+      st_val: (r.st_val ?? r.st ?? "") as string,
+      tilt: (r.tilt ?? "") as string,
       score_grade: (r.score_grade as "S" | "A" | "B" | "C" | "D" | undefined),
+      overall_score: (r.overall_score ?? r.score ?? null) as number | undefined,
     })),
     weather: (cache.weather ?? null) as {
       weather: string; temp: string; wind_speed: string;

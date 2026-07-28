@@ -167,7 +167,11 @@ function PredictionTab({ data, loading }: { data: PredictionData | null; loading
 // ─── タブ2: 能力評価 ───────────────────────────────────────────
 function AbilityTab({ data, loading }: { data: PredictionData | null; loading: boolean }) {
   if (loading) return <TabSkeleton />;
-  if (!data?.data || data.data.length === 0) return <TabEmpty message="選手データを取得中..." />;
+  if (!data?.data || data.data.length === 0)
+    return <TabEmpty message="選手データを取得中..." />;
+
+  const hasExhibition = data.data.some((r) => r.ex_time && r.ex_time !== "--");
+  const hasST = data.data.some((r) => r.st_val && r.st_val !== "--");
 
   const gradeColor: Record<string, string> = {
     S: "text-amber-400 border-amber-400/50 bg-amber-400/10",
@@ -178,42 +182,83 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {/* 展示フェーズ表示 */}
+      {hasExhibition && (
+        <div className="px-1 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-sm text-emerald-400 font-bold">展示データ取得済み</span>
+        </div>
+      )}
+
+      {/* 選手一覧 */}
       {data.data.map((racer) => (
         <div
           key={racer.lane}
-          className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-white/5"
+          className="p-3 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2"
         >
-          {/* Lane badge */}
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0 boat-${racer.lane}`}>
-            {racer.lane}
+          {/* Row 1: コース・名前・グレード */}
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0 boat-${racer.lane}`}>
+              {racer.lane}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white truncate">{racer.name}</p>
+              <p className="text-xs text-slate-400">{racer.cls}</p>
+            </div>
+            {racer.score_grade && (
+              <div className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm font-black shrink-0 ${gradeColor[racer.score_grade] ?? gradeColor.C}`}>
+                {racer.score_grade}
+              </div>
+            )}
           </div>
 
-          {/* Racer info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white truncate">{racer.name}</p>
-            <p className="text-sm text-slate-400">
-              {racer.cls} · 勝率{racer.rate} · M勝率{racer.motor_rate}
-            </p>
+          {/* Row 2: 能力指標 */}
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-slate-800/60 rounded-xl py-1.5 px-2">
+              <p className="text-[10px] text-slate-500 font-bold">勝率</p>
+              <p className="text-sm font-black text-white">{racer.rate || "--"}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl py-1.5 px-2">
+              <p className="text-[10px] text-slate-500 font-bold">M勝率</p>
+              <p className="text-sm font-black text-white">{racer.motor_rate || "--"}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl py-1.5 px-2">
+              <p className="text-[10px] text-slate-500 font-bold">チルト</p>
+              <p className="text-sm font-black text-white">{racer.tilt || "--"}</p>
+            </div>
           </div>
 
-          {/* Exhibition time */}
-          <div className="text-right shrink-0">
-            <p className="text-sm text-slate-500">展示</p>
-            <p className="text-base font-black font-outfit text-white">{racer.ex_time || "--"}</p>
-          </div>
-
-          {/* OVR grade */}
-          {racer.score_grade && (
-            <div className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm font-black shrink-0 ${gradeColor[racer.score_grade] ?? gradeColor.C}`}>
-              {racer.score_grade}
+          {/* Row 3: 展示情報（展示タイム・ST）*/}
+          {(hasExhibition || hasST) && (
+            <div className="grid grid-cols-2 gap-2">
+              {hasExhibition && (
+                <div className="flex items-center justify-between bg-indigo-500/5 border border-indigo-500/20 rounded-xl px-3 py-1.5">
+                  <p className="text-xs text-indigo-400 font-bold">展示タイム</p>
+                  <p className="text-sm font-black font-outfit text-indigo-300">{racer.ex_time || "--"}</p>
+                </div>
+              )}
+              {hasST && (
+                <div className="flex items-center justify-between bg-emerald-500/5 border border-emerald-500/20 rounded-xl px-3 py-1.5">
+                  <p className="text-xs text-emerald-400 font-bold">ST</p>
+                  <p className="text-sm font-black font-outfit text-emerald-300">F{racer.st_val || "--"}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       ))}
+
+      {/* 展示なし時の補足 */}
+      {!hasExhibition && (
+        <div className="px-1">
+          <p className="text-xs text-slate-500">※ 展示タイム・STはレース直前（展示後）に自動更新されます</p>
+        </div>
+      )}
     </div>
   );
 }
+
 
 // ─── タブ3: 気象・展開 ───────────────────────────────────────────
 function WeatherTab({ data, loading }: { data: PredictionData | null; loading: boolean }) {
