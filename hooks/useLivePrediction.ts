@@ -53,9 +53,9 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
   const { data: raw, error, isLoading, mutate } = useSWR<{
     success?: boolean;
     access?: string;
-    schedules?: Record<string, unknown>[];
-    active_jcds?: string[];
-    today_predictions?: Record<string, unknown>;
+    venues?: { jcd: string; name: string }[];
+    cutoffTimes?: Record<string, Record<string, string>>;
+    predictions?: Record<string, Record<string, unknown>>;
   }>(
     `/api/gas?action=get_initial_payload${authParams}`,
     fetcher,
@@ -66,16 +66,17 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
     }
   );
 
-  // active な場コードを抽出
-  const activeVenues: string[] = raw?.active_jcds ?? [];
+  // GAS が返す venues: [{ jcd: "14", name: "鳴門" }] → jcd 配列に変換
+  const activeVenues: string[] = (raw?.venues ?? []).map((v) => v.jcd);
 
-  // 予測データマップ: { "14_1": { phase: 1 or 2 }, ... }
+  // GAS が返す predictions: { "14_1": {...} } → phase 情報に変換
   const predictions: Record<string, { phase: number }> = {};
-  if (raw?.today_predictions) {
-    Object.entries(raw.today_predictions).forEach(([key, val]) => {
+  if (raw?.predictions) {
+    Object.entries(raw.predictions).forEach(([key, val]) => {
       const v = val as Record<string, unknown>;
-      const hasPhase2 = !!(v.second_prediction || v.exhibition_completed || v.live_predict);
-      predictions[key] = { phase: hasPhase2 ? 2 : v.ai || v.first_prediction ? 1 : 0 };
+      const hasPhase2 = !!(v.exhibition_completed || v.second_prediction);
+      const hasPhase1 = !!(v.first_prediction || v.ai || v.predictions);
+      predictions[key] = { phase: hasPhase2 ? 2 : hasPhase1 ? 1 : 0 };
     });
   }
 
@@ -83,7 +84,7 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
     predictions,
     activeVenues,
     loading: isLoading,
-    error: error ? null : null, // GAS エラーはサイレント（全場グレー表示）
+    error: error ? null : null,
     refresh: () => mutate(),
   };
 }
