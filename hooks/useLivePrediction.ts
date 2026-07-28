@@ -132,6 +132,9 @@ function mapGasCache(
       tilt: (r.tilt ?? "") as string,
       score_grade: (r.score_grade as "S" | "A" | "B" | "C" | "D" | undefined),
       overall_score: (r.overall_score ?? r.score ?? null) as number | undefined,
+      lap_time: (r.lap_time ?? r.lap ?? "") as string,
+      turn_time: (r.turn_time ?? r.turn ?? "") as string,
+      straight_time: (r.straight_time ?? r.straight ?? "") as string,
     })),
     weather: (cache.weather ?? null) as {
       weather: string; temp: string; wind_speed: string;
