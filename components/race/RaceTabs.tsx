@@ -204,8 +204,11 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
           <thead>
             <tr className="bg-slate-800/80 text-[10px] text-slate-400">
               <th className="p-2 font-bold w-24">枠 / 選手</th>
-              <th className="p-2 font-bold text-center text-rose-300/80">全国勝率</th>
-              <th className="p-2 font-bold text-center text-rose-300/80">ﾓｰﾀｰ2連</th>
+              <th className="p-2 font-bold text-center text-emerald-300/80">AI総合</th>
+              <th className="p-2 font-bold text-center text-rose-300/80">AI機力</th>
+              <th className="p-2 font-bold text-center text-indigo-300/80">AI ST</th>
+              <th className="p-2 font-bold text-center text-amber-300/80">AI旋回</th>
+              <th className="p-2 font-bold text-center text-orange-300/80">イン信頼</th>
               <th className="p-2 font-bold text-center">コース勝率</th>
               <th className="p-2 font-bold text-center">当地勝率</th>
               <th className="p-2 font-bold text-center">ST順位</th>
@@ -236,6 +239,8 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                 }
               }
 
+              const rScore = racer.regNo ? globalScores[racer.regNo] : null;
+
               return (
                 <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors">
                   <td className="p-2 flex items-center gap-2">
@@ -248,12 +253,21 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                     </div>
                   </td>
                   
-                  {/* 基本データ */}
-                  <td className="p-2 text-center text-xs font-bold text-rose-200">
-                    {racer.rate ? Number(racer.rate).toFixed(2) : "--"}
+                  {/* AI Scores */}
+                  <td className="p-2 text-center text-[11px] font-black font-outfit text-emerald-400">
+                    {rScore ? Math.round(rScore.win) : "--"}
                   </td>
-                  <td className="p-2 text-center text-xs font-bold text-rose-200">
-                    {racer.motor_rate ? `${Number(racer.motor_rate).toFixed(1)}%` : "--"}
+                  <td className="p-2 text-center text-[11px] font-black font-outfit text-rose-400">
+                    {rScore ? Math.round(rScore.maint) : "--"}
+                  </td>
+                  <td className="p-2 text-center text-[11px] font-black font-outfit text-indigo-400">
+                    {rScore ? Math.round(rScore.start) : "--"}
+                  </td>
+                  <td className="p-2 text-center text-[11px] font-black font-outfit text-amber-400">
+                    {rScore ? Math.round(rScore.turn) : "--"}
+                  </td>
+                  <td className="p-2 text-center text-[11px] font-black font-outfit text-orange-400">
+                    {rScore ? Math.round(rScore.escape) : "--"}
                   </td>
 
                   {/* 艇国DBデータ */}
