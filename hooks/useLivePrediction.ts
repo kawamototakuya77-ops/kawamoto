@@ -124,6 +124,7 @@ function mapGasCache(
     data: racerArray.map((r) => ({
       lane: r.lane as number,
       name: r.name as string,
+      regNo: (r.regNo ?? r.toban ?? r.id ?? "") as string,
       cls: r.cls as string,
       rate: r.rate as string,
       motor_rate: r.motor_rate as string,

@@ -13,6 +13,19 @@ export interface RacerData {
   st_course?: string;
   overall_score?: number;
   score_grade?: "S" | "A" | "B" | "C" | "D";
+  lap_time?: string;
+  turn_time?: string;
+  straight_time?: string;
+  
+  // カスタムAI評価スコア
+  ai_scores?: {
+    win: number;
+    start: number;
+    escape: number;
+    turn: number;
+    maint: number;
+    safety: number;
+  };
 }
 
 export interface WeatherData {
