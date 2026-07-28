@@ -200,13 +200,17 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
 
       {/* 選手一覧 (比較テーブルレイアウト) */}
       <div className="overflow-x-auto rounded-2xl border border-white/5 bg-slate-900/60 mt-2 scrollbar-thin scrollbar-thumb-slate-700">
-        <table className="w-full text-left border-collapse min-w-[600px]">
+        <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-slate-800/80 text-[10px] text-slate-400">
               <th className="p-2 font-bold w-24">枠 / 選手</th>
+              <th className="p-2 font-bold text-center text-rose-300/80">全国勝率</th>
+              <th className="p-2 font-bold text-center text-rose-300/80">ﾓｰﾀｰ2連</th>
               <th className="p-2 font-bold text-center">コース勝率</th>
               <th className="p-2 font-bold text-center">当地勝率</th>
               <th className="p-2 font-bold text-center">ST順位</th>
+              <th className="p-2 font-bold text-center">F/L</th>
+              <th className="p-2 font-bold text-center text-indigo-300">戦法</th>
               <th className="p-2 font-bold text-center">展示ST</th>
               <th className="p-2 font-bold text-center text-indigo-300">展示T</th>
               <th className="p-2 font-bold text-center text-amber-300">一周</th>
@@ -215,47 +219,87 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {data.data.map((racer) => (
-              <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors">
-                <td className="p-2 flex items-center gap-2">
-                  <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black shrink-0 boat-${racer.lane}`}>
-                    {racer.lane}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate leading-none">{racer.name}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{racer.cls}</p>
-                  </div>
-                </td>
-                
-                {/* 艇国DBデータ */}
-                <td className="p-2 text-center text-xs font-bold text-white">
-                  {racer.stats?.course_top2_rate ? `${Number(racer.stats.course_top2_rate).toFixed(1)}%` : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-bold text-white">
-                  {racer.stats?.venue_win_rate ? `${Number(racer.stats.venue_win_rate).toFixed(1)}%` : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-bold text-white">
-                  {racer.stats?.course_st_rank ? Number(racer.stats.course_st_rank).toFixed(2) : "--"}
-                </td>
+            {data.data.map((racer) => {
+              // 戦法の判定
+              const stats = racer.stats;
+              let tactic = "--";
+              if (stats) {
+                const tactics = [
+                  { name: "逃げ", val: stats.course_nige || 0 },
+                  { name: "差し", val: stats.course_sashi || 0 },
+                  { name: "捲り", val: stats.course_makuri || 0 },
+                  { name: "捲差", val: stats.course_makurizashi || 0 }
+                ];
+                tactics.sort((a, b) => b.val - a.val);
+                if (tactics[0].val > 0) {
+                  tactic = tactics[0].name;
+                }
+              }
 
-                {/* 展示・オリ展データ */}
-                <td className="p-2 text-center text-xs font-black font-outfit text-emerald-400">
-                  {racer.st_val !== "N/A" && racer.st_val ? `F${racer.st_val}` : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-black font-outfit text-indigo-300">
-                  {racer.ex_time !== "N/A" && racer.ex_time ? racer.ex_time : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                  {racer.lap_time !== "N/A" && racer.lap_time ? racer.lap_time : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                  {racer.turn_time !== "N/A" && racer.turn_time ? racer.turn_time : "--"}
-                </td>
-                <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                  {racer.straight_time !== "N/A" && racer.straight_time ? racer.straight_time : "--"}
-                </td>
-              </tr>
-            ))}
+              return (
+                <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="p-2 flex items-center gap-2">
+                    <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black shrink-0 boat-${racer.lane}`}>
+                      {racer.lane}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white truncate leading-none">{racer.name}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{racer.cls}</p>
+                    </div>
+                  </td>
+                  
+                  {/* 基本データ */}
+                  <td className="p-2 text-center text-xs font-bold text-rose-200">
+                    {racer.rate ? Number(racer.rate).toFixed(2) : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-bold text-rose-200">
+                    {racer.motor_rate ? `${Number(racer.motor_rate).toFixed(1)}%` : "--"}
+                  </td>
+
+                  {/* 艇国DBデータ */}
+                  <td className="p-2 text-center text-xs font-bold text-white">
+                    {stats?.course_top2_rate ? `${Number(stats.course_top2_rate).toFixed(1)}%` : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-bold text-white">
+                    {stats?.venue_win_rate ? `${Number(stats.venue_win_rate).toFixed(1)}%` : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-bold text-white">
+                    {stats?.course_st_rank ? Number(stats.course_st_rank).toFixed(2) : "--"}
+                  </td>
+
+                  {/* ペナルティ & 戦法 */}
+                  <td className="p-2 text-center text-[10px] font-bold text-amber-500">
+                    F{(stats as any)?.f_count || 0} / L{(stats as any)?.l_count || 0}
+                  </td>
+                  <td className="p-2 text-center">
+                    {tactic !== "--" ? (
+                      <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] border border-indigo-500/30">
+                        {tactic}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-500">--</span>
+                    )}
+                  </td>
+
+                  {/* 展示・オリ展データ */}
+                  <td className="p-2 text-center text-xs font-black font-outfit text-emerald-400">
+                    {racer.st_val !== "N/A" && racer.st_val ? `F${racer.st_val}` : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-black font-outfit text-indigo-300">
+                    {racer.ex_time !== "N/A" && racer.ex_time ? racer.ex_time : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                    {racer.lap_time !== "N/A" && racer.lap_time ? racer.lap_time : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                    {racer.turn_time !== "N/A" && racer.turn_time ? racer.turn_time : "--"}
+                  </td>
+                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                    {racer.straight_time !== "N/A" && racer.straight_time ? racer.straight_time : "--"}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

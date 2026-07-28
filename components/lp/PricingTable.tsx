@@ -35,7 +35,7 @@ export default function PricingTable() {
         "✅ 資金防衛AI（バンクロール・ディフェンダー）",
         "✅ EVフィルター（EV1.2以上の選別）",
       ],
-      cta: "プロプランで全機能を解禁",
+      cta: "最初の3日間無料トライアルで始める",
       href: "https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02",
       cardClass:
         "bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-emerald-500/60 shadow-[0_0_30px_rgba(16,185,129,0.15)]",
@@ -68,6 +68,11 @@ export default function PricingTable() {
                 <span className="text-4xl font-black text-white font-outfit">{plan.price}</span>
                 <span className="text-base text-slate-500 mb-1">{plan.period}</span>
               </div>
+              {plan.badge && (
+                <div className="mt-2 text-xs font-bold text-rose-400 bg-rose-900/30 border border-rose-500/30 px-2 py-1 rounded inline-block">
+                  ※ β版リリース記念: 先着50名様限定 (残り3枠)
+                </div>
+              )}
             </div>
 
             <ul className="space-y-2">

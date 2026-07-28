@@ -52,6 +52,23 @@ export default function HeroSection() {
             <br />
             投資判断を自動化
           </h1>
+          {/* Description */}
+          <p className="text-base text-slate-400 font-medium leading-relaxed max-w-sm">
+            オッズの歪みと展示データの相関を瞬時に計算し、<strong className="text-amber-400">期待値（EV）1.2以上</strong>の激アツレースだけを厳選。
+          </p>
+
+          {/* Social Proof (本日の実績ダイジェスト) */}
+          <div className="mt-4 p-4 rounded-xl bg-slate-800/80 border border-emerald-500/30 flex flex-col gap-2 relative overflow-hidden">
+            <div className="absolute top-0 right-0 px-2 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg">
+              本日更新
+            </div>
+            <p className="text-xs font-bold text-slate-400">🔥 最近のAI推奨ヒット</p>
+            <div className="flex items-center gap-3">
+              <span className="text-xl font-black text-white">三国 12R</span>
+              <span className="text-emerald-400 font-bold font-mono">1-2-4</span>
+              <span className="text-amber-400 font-black">2,480円 的中🎯</span>
+            </div>
+          </div>
           <p className="text-base text-slate-400 leading-relaxed">
             Gemini 2.5 Flash × LightGBM の二段階AIエンジンが、スリット・展示タイム・チルト・機力データを統合解析。
             全レース自動監視・見送りAI込みで
