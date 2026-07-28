@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --font-outfit: var(--font-outfit);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-outfit: "Outfit", sans-serif;
+}
+
+html {
+  background: #0f172a;
+}
+
+body {
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 14px; /* 最小フォントサイズ保証 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* スクロールバーのスタイル */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+
+/* グラスモーフィズム共通 */
+.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* PRO限定データロック表示 */
+.premium-blur {
+  position: relative;
+  user-select: none;
+  pointer-events: none;
+  filter: blur(4px);
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+
+/* タブのアクティブ状態 */
+.tab-active {
+  color: #34d399;
+  border-bottom-color: #34d399;
+}
+
+/* Boat color badges */
+.boat-1 { background: #ffffff; color: #000; border: 1px solid #cbd5e1; font-weight: 900; }
+.boat-2 { background: #1e293b; color: #fff; border: 1px solid #475569; }
+.boat-3 { background: #ef4444; color: #fff; }
+.boat-4 { background: #3b82f6; color: #fff; }
+.boat-5 { background: #eab308; color: #000; font-weight: 900; }
+.boat-6 { background: #10b981; color: #fff; }

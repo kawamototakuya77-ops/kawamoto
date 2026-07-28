@@ -12,22 +12,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>競艇直前物理AI - AIが弾き出すリアルタイム展開予測ダッシュボード</title>
-    <!-- SEO -->
-    <meta name="description" content="展示データ×LightGBM×Geminiの3段階AI予測。直前情報を全自動取得し、1号艇の逃げ信頼度・コース別STをリアルタイムスコアリング。月500円のプレミアム会員で全レース・全データ公開中。">
-    <!-- OGP (Facebook / LINE) -->
-    <meta property="og:title" content="競艇直前物理AI - AIが弾き出すリアルタイム展開予測">
-    <meta property="og:description" content="展示データ×LightGBM×Geminiの3段階AI予測。直前情報を全自動取得して1号艇の信頼度をスコアリング。月500円で全レース・全データ公開中。">
-    <meta property="og:image" content="https://boatrace-ai-two.vercel.app/ogp.jpg">
-    <meta property="og:url" content="https://boatrace-ai-two.vercel.app/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="競艇直前物理AI">
-    <meta property="og:locale" content="ja_JP">
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="競艇直前物理AI - AIが弾き出すリアルタイム展開予測">
-    <meta name="twitter:description" content="展示データ×LightGBM×Geminiの3段階AI予測。月500円で全レース・全データ公開中。">
-    <meta name="twitter:image" content="https://boatrace-ai-two.vercel.app/ogp.jpg">
+    <title>競艇直前物理AI - リアルタイム展開予測ダッシュボード</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Goolge Fonts -->
@@ -57,14 +42,12 @@
             box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
         }
         /* Boatrace Official Color Badges */
-        .boat-1 { background-color: #ffffff; color: #000000 !important; border: 1px solid #cbd5e1; font-weight: 900; }
-        .boat-1 * { color: #000000 !important; }
-        .boat-2 { background-color: #1e293b; color: #ffffff !important; border: 1px solid #475569; }
-        .boat-3 { background-color: #ef4444; color: #ffffff !important; }
-        .boat-4 { background-color: #3b82f6; color: #ffffff !important; }
-        .boat-5 { background-color: #eab308; color: #000000 !important; font-weight: 900; }
-        .boat-5 * { color: #000000 !important; }
-        .boat-6 { background-color: #10b981; color: #ffffff !important; }
+        .boat-1 { background-color: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; }
+        .boat-2 { background-color: #1e293b; color: #ffffff; border: 1px solid #475569; }
+        .boat-3 { background-color: #ef4444; color: #ffffff; }
+        .boat-4 { background-color: #3b82f6; color: #ffffff; }
+        .boat-5 { background-color: #eab308; color: #1e293b; }
+        .boat-6 { background-color: #10b981; color: #ffffff; }
         
         /* Slit Simulation Styling */
         .slit-line {
@@ -76,32 +59,24 @@
             90% { opacity: 1; }
             100% { top: 100%; opacity: 0; }
         }
-        /* Skeleton/Lock UI - Premium Content Gate */
+        /* AdMax Blur/Unlock style - Premium UI Enhancement */
         .premium-blur {
-            position: relative;
+            filter: blur(8px) grayscale(40%) contrast(0.8);
+            opacity: 0.85;
             user-select: none;
             pointer-events: none;
-            transition: all 0.3s ease;
-        }
-        .premium-blur * {
-            color: transparent !important;
-            border-color: rgba(255,255,255,0.05) !important;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         .premium-blur::after {
-            content: '🔒 プレミアム限定データ';
+            content: '';
             position: absolute;
             inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            color: #fbbf24; /* amber-400 */
-            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(3px);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(15, 23, 42, 0.2) 100%);
             z-index: 10;
+        }
+        .premium-blur .boat-1,
+        .premium-blur .boat-2,
         .premium-blur .boat-3,
         .premium-blur .boat-4,
         .premium-blur .boat-5,
@@ -115,7 +90,13 @@
             filter: blur(0px);
         }
         
-
+        /* Recommend Skip Decoupling Blur */
+        #data-container.recommend-skip > *:not(#skip-overlay) {
+            filter: blur(12px) grayscale(50%);
+            pointer-events: none;
+            opacity: 0.8;
+            transition: all 0.5s ease;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12 antialiased">
@@ -129,32 +110,13 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <!-- リアルタイム的中率・的中数 -->
-                <div class="flex flex-col items-end cursor-pointer group relative">
-                    <span class="text-[8px] text-slate-500 font-bold tracking-wider">🎯 本日のAI的中率</span>
-                    <span id="header-realtime-profit" class="text-[13px] font-black font-outfit text-indigo-400 leading-none">--%</span>
-                    <!-- ツールチップ -->
-                    <div class="absolute top-full right-0 mt-2 w-48 bg-slate-800/95 border border-slate-700/50 backdrop-blur-md rounded-lg p-2.5 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 text-[10px] transform translate-y-1 group-hover:translate-y-0">
-                        <div class="text-[9px] text-slate-400 mb-1.5 pb-1 border-b border-white/10 text-center font-bold">
-                            本日のAI推奨パフォーマンス
-                        </div>
-                        <div class="flex justify-between items-center text-indigo-400 mb-1"><span>鉄板的中率</span><span id="tt-rt-invest" class="font-mono font-bold">--%</span></div>
-                        <div class="flex justify-between items-center text-emerald-400"><span>本日的中数</span><span id="tt-rt-payout" class="font-mono font-bold">0R</span></div>
-                    </div>
-                </div>
-
                 <div class="flex flex-col items-end mr-2 cursor-pointer group relative">
-                    <span class="text-[8px] text-slate-500 font-bold tracking-wider">🛡️ 回避した損失額 (本日)</span>
+                    <span class="text-[8px] text-slate-500 font-bold tracking-wider">💰 防衛実績 (本日)</span>
                     <span id="header-defense-fund" class="text-[13px] font-black font-outfit text-emerald-400 leading-none">¥0</span>
                     
                     <!-- ツールチップ（内訳表示） -->
-                    <div class="absolute top-full right-0 mt-2 w-48 bg-slate-800/95 border border-slate-700/50 backdrop-blur-md rounded-lg p-2.5 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 text-[10px] transform translate-y-1 group-hover:translate-y-0">
-                        <div class="text-[9px] text-slate-400 mb-1.5 pb-1 border-b border-white/10 text-center font-bold">
-                            AIが「見送り」を推奨したことで<br>支払わずに済んだ架空の資金です。
-                        </div>
-                        <div class="text-[9px] text-rose-400 text-center font-bold mb-2 pb-1 border-b border-rose-500/20">
-                            ※実際の収支（利益）とは異なります
-                        </div>
+                    <div class="absolute top-full right-0 mt-2 w-36 bg-slate-800/95 border border-slate-700/50 backdrop-blur-md rounded-lg p-2.5 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 text-[10px] transform translate-y-1 group-hover:translate-y-0">
+                        <div class="text-[9px] text-slate-400 mb-1.5 pb-1 border-b border-white/10 text-center font-bold">防衛内訳 (機会損失相殺)</div>
                         <div class="flex justify-between items-center text-emerald-400 mb-1"><span>✅ 成功</span><span id="tt-defense-success" class="font-mono font-bold">+¥0</span></div>
                         <div class="flex justify-between items-center text-rose-400"><span>❌ 損失</span><span id="tt-defense-loss" class="font-mono font-bold">¥0</span></div>
                     </div>
@@ -208,45 +170,57 @@
                     </div>
                 </div>
                 <!-- CTA -->
-                <button onclick="window._ga4Event('premium_cta_click', {location: 'hero'}); window.location.href='https://buy.stripe.com/test_123456';" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-xl shadow-lg transition-all active:scale-[0.98] font-outfit">
-                    🔐 プレミアム登録（月額500円）して予想を見る
+                <button onclick="window._ga4Event('premium_cta_click', {location: 'hero'}); window.showLoginModal();" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-xl shadow-lg transition-all active:scale-[0.98] font-outfit">
+                    🔐 無料で読む → ログイン / 登録
                 </button>
-                <div class="mt-2 text-center">
-                    <p class="text-[8px] text-slate-600 mb-1">クレジットカード不要・Stripeで安全決済・いつでも解約可</p>
-                    <button onclick="window.showLoginModal()" class="text-[9px] text-emerald-400/80 underline hover:text-emerald-300">すでに登録済みの方（ログイン）はこちら</button>
-                </div>
+                <p class="text-center text-[8px] text-slate-600">クレジットカード不要・Stripeで安全決済・いつでも解約可</p>
             </div>
         </section>
 
         <!-- SELECTOR PANEL (STATION & RACE) -->
         <section class="p-4 rounded-2xl glass space-y-4 shadow-md">
 
-            <!-- INFO DASHBOARD (お知らせ) - コンパクト版 -->
-            <div id="info-dashboard" class="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/40 shadow-sm">
-                <div class="flex items-center gap-1.5 mb-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                    <span class="text-[10px] font-bold text-slate-300 font-outfit tracking-wider">お知らせ</span>
-                    <span class="ml-auto text-[8px] text-slate-500">最新情報</span>
+            <!-- INFO DASHBOARD -->
+            <div id="info-dashboard" class="p-3 rounded-xl bg-slate-800/60 border border-slate-600/50 mb-3 shadow-md">
+                <div class="flex items-center gap-1.5 mb-2 text-slate-200 font-bold text-[11px] font-outfit tracking-wider">
+                    <span>ℹ️ お知らせ</span>
                 </div>
-                <ul id="news-list-container" class="text-[10px] text-slate-300 space-y-1.5 list-none pl-0 max-h-20 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                    <li class="flex items-start gap-1.5">
-                        <span class="px-1 py-0.5 rounded bg-emerald-900/60 text-[7px] text-emerald-300 font-mono shrink-0 mt-0.5">07/15</span>
-                        <div>🆕 <span class="text-emerald-300 font-bold">選手のAIスコア化が完成</span>。勝率・モーター・展示タイムを元にOVRスコア（S/A/B/C/D）を自動算出。法大型マトリクスで一目瞬遠に分かります。</div>
-                    </li>
-                    <li class="flex items-start gap-1.5">
-                        <span class="px-1 py-0.5 rounded bg-blue-900/60 text-[7px] text-blue-300 font-mono shrink-0 mt-0.5">07/14</span>
-                        <div>🌙 <span class="text-blue-300 font-bold">ミッドナイト競艇（深夜開催）も24時間監視対象に追加</span>。深夜の全場レースを自動でAI予想します。</div>
-                    </li>
+                <ul id="news-list-container" class="text-[10px] text-slate-300 space-y-2.5 list-none pl-0">
+                    <li class="text-slate-500 text-center py-2 animate-pulse">お知らせ取得中...</li>
                 </ul>
             </div>
 
-            <!-- TODAY'S STATS CARD (HIT RATE & LOSS PREVENTION) -->
+            <!-- TODAY'S STATS CARD (GLOBAL RECOVERY & HIT RATE) - MOVED TO TOP -->
             <div id="today-stats-card" class="hidden p-3 rounded-xl bg-slate-950/40 border border-white/5 space-y-2.5 mb-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAI予想・資金防衛パフォーマンス</span>
+                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-outfit">🏆 本日のAIトータル成績</span>
                     <span id="stats-progress-badge" class="px-2 py-0.5 rounded text-[9px] font-black bg-slate-900 text-slate-400">0 / 0 レース確定</span>
                 </div>
                 
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- 本命成績 -->
+                    <div class="bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10 text-center space-y-1">
+                        <span class="text-[9px] text-indigo-400 font-bold block">🔥 本命推奨</span>
+                        <div class="grid grid-cols-2 gap-1 border-t border-indigo-500/5 pt-1 mt-1">
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
+                                <div id="stats-solid-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">的中率</span>
+                                <div id="stats-solid-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 穴成績 -->
+                    <div class="bg-purple-500/5 p-2 rounded-lg border border-purple-500/10 text-center space-y-1">
+                        <span class="text-[9px] text-purple-400 font-bold block">⚡ 穴推奨</span>
+                        <div class="grid grid-cols-2 gap-1 border-t border-purple-500/5 pt-1 mt-1">
+                            <div>
+                                <span class="text-[8px] text-slate-500 block">回収率</span>
+                                <div id="stats-upset-recovery" class="text-xs font-black font-outfit text-slate-300">--%</div>
+                            </div>
+                            <div>
                                 <span class="text-[8px] text-slate-500 block">的中率</span>
                                 <div id="stats-upset-hit" class="text-xs font-black font-outfit text-slate-300">--%</div>
                             </div>
@@ -407,16 +381,17 @@
         <!-- REAL DATA WRAPPER - always visible, premium content gated inside -->
         <div id="data-container" class="space-y-4 relative">
             
-            <!-- 見送り推奨時バナー -->
-            <div id="skip-overlay" class="hidden mb-4 p-4 bg-amber-500/10 border border-amber-500/50 rounded-xl relative z-10 shadow-lg">
-                <div class="flex items-start gap-3">
-                    <div class="text-2xl mt-1">🛡️</div>
-                    <div>
-                        <h3 class="text-sm font-black text-amber-400 tracking-tight mb-1">🛡️ AI 資金防衛判定: 見送り推奨 (トリガミ・高リスク回避)</h3>
-                        <p class="text-[10px] text-slate-300 leading-relaxed mb-2">
-                            AIマネージャーが危険な荒れ相場またはトリガミの可能性を事前に検知しました。無駄な買い目を削り、資金を守ることが収支改善の最大のショートカットです。
-                        </p>
-                        <p id="skip-avoided-loss" class="text-[11px] font-bold text-amber-300"></p>
+            <!-- 見送り推奨時(デカップリング)のBlurオーバーレイ -->
+            <div id="skip-overlay" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center">
+                <div class="bg-slate-900/95 border border-slate-700 rounded-2xl p-6 shadow-2xl max-w-sm w-full space-y-4">
+                    <div class="text-4xl">🛡️</div>
+                    <h3 class="text-lg font-black text-white tracking-tight">AI 見送り推奨</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        このレースはすべての買い目の期待値(EV)が基準値を下回っており、長期的には利益が見込めません。
+                    </p>
+                    <p id="skip-avoided-loss" class="text-sm font-bold text-amber-300 mt-2"></p>
+                    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <p class="text-[10px] text-red-400 font-bold">⚠️ 無駄な負けを減らすことが、最終的な回収率を最大化する唯一の方法です。</p>
                     </div>
                 </div>
             </div>
@@ -455,6 +430,13 @@
                             <span class="text-[10px] text-amber-400 font-bold tracking-wider block mb-1.5">🟧 穴狙い（中大穴）</span>
                             <div id="first-ai-upset-focus" class="grid grid-cols-2 gap-2"></div>
                             
+                            <!-- Ad Unlock Mosaic overlay for Upset Focus -->
+                            <div id="first-ai-ad-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px] z-10 flex flex-col items-center justify-center p-2 text-center transition-all border border-amber-500/30 rounded-xl hidden">
+                                <span class="text-[9px] text-amber-400 font-bold mb-1.5 shadow-black drop-shadow-md">🔒 穴狙い解禁</span>
+                                <button onclick="window.unlockWithAd()" class="px-2.5 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-white text-[9px] font-bold rounded shadow-lg transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">
+                                    ▶ 広告を見る
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -621,14 +603,14 @@
             <!-- PREMIUM ZONE (Hidden for non-premium by default or blurred) -->
             <div id="premium-zone" class="space-y-4 relative">
                 <!-- Global Premium Overlay for Simulator/Details -->
-                <div id="premium-overlay" class="absolute inset-x-0 bottom-0 top-32 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-50 flex flex-col items-center justify-end pb-12 rounded-2xl hidden" style="margin-top: 0; pointer-events: none;">
-                    <div class="p-5 text-center space-y-3 max-w-sm w-full" style="pointer-events: auto;">
+                <div id="premium-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl border border-white/10 hidden" style="margin-top: 0; height: 100%;">
+                    <div class="p-5 text-center space-y-3 max-w-sm w-full sticky top-1/3">
                         <!-- アイコン + バッジ -->
                         <div class="flex flex-col items-center gap-2">
                             <div class="relative">
                                 <span class="text-4xl block">🔒</span>
                             </div>
-                            <span class="text-[9px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full tracking-wider uppercase shadow-lg">月額1,980円 プロプラン限定</span>
+                            <span class="text-[9px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full tracking-wider uppercase shadow-lg">月額500円 プレミアム限定</span>
                         </div>
 
                         <!-- 価値訴求 -->
@@ -647,14 +629,11 @@
                         <!-- CTA ボタン群 -->
                         <div class="space-y-2 w-full pt-1">
                             <button id="premium-cta-main-btn"
-                                onclick="window._ga4Event('premium_cta_click', {location: 'global_overlay'}); window.location.href='https://buy.stripe.com/test_123456';"
+                                onclick="window._ga4Event('premium_cta_click', {location: 'overlay'}); window.showLoginModal();"
                                 class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black py-3 rounded-xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-sm">
-                                🔐 プロプラン登録 (月額1,980円) してロック解除
+                                🔐 ログインしてロックを解除
                             </button>
-                            <div class="mt-2">
-                                <p class="text-[9px] text-slate-500 mb-1">購読は月額1,980円。いつでも解約可能です。</p>
-                                <button onclick="window.showLoginModal()" class="text-[10px] text-emerald-400/80 underline hover:text-emerald-300">すでに登録済みの方（ログイン）はこちら</button>
-                            </div>
+                            <p class="text-[9px] text-slate-500">購読は月額500円。いつでも解約可能です。</p>
                         </div>
                     </div>
                 </div>
@@ -721,8 +700,8 @@
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit">6艇能力比較マトリクス</span>
                         <div class="flex items-center gap-2">
-                            <button id="toggle-guide-btn" onclick="(function(){var p=document.getElementById('abilities-guide');var b=document.getElementById('toggle-guide-btn');if(!p)return;var h=p.classList.contains('hidden');p.classList.toggle('hidden',!h);b.textContent=h?'能力ガイド ✕':'能力ガイド ℹ';})()" class="px-2 py-0.5 rounded text-[8px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition-colors flex items-center gap-1">
-                                能力ガイド ℹ
+                            <button id="toggle-guide-btn" class="px-2 py-0.5 rounded text-[8px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition-colors flex items-center gap-1">
+                                能力ガイド 🛈
                             </button>
                             <span id="detail-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold"></span>
                         </div>
@@ -732,27 +711,17 @@
                         <div><strong>【基本】生涯スペック</strong>:
                             <br>・走力: 全国勝率相対偏差に基づく走力評価
                             <br>・基ST: 生涯の平均スタートタイミング
-                            <br>・安定: 平均ST順位のバラツキ（分散）の小ささ
+                            <br>・安定: スタート事故（F/L）の起こしにくさ
                         </div>
-                        <div><strong>【コース/場】本番予測</strong>:
-                            <br>・コST: 当該コースでの平均ST
-                            <br>・コS順: 当該コースでの平均ST順位
-                            <br>・場ST: 当該水面での平均ST
+                        <div><strong>【今節】今節ここまでの成績と平均展示タイム</strong>:
+                            <br>・今着: 今節（直近7日間）の平均着順
+                            <br>・今ST: 今節の平均STと平均スタート順位
+                            <br>・安定: 今節スタートのばらつきの少なさ（標準偏差σ）
                         </div>
-                        <div><strong>【今節の調子】節間成績</strong>:
-                            <br>・節着順: 今節これまでの平均着順
-                            <br>・節ST: 今節これまでの平均ST
-                            <br>・節展T: 今節これまでの平均展示タイム
-                            <br>・節周回: 今節これまでの平均周回タイム
-                            <br>・節直線: 今節これまでの平均直線タイム
-                            <br>・節回り: 今節これまでの平均まわり足タイム
-                        </div>
-                        <div><strong>【直前気配】直前展示</strong>:
-                            <br>・展ST: 今回の直前展示でのSTとスタート順位
-                            <br>・展示T: 直前展示でのタイム（最速艇とのタイム差）
-                            <br>・周回T: 周回タイムの評価（一部場限定）
-                            <br>・直線T: 直線タイムの評価（一部場限定）
-                            <br>・回りT: まわり足タイムの評価（一部場限定）
+                        <div><strong>【展示】本日の直前気配（リアルタイム）</strong>:
+                            <br>・展ST: 今日の直前展示でのSTとスタート順位
+                            <br>・展示T: 今日の展示タイム（最速艇とのタイム差）
+                            <br>・周直ま: 今日の周回タイム/直線タイム/まわり足タイムの評価
                         </div>
                         <div class="text-slate-500 border-t border-slate-800/60 pt-1">★ 各バッジを<strong>長押し（ロングタップ/ホバー）</strong>すると、数値と生データが浮き出ます。</div>
                     </div>
@@ -762,26 +731,28 @@
                 </div>
                 <!-- 新設：6艇一画面完結 3大ボックス比較テーブル -->
                 <div class="px-3 pb-3 overflow-x-hidden">
-                    
-    <div class="flex items-center justify-between mb-2 px-1">
-        <h3 class="text-[11px] font-black text-slate-300">📊 6艇能力比較マトリクス</h3>
-        <div class="flex items-center bg-slate-900/80 rounded-lg p-0.5 border border-slate-700/50 shadow-inner">
-            <button id="btn-sort-lane" class="px-3 py-1 rounded-md text-[9px] font-bold transition-all text-slate-400 hover:text-slate-200" onclick="window.setMatrixSort('lane')">枠番順</button>
-            <button id="btn-sort-course" class="px-3 py-1 rounded-md text-[9px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" onclick="window.setMatrixSort('course')">進入順</button>
-        </div>
-    </div>
-    <div id="racer-comparison-container" class="w-full bg-slate-950/60 rounded-xl border border-white/5 overflow-x-auto overflow-y-hidden text-[9px] relative">
-                        <table class="w-full min-w-max border-collapse select-none">
+                    <div id="racer-comparison-container" class="w-full bg-slate-950/60 rounded-xl border border-white/5 overflow-hidden text-[9px] relative">
+                        <table class="w-full table-fixed border-collapse select-none">
                             <thead>
-                                <tr class="border-b border-slate-800 text-slate-400 font-bold bg-slate-900">
-                                    <th class="w-[45px] py-1 text-center border-r border-slate-800">分類</th>
-                                    <th class="w-[45px] py-1 text-center border-r-2 border-slate-700">項目</th>
-                                    <th id="th-boat-1" class="py-1 text-center boat-1 shadow-md border-r border-slate-800">1号艇</th>
-                                    <th id="th-boat-2" class="py-1 text-center boat-2 shadow-md border-r border-slate-800">2号艇</th>
-                                    <th id="th-boat-3" class="py-1 text-center boat-3 shadow-md border-r border-slate-800">3号艇</th>
-                                    <th id="th-boat-4" class="py-1 text-center boat-4 shadow-md border-r border-slate-800">4号艇</th>
-                                    <th id="th-boat-5" class="py-1 text-center boat-5 shadow-md border-r border-slate-800">5号艇</th>
-                                    <th id="th-boat-6" class="py-1 text-center boat-6 shadow-md">6号艇</th>
+                                <tr class="border-b border-slate-800 text-slate-400 font-bold">
+                                    <th class="w-[52px] py-1 text-center bg-slate-900 border-r border-slate-800">選手</th>
+                                    <th class="w-[28px] py-1 text-center bg-slate-900 border-r-2 border-slate-700">総合</th>
+                                    <th colspan="3" class="py-1 text-center bg-emerald-500/10 text-emerald-300 border-r-2 border-slate-700">基本</th>
+                                    <th colspan="3" class="py-1 text-center bg-amber-500/10 text-amber-300 border-r-2 border-slate-700">今節</th>
+                                    <th colspan="3" class="py-1 text-center bg-indigo-500/10 text-indigo-300">直前展示</th>
+                                </tr>
+                                <tr class="border-b border-slate-800 text-[8px] text-slate-500 font-semibold bg-slate-950/40">
+                                    <th class="py-0.5 text-center bg-slate-900 border-r border-slate-800">枠・名</th>
+                                    <th class="py-0.5 text-center bg-slate-900 border-r-2 border-slate-700">OVR</th>
+                                    <th class="py-0.5 text-center bg-emerald-500/5 text-emerald-400">走力</th>
+                                    <th class="py-0.5 text-center bg-emerald-500/5 text-emerald-400">基ST</th>
+                                    <th class="py-0.5 text-center bg-emerald-500/5 text-emerald-400 border-r-2 border-slate-700">安定</th>
+                                    <th class="py-0.5 text-center bg-amber-500/5 text-amber-400">今着</th>
+                                    <th class="py-0.5 text-center bg-amber-500/5 text-amber-400">今ST</th>
+                                    <th class="py-0.5 text-center bg-amber-500/5 text-amber-400 border-r-2 border-slate-700">安定</th>
+                                    <th class="py-0.5 text-center bg-indigo-500/5 text-indigo-400">展ST</th>
+                                    <th class="py-0.5 text-center bg-indigo-500/5 text-indigo-400">展示T</th>
+                                    <th class="py-0.5 text-center bg-indigo-500/5 text-indigo-400">周直ま</th>
                                 </tr>
                             </thead>
                             <tbody id="racer-comparison-tbody" class="divide-y divide-slate-800/60 font-mono text-[8px]">
@@ -868,7 +839,7 @@
         <!-- ★ 日次・月次収支実績セクション -->
         <section id="roi-history-section" class="rounded-2xl glass shadow-md overflow-hidden mx-0 mt-4">
             <div id="toggle-roi-btn" class="px-4 py-3 border-b border-white/5 bg-slate-900/30 flex items-center justify-between cursor-pointer hover:bg-slate-800/30 transition-colors">
-                <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5">📈 日次・月次収支実績 <span class="text-[8px] px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded font-bold">7/20〜公開</span></span>
+                <span class="text-xs font-bold tracking-wider text-slate-400 uppercase font-outfit flex items-center gap-1.5">📈 日次・月次収支実績 <span class="text-[8px] px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded font-bold">7/1〜公開</span></span>
                 <span id="roi-arrow" class="text-slate-400 transition-transform duration-200 inline-block">▼</span>
             </div>
             <div id="roi-container" class="p-4 space-y-4">
@@ -889,7 +860,7 @@
                 </div>
                 <!-- 棒グラフ（Chart.js） -->
                 <div class="bg-slate-950/60 rounded-xl p-3 border border-white/5">
-                    <span class="text-[9px] text-slate-400 font-bold block mb-2">日次収支グラフ（7/20〜）</span>
+                    <span class="text-[9px] text-slate-400 font-bold block mb-2">日次収支グラフ（7月〜）</span>
                     <canvas id="roi-bar-chart" height="120"></canvas>
                 </div>
                 <!-- 日次一覧 -->
@@ -1042,7 +1013,7 @@
             return `ad_unlocked_${jFmt}_${rFmt}`;
         };
 
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzYijAhOUJamFkAHakS5axVUs1e5ncxYUELbmvEclgz7MfWbsN_w7wPRv1M7YRZ8CAl/exec";
 
         // ============================================================
         // 📊 GA4 カスタムイベント ヘルパー（コンバージョンファネル計測）
@@ -1106,49 +1077,11 @@
             localStorage.setItem('PREMIUM_AUTH_TIME', new Date().getTime().toString());
         };
         
-        // 防衛資金と的中UIの更新
-        window.updateHeaderStatsUI = function() {
-            const profitDisplay = document.getElementById('header-realtime-profit');
+        // 防衛資金UIの更新（フェイクのlocalStorageを使わず本物のデータを使用）
+        window.updateDefenseFundUI = function() {
             const fundDisplay = document.getElementById('header-defense-fund');
             const ttSuccess = document.getElementById('tt-defense-success');
             const ttLoss = document.getElementById('tt-defense-loss');
-            const ttInvest = document.getElementById('tt-rt-invest');
-            const ttPayout = document.getElementById('tt-rt-payout');
-            
-            let hitRateVal = '--%';
-            let hitCountVal = '0R';
-
-            // 1. Stats cardを参照
-            const solidHitEl = document.getElementById('stats-solid-hit');
-            const solidRecEl = document.getElementById('stats-solid-recovery');
-            if (solidHitEl && solidHitEl.innerText && solidHitEl.innerText !== '--%') {
-                hitRateVal = solidHitEl.innerText;
-            }
-            if (solidRecEl && solidRecEl.innerText && solidRecEl.innerText !== '--R') {
-                hitCountVal = solidRecEl.innerText;
-            }
-
-            // 2. Stats cardが未描画の場合はpayloadデータからダイレクト計算
-            if (hitRateVal === '--%' && window.currentPayload && window.currentPayload.races) {
-                let hits = 0, finished = 0;
-                Object.values(window.currentPayload.races).forEach(r => {
-                    if (r.is_hit !== undefined) {
-                        finished++;
-                        if (r.is_hit) hits++;
-                    }
-                });
-                if (finished > 0) {
-                    hitRateVal = `${Math.round((hits / finished) * 100)}%`;
-                    hitCountVal = `${hits}R`;
-                }
-            }
-
-            if (profitDisplay) {
-                profitDisplay.innerText = hitRateVal;
-                profitDisplay.className = "text-[13px] font-black font-outfit text-indigo-400 leading-none";
-                if (ttInvest) ttInvest.innerText = hitRateVal;
-                if (ttPayout) ttPayout.innerText = hitCountVal;
-            }
             
             if(fundDisplay && window.dailyDefenseFund) {
                 // オブジェクトとして扱えるようにフォールバック
@@ -1218,7 +1151,7 @@
         window.racerScoreCache = {};
         async function loadRacerScoreCache() {
             try {
-                const cacheKey = 'racer_score_cache_v2';
+                const cacheKey = 'racer_score_cache';
                 const stored = localStorage.getItem(cacheKey);
                 if (stored) {
                     const parsed = JSON.parse(stored);
@@ -1298,8 +1231,7 @@
                         window.predictionsCache = payload.predictions || {};
                         
                         window.dailyDefenseFund = payload.daily_defense_fund || 0;
-                        window.dailyRealtimeProfit = payload.daily_realtime_profit || 0;
-                        updateHeaderStatsUI();
+                        updateDefenseFundUI();
                         
                         if (typeof checkPremiumStatusFromData === 'function') {
                             checkPremiumStatusFromData(payload);
@@ -1823,189 +1755,11 @@
             });
         }
 
-        // gradeConfig: 
-        window.gradeConfig = window.gradeConfig || {
-            color: { S: '#f59e0b', A: '#ef4444', B: '#f97316', C: '#22c55e', D: '#06b6d4', E: '#6b7280' },
-            bg:    { S: 'rgba(245,158,11,0.15)', A: 'rgba(239,68,68,0.12)', B: 'rgba(249,115,22,0.12)', C: 'rgba(34,197,94,0.12)', D: 'rgba(6,182,212,0.12)', E: 'rgba(107,114,128,0.10)' }
-        };
-
-        // calcGrade: S/A/B/C/D/E グレード変換（グローバル）
-        function calcGrade(value, thresholds) {
-            if (value >= thresholds[0]) return 'S';
-            if (value >= thresholds[1]) return 'A';
-            if (value >= thresholds[2]) return 'B';
-            if (value >= thresholds[3]) return 'C';
-            if (value >= thresholds[4]) return 'D';
-            return 'E';
-        }
-
         function renderDashboard(result) {
             try {
             const racers = result.data;
             const isPlaceholder = racers.length > 0 && racers[0].name.includes("号艇選手");
             const ai = result.ai || { "escape_rate": 55, "comment": "【データ準備中】\n現在、予想エンジンがデータを処理しています...", "focus": ["-"] };
-            let boatData = result.racer_scores || result.boat_stats || (result.historical_stats && result.historical_stats.racer_scores) || null;
-            if (boatData && typeof boatData === 'object' && (Object.keys(boatData).length === 0 || (Array.isArray(boatData) && boatData.length === 0))) {
-                boatData = null;
-            }
-            if (boatData && Array.isArray(boatData) && boatData.length > 0) {
-                // compute_race_scores は [{lane, score, components:{rate, st_val, ex_time, motor_rate, ...}}] を返す
-                // まず全艇のスコアを取得して相対ランク計算
-                const scores = boatData.map(x => x.score || 0);
-                const maxScore = Math.max(...scores), minScore = Math.min(...scores);
-                
-                const relGrade = (val, max, min, lowerIsBetter = false) => {
-                    const num = parseFloat(val);
-                    if (isNaN(num)) return 'C';
-                    const norm = (max === min) ? 0.5 : lowerIsBetter
-                        ? (max - num) / (max - min)
-                        : (num - min) / (max - min);
-                    if (norm >= 0.8) return 'S';
-                    if (norm >= 0.6) return 'A';
-                    if (norm >= 0.4) return 'B';
-                    if (norm >= 0.2) return 'C';
-                    return 'D';
-                };
-
-                const allStVals = boatData.map(x => parseFloat((x.components||{}).st_val||(x.components||{}).avg_st)).filter(v=>!isNaN(v)&&v>0);
-                const allExTimes = boatData.map(x => parseFloat((x.components||{}).ex_time)).filter(v=>!isNaN(v)&&v>0);
-                const allMotors = boatData.map(x => parseFloat((x.components||{}).motor_rate)).filter(v=>!isNaN(v)&&v>0);
-                const allRates = boatData.map(x => parseFloat((x.components||{}).rate||(x.components||{}).smoothed_win_rate)).filter(v=>!isNaN(v)&&v>0);
-                const allSeriesSt = boatData.map(x => parseFloat((x.components||{}).series_st)).filter(v=>!isNaN(v)&&v>0);
-
-                const maxSt = allStVals.length>0?Math.max(...allStVals):0.20, minSt = allStVals.length>0?Math.min(...allStVals):0.10;
-                const maxEx = allExTimes.length>0?Math.max(...allExTimes):6.80, minEx = allExTimes.length>0?Math.min(...allExTimes):6.60;
-                const maxMot = allMotors.length>0?Math.max(...allMotors):50, minMot = allMotors.length>0?Math.min(...allMotors):20;
-                const maxRate = allRates.length>0?Math.max(...allRates):6, minRate = allRates.length>0?Math.min(...allRates):4;
-                const maxSeries = allSeriesSt.length>0?Math.max(...allSeriesSt):0.20, minSeries = allSeriesSt.length>0?Math.min(...allSeriesSt):0.10;
-
-                const map = {};
-                boatData.forEach(item => {
-                    if (!item || !item.lane) return;
-                    const c = item.components || {};
-                    const stv = parseFloat(c.st_val||c.avg_st)||0.15;
-                    const ex = parseFloat(c.ex_time)||6.70;
-                    const mot = parseFloat(c.motor_rate)||35;
-                    const rt = parseFloat(c.rate||c.smoothed_win_rate)||5.0;
-                    const seriesSt = parseFloat(c.series_st)||stv;
-                    const cSt = parseFloat(c.c_avg_st)||stv;
-                    const ovrG = relGrade(item.score, maxScore, minScore, false);
-                    const loopT = parseFloat(c.loop_time);
-                    const straightT = parseFloat(c.straight_time);
-                    const turnT = parseFloat(c.turn_time);
-                    
-                    const loopTimes = boatData.map(x => parseFloat((x.components||{}).loop_time)).filter(v=>!isNaN(v)&&v>0);
-                    const straightTimes = boatData.map(x => parseFloat((x.components||{}).straight_time)).filter(v=>!isNaN(v)&&v>0);
-                    const turnTimes = boatData.map(x => parseFloat((x.components||{}).turn_time)).filter(v=>!isNaN(v)&&v>0);
-                    const maxLoop = loopTimes.length>0?Math.max(...loopTimes):38, minLoop = loopTimes.length>0?Math.min(...loopTimes):35;
-                    const maxStraight = straightTimes.length>0?Math.max(...straightTimes):38, minStraight = straightTimes.length>0?Math.min(...straightTimes):35;
-                    const maxTurn = turnTimes.length>0?Math.max(...turnTimes):38, minTurn = turnTimes.length>0?Math.min(...turnTimes):35;
-
-                    map[item.lane] = {
-                        ovr:      { score: Math.round(item.score||50), grade: ovrG,                               title: 'OVR',  raw: `${Math.round(item.score||50)}点`, desc: `総合スコア（Z-score正規化）` },
-                        winRate:  { score: Math.round(rt*10),           grade: relGrade(rt,maxRate,minRate),       title: '走力', raw: `${rt.toFixed(2)}%`,              desc: `全国勝率: ${rt.toFixed(2)}%` },
-                        avgSt:    { score: Math.round((0.30-stv)*500),  grade: relGrade(stv,maxSt,minSt,true),    title: '基ST', raw: `${stv.toFixed(3)}`,               desc: `平均ST: ${stv.toFixed(3)}秒` },
-                        stVar:    { score: Math.round((c.stability||0.5)*100), grade: relGrade(c.stability||0.5,1,0), title: '安定', raw: `${Math.round((c.stability||0.5)*100)}%`, desc: 'ST安定度' },
-                        cSt:      { score: Math.round((0.30-cSt)*500),  grade: relGrade(cSt,maxSt,minSt,true),   title: 'コST', raw: `${cSt.toFixed(3)}`,               desc: `コース別ST: ${cSt.toFixed(3)}` },
-                        cStRank:  { score: 7-Math.round(c.c_avg_st_rank||3.5), grade: relGrade(7-(c.c_avg_st_rank||3.5),0,6), title: 'コS順', raw: `${Math.round(c.c_avg_st_rank||3.5)}位`, desc: 'コース別ST順位' },
-                        vSt:      { score: Math.round((0.30-stv)*500),  grade: relGrade(stv,maxSt,minSt,true),   title: '場ST', raw: `${stv.toFixed(3)}`,               desc: `当場ST実績` },
-                        iPlace:   { score: Math.round(rt*8),             grade: relGrade(rt,maxRate,minRate),       title: '節着順', raw: `${c.n_enter||0}走`,           desc: `今節出走数: ${c.n_enter||0}回` },
-                        iSt:      { score: Math.round((0.30-seriesSt)*500), grade: relGrade(seriesSt,maxSeries,minSeries,true), title: '節ST', raw: `${seriesSt.toFixed(3)}`, desc: `今節ST: ${seriesSt.toFixed(3)}` },
-                        iEx:      { score: Math.round((7.2-ex)*100),    grade: relGrade(ex,maxEx,minEx,true),     title: '節展T', raw: ex>0?`${ex.toFixed(2)}s`:'---',   desc: `展示タイム: ${ex.toFixed(2)}秒` },
-                        iLoop:    { score: loopT ? Math.round((42-loopT)*50) : 50, grade: loopT ? relGrade(loopT,maxLoop,minLoop,true) : 'C', title: '節周回', raw: loopT ? `${loopT.toFixed(2)}s` : '---', desc: loopT ? `展示周回タイム` : `データ未提供` },
-                        iStraight:{ score: straightT ? Math.round((42-straightT)*50) : 50, grade: straightT ? relGrade(straightT,maxStraight,minStraight,true) : 'C', title: '節直線', raw: straightT ? `${straightT.toFixed(2)}s` : '---', desc: straightT ? `展示直線タイム` : `データ未提供` },
-                        iTurn:    { score: turnT ? Math.round((42-turnT)*50) : 50, grade: turnT ? relGrade(turnT,maxTurn,minTurn,true) : 'C', title: '節回り', raw: turnT ? `${turnT.toFixed(2)}s` : '---', desc: turnT ? `展示回り足タイム` : `データ未提供` },
-                        exSt:     { score: Math.round((0.30-stv)*500),  grade: relGrade(stv,maxSt,minSt,true),   title: '展ST',  raw: c.st_val?`${stv.toFixed(3)}`:'---', desc: '直前展示スタート' },
-                        exTime:   { score: Math.round((7.2-ex)*100),    grade: relGrade(ex,maxEx,minEx,true),     title: '展示T', raw: ex>0?`${ex.toFixed(2)}s`:'---',   desc: `直前展示タイム: ${ex.toFixed(2)}秒` },
-                        loop:     { score: loopT ? Math.round((42-loopT)*50) : 50, grade: loopT ? relGrade(loopT,maxLoop,minLoop,true) : 'C', title: '周回T', raw: loopT ? `${loopT.toFixed(2)}s` : '---', desc: loopT ? `展示周回タイム` : `データ未提供` },
-                        straight: { score: straightT ? Math.round((42-straightT)*50) : 50, grade: straightT ? relGrade(straightT,maxStraight,minStraight,true) : 'C', title: '直線T', raw: straightT ? `${straightT.toFixed(2)}s` : '---', desc: straightT ? `展示直線タイム` : `データ未提供` },
-                        turn:     { score: turnT ? Math.round((42-turnT)*50) : 50, grade: turnT ? relGrade(turnT,maxTurn,minTurn,true) : 'C', title: '回りT', raw: turnT ? `${turnT.toFixed(2)}s` : '---', desc: turnT ? `展示回り足タイム` : `データ未提供` }
-                    };
-                });
-                boatData = map;
-            }
-            if ((!boatData || Object.keys(boatData).length === 0) && racers && racers.length > 0) {
-                // racersデータから動的に相対評価(S/A/B/C/D)および詳細raw値を計算
-                const rates = racers.map(r => parseFloat(r.rate) || 5.0);
-                const maxRate = Math.max(...rates), minRate = Math.min(...rates);
-
-                const stVals = racers.map(r => parseFloat(r.st_val)).filter(v => !isNaN(v) && v > 0);
-                const minSt = stVals.length > 0 ? Math.min(...stVals) : 0.15;
-                const maxSt = stVals.length > 0 ? Math.max(...stVals) : 0.15;
-
-                const exTimes = racers.map(r => parseFloat(r.ex_time)).filter(v => !isNaN(v) && v > 0);
-                const minEx = exTimes.length > 0 ? Math.min(...exTimes) : 6.70;
-                const maxEx = exTimes.length > 0 ? Math.max(...exTimes) : 6.70;
-
-                const motorRates = racers.map(r => parseFloat(r.motor_rate)).filter(v => !isNaN(v) && v > 0);
-                const maxMotor = motorRates.length > 0 ? Math.max(...motorRates) : 35.0;
-                const minMotor = motorRates.length > 0 ? Math.min(...motorRates) : 35.0;
-
-                const calcGrade = (val, max, min, lowerIsBetter = false) => {
-                    if (val === undefined || val === null || isNaN(val) || val === 'N/A' || val === '') return 'C';
-                    const num = parseFloat(val);
-                    if (isNaN(num)) return 'C';
-                    const norm = lowerIsBetter 
-                        ? (max === min ? 0.5 : (max - num) / (max - min))
-                        : (max === min ? 0.5 : (num - min) / (max - min));
-                    if (norm >= 0.8) return 'S';
-                    if (norm >= 0.6) return 'A';
-                    if (norm >= 0.4) return 'B';
-                    if (norm >= 0.2) return 'C';
-                    return 'D';
-                };
-
-                boatData = {};
-                racers.forEach(r => {
-                    const rRate = parseFloat(r.rate) || 5.0;
-                    const rSt = parseFloat(r.st_val) || 0.15;
-                    const rEx = parseFloat(r.ex_time) || 6.70;
-                    const rMotor = parseFloat(r.motor_rate) || 35.0;
-
-                    const rateGrade = calcGrade(rRate, maxRate, minRate, false);
-                    const stGrade = calcGrade(rSt, maxSt, minSt, true);
-                    const exGrade = calcGrade(rEx, maxEx, minEx, true);
-                    const motorGrade = calcGrade(rMotor, maxMotor, minMotor, false);
-
-                    const ovrScore = Math.round(rRate * 10 + (0.3 - rSt) * 100);
-
-                    const loopT = parseFloat(r.loop_time);
-                    const straightT = parseFloat(r.straight_time);
-                    const turnT = parseFloat(r.turn_time);
-                    
-                    const loopTimesF = racers.map(r => parseFloat(r.loop_time)).filter(v=>!isNaN(v)&&v>0);
-                    const straightTimesF = racers.map(r => parseFloat(r.straight_time)).filter(v=>!isNaN(v)&&v>0);
-                    const turnTimesF = racers.map(r => parseFloat(r.turn_time)).filter(v=>!isNaN(v)&&v>0);
-                    const maxLoopF = loopTimesF.length>0?Math.max(...loopTimesF):38, minLoopF = loopTimesF.length>0?Math.min(...loopTimesF):35;
-                    const maxStraightF = straightTimesF.length>0?Math.max(...straightTimesF):38, minStraightF = straightTimesF.length>0?Math.min(...straightTimesF):35;
-                    const maxTurnF = turnTimesF.length>0?Math.max(...turnTimesF):38, minTurnF = turnTimesF.length>0?Math.min(...turnTimesF):35;
-
-                    const loopGrade = loopT ? calcGrade(loopT, maxLoopF, minLoopF, true) : 'C';
-                    const straightGrade = straightT ? calcGrade(straightT, maxStraightF, minStraightF, true) : 'C';
-                    const turnGrade = turnT ? calcGrade(turnT, maxTurnF, minTurnF, true) : 'C';
-
-                    boatData[r.lane] = {
-                        ovr: { score: ovrScore, grade: rateGrade, title: "OVR", raw: `${ovrScore}点`, desc: `${r.name || '選手'} 総合評価` },
-                        winRate: { score: Math.round(rRate * 10), grade: rateGrade, title: "走力", raw: `${rRate}%`, desc: `全国勝率: ${rRate}%` },
-                        avgSt: { score: Math.round((0.3 - rSt) * 300), grade: stGrade, title: "平均ST", raw: `${rSt}`, desc: `平均ST: ${rSt}` },
-                        stVar: { score: 70, grade: stGrade, title: "ST安定", raw: "安定", desc: "スタート順目安定度" },
-                        cSt: { score: Math.round((0.3 - rSt) * 300), grade: stGrade, title: "コースST", raw: `${rSt}`, desc: `コース別ST` },
-                        cStRank: { score: r.lane, grade: stGrade, title: "ST順", raw: `${r.lane}位`, desc: "スタート想定順位" },
-                        vSt: { score: Math.round((0.3 - rSt) * 300), grade: stGrade, title: "場ST", raw: `${rSt}`, desc: "当場ST実績" },
-                        iPlace: { score: Math.round(rRate * 8), grade: rateGrade, title: "節着順", raw: `${r.cls || 'B1'}級`, desc: "級別・今節気配" },
-                        iSt: { score: Math.round((0.3 - rSt) * 300), grade: stGrade, title: "節ST", raw: `${rSt}`, desc: "今節ST平均" },
-                        iEx: { score: Math.round((7.2 - rEx) * 100), grade: exGrade, title: "節展T", raw: rEx > 0 ? `${rEx}s` : "---", desc: "節展示タイム" },
-                        iLoop: { score: loopT ? Math.round((42-loopT)*50) : 50, grade: loopT ? loopGrade : 'C', title: "節周回", raw: loopT ? `${loopT.toFixed(2)}s` : '---', desc: loopT ? "展示周回タイム" : "データ未提供" },
-                        iStraight: { score: straightT ? Math.round((42-straightT)*50) : 50, grade: straightT ? straightGrade : 'C', title: "節直線", raw: straightT ? `${straightT.toFixed(2)}s` : '---', desc: straightT ? "展示直線タイム" : "データ未提供" },
-                        iTurn: { score: turnT ? Math.round((42-turnT)*50) : 50, grade: turnT ? turnGrade : 'C', title: "節回り", raw: turnT ? `${turnT.toFixed(2)}s` : '---', desc: turnT ? "展示回り足タイム" : "データ未提供" },
-                        exSt: { score: Math.round((0.3 - rSt) * 300), grade: stGrade, title: "展ST", raw: r.ex_st ? `${r.ex_st}` : `${rSt}`, desc: "展示スタート" },
-                        exTime: { score: Math.round((7.2 - rEx) * 100), grade: exGrade, title: "展示T", raw: rEx > 0 ? `${rEx}s` : "---", desc: "展示タイム" },
-                        loop: { score: loopT ? Math.round((42-loopT)*50) : 50, grade: loopT ? loopGrade : 'C', title: "周回T", raw: loopT ? `${loopT.toFixed(2)}s` : '---', desc: loopT ? "展示周回タイム" : "データ未提供" },
-                        straight: { score: straightT ? Math.round((42-straightT)*50) : 50, grade: straightT ? straightGrade : 'C', title: "直線T", raw: straightT ? `${straightT.toFixed(2)}s` : '---', desc: straightT ? "展示直線タイム" : "データ未提供" },
-                        turn: { score: turnT ? Math.round((42-turnT)*50) : 50, grade: turnT ? turnGrade : 'C', title: "回りT", raw: turnT ? `${turnT.toFixed(2)}s` : '---', desc: turnT ? "展示回り足タイム" : "データ未提供" }
-                    };
-                });
-            }
             const exhibitionCompleted = result.exhibition_completed;
             const phase = result.phase || (exhibitionCompleted ? 2 : 1);
             window.currentPhase = phase; // フェーズ別カウントダウン用にグローバル保持
@@ -2062,10 +1816,37 @@
             const firstPred = result.first_prediction || null;
             const secondPred = result.second_prediction || null;
             
-            if (result.review && result.review.is_completed) {
-                const combo = result.review.winning_combo;
-                const payout = result.review.payout || 0;
-                const isHit = result.review.is_hit;
+            if (result.result && result.result.success) {
+                const combo = result.result.combo;
+                const payout = result.result.payout || 0;
+                
+                let activeAiResult = null;
+                if (result.second_prediction && result.second_prediction.ai) {
+                    activeAiResult = result.second_prediction.ai;
+                } else if (result.first_prediction) {
+                    activeAiResult = null;
+                } else {
+                    activeAiResult = result.ai || null;
+                }
+                let isHit = false;
+                if (activeAiResult) {
+                    const isSecond = result.second_prediction ? true : false;
+                    let sFocus = getReliabilityBasedFocus(activeAiResult, 'solid', isSecond);
+                    if (sFocus.length === 0) sFocus = get4Focus(result).slice(0, 4);
+                    let uFocus = getReliabilityBasedFocus(activeAiResult, 'upset', isSecond);
+                    if (uFocus.length === 0) {
+                        const dynamicCombos = getDynamicPredictions(result.data || []);
+                        uFocus = [];
+                        for (let i = 0; i < dynamicCombos.length; i++) {
+                            const c = dynamicCombos[i].combo;
+                            if (!c.startsWith("1-")) uFocus.push(c);
+                            if (uFocus.length >= 4) break;
+                        }
+                    }
+                    if (sFocus.includes(combo) || uFocus.includes(combo)) {
+                        isHit = true;
+                    }
+                }
                 
                 raceResultAlert.classList.remove('hidden');
                 raceResultAlert.innerHTML = `
@@ -2097,9 +1878,22 @@
                 
                 const firstSolidContainer = document.getElementById('first-ai-solid-focus');
                 const firstUpsetContainer = document.getElementById('first-ai-upset-focus');
+                const firstAdOverlay = document.getElementById('first-ai-ad-overlay');
                 
                 if (firstSolidContainer) firstSolidContainer.innerHTML = '';
                 if (firstUpsetContainer) firstUpsetContainer.innerHTML = '';
+                
+                const isPremium = result && result.access !== "denied" && result.status !== 403 && window.getPremiumPass && window.getPremiumPass();
+                const adKey = window.getAdUnlockKey();
+                const isAdUnlocked = adKey ? (sessionStorage.getItem(adKey) === 'true') : false;
+                
+                if (!isPremium && !isAdUnlocked && firstAdOverlay) {
+                    firstAdOverlay.classList.remove('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.add('premium-blur');
+                } else if (firstAdOverlay) {
+                    firstAdOverlay.classList.add('hidden');
+                    if (firstUpsetContainer) firstUpsetContainer.classList.remove('premium-blur');
+                }
 
                 let firstFocusArr = [];
                 if (firstPred.ai.solid_focus && firstPred.ai.upset_focus) {
@@ -2307,11 +2101,8 @@
                                         <p class="text-[9px] text-slate-400 max-w-xs mt-1.5 mb-3.5 leading-relaxed">
                                             展示タイム・スタートタイミング・直前オッズから期待値(<strong class="text-emerald-400 font-bold">EV 1.2以上</strong>)の買い目のみをリアルタイム抽出完了！
                                         </p>
-                                        <button onclick="window._ga4Event('premium_cta_click', {location: 'live_overlay'}); window.location.href='https://buy.stripe.com/test_123456';" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-[10px] font-black rounded-lg shadow-lg transition-all transform hover:scale-[1.03] active:scale-95 mb-2">
+                                        <button onclick="window.showLoginModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-[10px] font-black rounded-lg shadow-lg transition-all transform hover:scale-[1.03] active:scale-95">
                                             🔐 プレミアム登録 (月額500円) で最終結論を見る
-                                        </button>
-                                        <button onclick="window.showLoginModal()" class="text-[9px] text-emerald-400/80 underline hover:text-emerald-300">
-                                            すでに登録済みの方（ログイン）はこちら
                                         </button>
                                     </div>
                                 </div>
@@ -2529,171 +2320,145 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                 });
             }
 
-            // 3. Render Racer Table Details (縦横入れ替えマトリクス)
-            const tbody = document.getElementById('racer-comparison-tbody');
-            if (tbody) {
-                tbody.innerHTML = '';
+            const racerList = document.getElementById('racer-list');
+            racerList.innerHTML = '';
+            
+            if (isPlaceholder) {
+                racerList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 text-slate-500 gap-1 text-center py-10">
+                        <svg class="w-6 h-6 text-slate-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-xs font-bold mt-2 text-slate-400">出走表データを取得中...</span>
+                        <span class="text-[9px] text-slate-600">バックグラウンドで出走メンバー情報を自動収集しています</span>
+                    </div>
+                `;
+            } else {
+                const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
+            const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
+
+            // 各オリジナル展示タイムの最速値（最小値）をあらかじめ算出
+            const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
+            const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
+
+            const turnTimes = racers.map(r => parseFloat(r.turn_time)).filter(t => !isNaN(t) && t > 0);
+            const minTurn = turnTimes.length > 0 ? Math.min(...turnTimes) : 999;
+
+            const straightTimes = racers.map(r => parseFloat(r.straight_time)).filter(t => !isNaN(t) && t > 0);
+            const minStraight = straightTimes.length > 0 ? Math.min(...straightTimes) : 999;
+
+            racers.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'p-3 flex items-center justify-between gap-2';
+
+                const leftArea = document.createElement('div');
+                leftArea.className = 'flex items-center gap-2.5 w-full';
                 
-                if (isPlaceholder) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-500 font-bold">
-                                <svg class="w-5 h-5 text-slate-600 animate-spin mx-auto mb-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.001 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                データを読み込み中...
-                            </td>
-                        </tr>
+                const badge = document.createElement('div');
+                badge.className = `w-7 h-7 rounded-xl flex items-center justify-center font-black font-outfit text-sm shadow-sm boat-${r.lane} flex-shrink-0`;
+                badge.innerText = r.lane;
+                
+                // オリジナル展示タイムがある場（鳴門・三国など）の追加HTML生成
+                let originalHtml = '';
+                const hasOriginalTimes = (r.loop_time && r.loop_time !== "N/A" && r.loop_time !== "");
+                if (hasOriginalTimes) {
+                    const lVal = parseFloat(r.loop_time) || 0;
+                    const tVal = parseFloat(r.turn_time) || 0;
+                    const sVal = parseFloat(r.straight_time) || 0;
+
+                    const lColor = (lVal === minLoop) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const tColor = (tVal === minTurn) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+                    const sColor = (sVal === minStraight) ? 'text-amber-400 font-extrabold' : 'text-slate-300';
+
+                    const lBadge = (lVal === minLoop) ? '👑' : '';
+                    const tBadge = (tVal === minTurn) ? '👑' : '';
+                    const sBadge = (sVal === minStraight) ? '👑' : '';
+
+                    originalHtml = `
+                        <div class="flex gap-2.5 mt-1.5 text-[9px] bg-slate-950/50 px-2 py-0.5 rounded-lg border border-white/5 w-fit">
+                            <span class="text-slate-400 font-medium">一周: <strong class="${lColor} font-mono">${lBadge}${parseFloat(r.loop_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">まわり: <strong class="${tColor} font-mono">${tBadge}${parseFloat(r.turn_time).toFixed(2)}</strong></span>
+                            <span class="text-slate-400 font-medium">直線: <strong class="${sColor} font-mono">${sBadge}${parseFloat(r.straight_time).toFixed(2)}</strong></span>
+                        </div>
                     `;
-                } else {
-                    const validTimes = racers.map(r => parseFloat(r.ex_time)).filter(t => !isNaN(t));
-                    const minTime = validTimes.length > 0 ? Math.min(...validTimes) : 6.70;
-                    
-                    const loopTimes = racers.map(r => parseFloat(r.loop_time)).filter(t => !isNaN(t) && t > 0);
-                    const minLoop = loopTimes.length > 0 ? Math.min(...loopTimes) : 999;
-                    const turnTimes = racers.map(r => parseFloat(r.turn_time)).filter(t => !isNaN(t) && t > 0);
-                    const minTurn = turnTimes.length > 0 ? Math.min(...turnTimes) : 999;
-                    const straightTimes = racers.map(r => parseFloat(r.straight_time)).filter(t => !isNaN(t) && t > 0);
-                    const minStraight = straightTimes.length > 0 ? Math.min(...straightTimes) : 999;
-
-                    
-                    
-                    
-                    window.currentRacers = racers;
-                    window.currentBoatData = boatData;
-                    if (!window.matrixSortMode) window.matrixSortMode = 'course';
-
-                    window.setMatrixSort = function(mode) {
-                        window.matrixSortMode = mode;
-                        
-                        const btnLane = document.getElementById('btn-sort-lane');
-                        const btnCourse = document.getElementById('btn-sort-course');
-                        
-                        if (btnLane && btnCourse) {
-                            btnLane.className = mode === 'lane' 
-                                ? "px-3 py-1 rounded-md text-[9px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
-                                : "px-3 py-1 rounded-md text-[9px] font-bold transition-all text-slate-400 hover:text-slate-200";
-                                
-                            btnCourse.className = mode === 'course' 
-                                ? "px-3 py-1 rounded-md text-[9px] font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
-                                : "px-3 py-1 rounded-md text-[9px] font-bold transition-all text-slate-400 hover:text-slate-200";
-                        }
-                            
-                        window.drawMatrix();
-                    };
-
-                    window.drawMatrix = function() {
-                        const racers = window.currentRacers;
-                        const boatData = window.currentBoatData;
-                        const tbody = document.getElementById('racer-comparison-tbody');
-                        const theadElement = document.querySelector('#racer-comparison-container table thead');
-                        if (!tbody || !theadElement || !racers || !boatData) return;
-
-                        const sortedLanes = racers.map(r => {
-                            const isNA = r.st_val === "N/A" || r.st_val === "";
-                            return {
-                                lane: r.lane,
-                                sortKey: window.matrixSortMode === 'lane' ? r.lane : (isNA ? r.lane : (parseFloat(r.st_course) || r.lane))
-                            };
-                        }).sort((a, b) => a.sortKey - b.sortKey).map(x => x.lane);
-
-                        let theadHtml = `
-                            <tr class="border-b border-slate-800 text-slate-400 font-bold bg-slate-900">
-                                <th class="w-[45px] py-1 text-center border-r border-slate-800">分類</th>
-                                <th class="w-[45px] py-1 text-center border-r-2 border-slate-700">項目</th>
-                        `;
-                        sortedLanes.forEach(lane => {
-                            const r = racers.find(x => x.lane === lane) || {};
-                            const racerNameShort = r.name ? r.name.split(' ')[0] : '選手';
-                            theadHtml += `<th class="py-1 text-center boat-${lane} shadow-md border-r border-slate-800">
-                                <div class="flex items-center justify-center gap-1"><span class="opacity-70 font-normal">${lane}</span> <span class="font-black text-[10px] truncate max-w-[40px]">${racerNameShort}</span></div>
-                            </th>`;
-                        });
-                        theadHtml += `</tr>`;
-                        theadElement.innerHTML = theadHtml;
-
-                        const buildCell = (d) => {
-                            if (!d || d.grade === '--') {
-                                return `<td class="text-center py-0.5 text-slate-600 font-bold border-r border-slate-800/50">--</td>`;
-                            }
-                            const bg = window.gradeConfig.bg[d.grade] || 'rgba(255,255,255,0.05)';
-                            const col = window.gradeConfig.color[d.grade] || '#fff';
-                            return `
-                                <td class="text-center py-0.5 font-bold cursor-help rank-cell border-r border-slate-800/50 hover:brightness-125 transition-all" 
-                                    data-title="${d.title}"
-                                    data-grade="${d.grade}"
-                                    data-score="${d.score}"
-                                    data-raw="${d.raw}"
-                                    data-desc="${d.desc}">
-                                    <div class="flex items-center justify-center gap-1.5">
-                                        <span class="inline-flex w-[16px] h-[16px] rounded-full items-center justify-center text-[9px] font-black" style="background:${bg};color:${col};border:1px solid ${col}22;">
-                                            ${d.grade}
-                                        </span>
-                                    </div>
-                                </td>
-                            `;
-                        };
-
-                        const rowsConfig = [
-                            { cat: "総合", catClass: "bg-slate-900/60 text-slate-300", items: [
-                                { key: "ovr", name: "OVR", class: "bg-slate-900/40 text-slate-300 font-black" }
-                            ]},
-                            { cat: "基本", catClass: "bg-emerald-500/10 text-emerald-400", items: [
-                                { key: "winRate", name: "走力", class: "bg-emerald-500/5 text-emerald-500" },
-                                { key: "avgSt", name: "基ST", class: "bg-emerald-500/5 text-emerald-500" },
-                                { key: "stVar", name: "安定", class: "bg-emerald-500/5 text-emerald-500" }
-                            ]},
-                            { cat: "コース/場", catClass: "bg-cyan-500/10 text-cyan-400", items: [
-                                { key: "cSt", name: "コST", class: "bg-cyan-500/5 text-cyan-500" },
-                                { key: "cStRank", name: "コS順", class: "bg-cyan-500/5 text-cyan-500" },
-                                { key: "vSt", name: "場ST", class: "bg-cyan-500/5 text-cyan-500" }
-                            ]},
-                            { cat: "今節の調子", catClass: "bg-purple-500/10 text-purple-400", items: [
-                                { key: "iPlace", name: "節着順", class: "bg-purple-500/5 text-purple-500" },
-                                { key: "iSt", name: "節ST", class: "bg-purple-500/5 text-purple-500" },
-                                { key: "iEx", name: "節展T", class: "bg-purple-500/5 text-purple-500" },
-                                { key: "iLoop", name: "節周回", class: "bg-purple-500/5 text-purple-500" },
-                                { key: "iStraight", name: "節直線", class: "bg-purple-500/5 text-purple-500" },
-                                { key: "iTurn", name: "節回り", class: "bg-purple-500/5 text-purple-500" }
-                            ]},
-                            { cat: "直前気配", catClass: "bg-indigo-500/10 text-indigo-400", items: [
-                                { key: "exSt", name: "展ST", class: "bg-indigo-500/5 text-indigo-500" },
-                                { key: "exTime", name: "展示T", class: "bg-indigo-500/5 text-indigo-500" },
-                                { key: "loop", name: "周回T", class: "bg-indigo-500/5 text-indigo-500" },
-                                { key: "straight", name: "直線T", class: "bg-indigo-500/5 text-indigo-500" },
-                                { key: "turn", name: "回りT", class: "bg-indigo-500/5 text-indigo-500" }
-                            ]}
-                        ];
-
-                        let htmlStr = '';
-                        rowsConfig.forEach((catGroup) => {
-                            catGroup.items.forEach((item, idx) => {
-                                htmlStr += `<tr class="border-b border-slate-800/80 hover:bg-slate-900/40 transition-colors h-[26px]">`;
-                                
-                                if (idx === 0) {
-                                    htmlStr += `<td rowspan="${catGroup.items.length}" class="text-center font-bold text-[9px] align-middle border-r border-slate-800 ${catGroup.catClass} py-0 w-[45px] leading-[1.2]">
-                                        <div style="writing-mode: vertical-rl; text-orientation: upright; letter-spacing: -1px; display: inline-block;">${catGroup.cat}</div>
-                                    </td>`;
-                                }
-                                
-                                htmlStr += `<td class="text-center font-bold text-[9px] border-r-2 border-slate-700 ${item.class} w-[45px]">${item.name}</td>`;
-                                
-                                sortedLanes.forEach(lane => {
-                                    htmlStr += buildCell(boatData[lane] ? boatData[lane][item.key] : null);
-                                });
-                                
-                                htmlStr += `</tr>`;
-                            });
-                        });
-                        
-                        tbody.innerHTML = htmlStr;
-                    };
-                    
-                    window.setMatrixSort(window.matrixSortMode);
-
-                    registerRacerTooltipEvents();
                 }
+
+                const details = document.createElement('div');
+                details.className = 'w-full';
+                details.innerHTML = `
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-black text-white">${r.name}</span>
+                        <span class="text-[8px] px-1 py-0.2 bg-slate-800 text-slate-400 font-bold rounded">${r.cls}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-medium">
+                        勝率:${parseFloat(r.rate).toFixed(2)} | モーター:${parseFloat(r.motor_rate).toFixed(1)}%
+                    </div>
+                    ${originalHtml}
+                `;
+                
+                leftArea.appendChild(badge);
+                leftArea.appendChild(details);
+                card.appendChild(leftArea);
+
+                const rightArea = document.createElement('div');
+                rightArea.className = 'text-right flex flex-col items-end gap-1 w-28 flex-shrink-0';
+                
+                const isNA = r.ex_time === "N/A" || r.ex_time === "";
+                const exTimeVal = parseFloat(r.ex_time) || 0.0;
+                const offset = (exTimeVal - minTime).toFixed(2);
+                
+                let gaugeColor = 'bg-emerald-500';
+                let offsetText = `±0.00`;
+                let displayTimeText = r.ex_time;
+                let gaugeWidth = 100;
+
+                if (isNA) {
+                    gaugeColor = 'bg-slate-700/50';
+                    offsetText = '未実施';
+                    displayTimeText = '--.--';
+                    gaugeWidth = 50; 
+                } else if (offset > 0) {
+                    offsetText = `+${offset}`;
+                    if (offset > 0.08) gaugeColor = 'bg-red-500 animate-pulse';
+                    else if (offset > 0.04) gaugeColor = 'bg-amber-500';
+                    gaugeWidth = Math.max(10, 100 - (offset * 500));
+                }
+
+                // ★ AIスコア計算（勝率・モーター2連率・展示タイム偏差から算出）
+                const winRate = parseFloat(r.rate) || 5.0;
+                const motorRate = parseFloat(r.motor_rate) || 40.0;
+                const timePenalty = isNA ? 0 : Math.max(0, 10 - parseFloat(offset) * 100);
+                const aiScore = Math.min(99, Math.max(1, Math.round(winRate * 8 + motorRate * 0.3 + timePenalty)));
+                const scoreColor = aiScore >= 70 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+                    : aiScore >= 50 ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+                    : 'text-slate-400 bg-slate-800/50 border-slate-700/30';
+
+                rightArea.innerHTML = `
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xs font-black font-mono ${isNA ? 'text-slate-500' : 'text-white'}">${displayTimeText}</span>
+                        <span class="text-[8px] font-black font-mono ${isNA ? 'text-slate-500' : (offset > 0.08 ? 'text-red-400' : 'text-emerald-400')}">(${offsetText})</span>
+                    </div>
+                    <div class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden">
+                        <div class="h-full ${gaugeColor}" style="width: ${gaugeWidth}%"></div>
+                    </div>
+                    <div class="text-[8px] ${isNA ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase tracking-wider">TILT: ${isNA ? '--' : r.tilt}</div>
+                    <div class="px-1.5 py-0.5 rounded border text-[9px] font-black ${scoreColor}">AI ${aiScore}</div>
+                `;
+                
+                card.appendChild(rightArea);
+
+                // ★ 選手名タップで詳細モーダルを開く
+                const nameEl = details.querySelector('span.font-black');
+                if (nameEl) {
+                    nameEl.style.cursor = 'pointer';
+                    nameEl.style.textDecoration = 'underline dotted';
+                    nameEl.style.textDecorationColor = 'rgba(148,163,184,0.5)';
+                    nameEl.addEventListener('click', () => window.showRacerDetailModal(r, aiScore));
+                }
+
+                racerList.appendChild(card);
+            });
             }
             
             // プレミアム2D物理展開シミュレーションの起動（API消費ゼロ）
@@ -2703,12 +2468,11 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                 let activeAi = null;
                 if (result.second_prediction && result.second_prediction.ai) {
                     activeAi = result.second_prediction.ai;
-                } else if (result.first_prediction && result.first_prediction.ai) {
-                    activeAi = result.first_prediction.ai;
+                } else if (result.first_prediction) {
+                    activeAi = null;
                 } else {
                     activeAi = result.ai || null;
                 }
-                let aiComment = activeAi ? (activeAi.comment || "") : "";
                 if (activeAi) {
                     const isSecond = result.second_prediction ? true : false;
                     simSolidFocus = getReliabilityBasedFocus(activeAi, 'solid', isSecond);
@@ -2725,76 +2489,28 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                 } else {
                     simSolidFocus = get4Focus(result).slice(0, 4);
                 }
-                initTurnSimulation(racers, simSolidFocus, simUpsetFocus, exhibitionCompleted && !isPlaceholder, aiComment);
+                initTurnSimulation(racers, simSolidFocus, simUpsetFocus, exhibitionCompleted && !isPlaceholder);
             } catch (e) {
                 console.error("Simulation init failed:", e);
             }
 
             
             // プレミアム状態のUI反映 (データコンテナ描画後)
-            window.getUserTier = window.getUserTier || function() {
-                const pass = window.getPremiumPass && window.getPremiumPass();
-                if (pass) return 'pro'; // 既存の有料ユーザーはそのままProとして扱う
-                return localStorage.getItem('USER_TIER_LEVEL') || 'free';
-            };
-            const userTier = window.getUserTier();
-            
+            const isPremium = window.getPremiumPass && window.getPremiumPass() !== "";
             const premiumOverlay = document.getElementById('premium-overlay');
-            const proCardsToBlur = [
-                document.querySelector('#racer-comparison-container table tbody'),
+            const cardsToBlur = [
+                document.getElementById('weather-card'),
                 document.getElementById('sim-controls-container'),
                 document.getElementById('turn-animation-container'),
-                document.getElementById('turn-controls'),
-                document.getElementById('investment-manager-card')
-            ];
-            const basicCardsToBlur = [
-                document.getElementById('first-ai-upset-focus')
+                document.getElementById('turn-controls')
             ];
 
-            // Reset
-            [...proCardsToBlur, ...basicCardsToBlur].forEach(card => { 
-                if(card) {
-                    card.classList.remove('premium-blur', 'pointer-events-none', 'select-none'); 
-                    const cta = card.querySelector('.micro-cta');
-                    if(cta) cta.remove();
-                }
-            });
-            if (premiumOverlay) premiumOverlay.classList.add('hidden');
-
-            // 段階的ロックの適用
-            if (userTier === 'free') {
-                [...proCardsToBlur, ...basicCardsToBlur].forEach(card => { 
-                    if(card) card.classList.add('premium-blur', 'pointer-events-none', 'select-none'); 
-                });
+            if (!isPremium) {
+                cardsToBlur.forEach(card => { if(card) card.classList.add('premium-blur'); });
                 if (premiumOverlay) premiumOverlay.classList.remove('hidden');
-                
-                // Add micro-cta to basic card (500 JPY)
-                const upsetCard = document.getElementById('first-ai-upset-focus');
-                if (upsetCard) {
-                    const cta = document.createElement('div');
-                    cta.className = 'micro-cta absolute inset-0 flex flex-col items-center justify-center z-10 bg-slate-950/80 pointer-events-auto cursor-pointer rounded-xl backdrop-blur-sm border border-slate-700 hover:bg-slate-900 transition-colors duration-300';
-                    cta.innerHTML = '<span class="text-2xl mb-1 block">🔒</span><span class="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-3 py-1.5 rounded shadow">穴狙い予想を見る (月額500円)</span>';
-                    cta.onclick = () => { window._ga4Event('premium_cta_click', {location: 'basic_micro_cta'}); window.location.href='https://buy.stripe.com/test_basic500'; };
-                    upsetCard.appendChild(cta);
-                }
-            } else if (userTier === 'basic') {
-                // 500円プランは事前予想(Basic)は見れるが、直前データ(Pro)は見れない
-                proCardsToBlur.forEach(card => { 
-                    if(card) card.classList.add('premium-blur', 'pointer-events-none', 'select-none'); 
-                });
-                if (premiumOverlay) {
-                    premiumOverlay.classList.remove('hidden');
-                    // アップグレードの場合は二重課金を防ぐため、Stripeカスタマーポータルへ誘導する
-                    const mainBtn = document.getElementById('premium-cta-main-btn');
-                    if (mainBtn) {
-                        mainBtn.innerHTML = '🔐 プロプランへアップグレード (差額のみ自動計算)';
-                        mainBtn.onclick = () => {
-                            window._ga4Event('premium_cta_click', {location: 'upgrade_portal'});
-                            alert('アップグレードは「Stripeカスタマーポータル」で行います。決済時のメールアドレスをご用意ください。');
-                            window.location.href = 'https://billing.stripe.com/p/login/test_YOUR_PORTAL_LINK';
-                        };
-                    }
-                }
+            } else {
+                cardsToBlur.forEach(card => { if(card) card.classList.remove('premium-blur'); });
+                if (premiumOverlay) premiumOverlay.classList.add('hidden');
             }
 
             // ============================================================
@@ -2939,8 +2655,8 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                 const raw = cell.getAttribute('data-raw');
                 const desc = cell.getAttribute('data-desc');
 
-                const gColor = window.gradeConfig.color[grade] || '#fff';
-                const gBg = window.gradeConfig.bg[grade] || 'rgba(255,255,255,0.05)';
+                const gColor = gradeConfig.color[grade] || '#fff';
+                const gBg = gradeConfig.bg[grade] || 'rgba(255,255,255,0.05)';
 
                 tooltipEl.innerHTML = `
                     <div class="font-extrabold text-[11px] text-white border-b border-slate-800 pb-1 mb-1.5 flex justify-between items-center">
@@ -3148,25 +2864,62 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                     progressBadge.innerText = `${finishedCount} レース確定`;
                 }
                 
-                // Solid & Global metrics (マーケティング最適化: 的中率・的中数・回避損失)
-                const solidHit = finishedCount > 0 ? Math.round((solidHitCount / finishedCount) * 100) : 0;
+                // Solid metrics
+                const solidRecovery = totalSolidBet > 0 ? Math.round((totalSolidPayout / totalSolidBet) * 100) : 0;
+                const solidHit = Math.round((solidHitCount / finishedCount) * 100);
                 
+                if (solidRecoveryEl) {
+                    if (solidRecovery >= 100) {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-emerald-400";
+                    } else if (solidRecovery >= 70) {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-amber-400";
+                    } else {
+                        solidRecoveryEl.className = "text-xs font-black font-outfit text-rose-400";
+                    }
+                    solidRecoveryEl.innerText = `${solidRecovery}%`;
+                }
                 if (solidHitEl) {
-                    solidHitEl.className = "text-sm font-black font-outfit text-indigo-400";
+                    solidHitEl.className = "text-xs font-black font-outfit text-slate-200";
                     solidHitEl.innerText = `${solidHit}%`;
                 }
-                if (solidRecoveryEl) {
-                    solidRecoveryEl.className = "text-sm font-black font-outfit text-emerald-400";
-                    solidRecoveryEl.innerText = `${solidHitCount}R`;
+                if (solidProfitEl) {
+                    const sNet = totalSolidPayout - totalSolidBet;
+                    solidProfitEl.innerText = `¥ ${sNet.toLocaleString()}`;
+                    if (sNet > 0) solidProfitEl.className = "text-xs font-black font-outfit text-emerald-400";
+                    else if (sNet < 0) solidProfitEl.className = "text-xs font-black font-outfit text-rose-400";
+                    else solidProfitEl.className = "text-xs font-black font-outfit text-slate-300";
                 }
-                if (netProfitEl) {
-                    const fundTotal = (typeof window.dailyDefenseFund === 'object' ? window.dailyDefenseFund.total : window.dailyDefenseFund) || 0;
-                    netProfitEl.className = "text-sm font-black font-outfit text-amber-400";
-                    netProfitEl.innerText = `${fundTotal.toLocaleString()}円`;
-                }
+
+                // Upset metrics
+                const upsetRecovery = totalUpsetBet > 0 ? Math.round((totalUpsetPayout / totalUpsetBet) * 100) : 0;
+                const upsetHit = Math.round((upsetHitCount / finishedCount) * 100);
                 
-                if (typeof window.updateHeaderStatsUI === 'function') {
-                    window.updateHeaderStatsUI();
+                if (upsetRecoveryEl) {
+                    if (upsetRecovery >= 100) {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-emerald-400";
+                    } else if (upsetRecovery >= 70) {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-amber-400";
+                    } else {
+                        upsetRecoveryEl.className = "text-xs font-black font-outfit text-rose-400";
+                    }
+                    upsetRecoveryEl.innerText = `${upsetRecovery}%`;
+                }
+                if (upsetHitEl) {
+                    upsetHitEl.className = "text-xs font-black font-outfit text-slate-200";
+                    upsetHitEl.innerText = `${upsetHit}%`;
+                }
+
+                const netProfit = (totalSolidPayout + totalUpsetPayout) - (totalSolidBet + totalUpsetBet);
+
+                if (netProfit > 0) {
+                    netProfitEl.className = "font-black font-outfit text-emerald-400";
+                    netProfitEl.innerText = `+${netProfit.toLocaleString()}円`;
+                } else if (netProfit < 0) {
+                    netProfitEl.className = "font-black font-outfit text-rose-400";
+                    netProfitEl.innerText = `${netProfit.toLocaleString()}円`;
+                } else {
+                    netProfitEl.className = "font-black font-outfit text-slate-300";
+                    netProfitEl.innerText = "±0円";
                 }
 
                 // Sort history by JCD and RNO
@@ -3338,7 +3091,7 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
         // ==========================================
         // プレミアム2D 1マーク物理展開シミュレーター
         // ==========================================
-        function initTurnSimulation(racers, solidFocus, upsetFocus, hasExhibitionData, aiComment = "") {
+        function initTurnSimulation(racers, solidFocus, upsetFocus, hasExhibitionData) {
             const canvas = document.getElementById('turn-sim-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -3429,122 +3182,59 @@ const weatherStatusBadge = document.getElementById('weather-status-badge');
                 });
 
                 let roles = {};
-                // ==========================================
-                // 1. 純粋な物理データ(ST・展示タイム)に基づく「X座標(推進力)」算出
-                // ==========================================
-                let xScore = {};
-                racers.forEach(r => {
-                    const l = parseInt(r.lane) || 1;
-                    const st = stVals[l] || 0.15;
-                    const ex = parseFloat(r.ex_time) || 6.80;
-                    // ST(スタート)差: 0.01秒早く出るごとに+18のアドバンテージ
-                    const stAdvantage = (0.15 - st) * 1800; 
-                    // 展示タイム(直線足)差: 0.1秒早いごとに+150のアドバンテージ
-                    const exAdvantage = (6.80 - ex) * 1500; 
-                    xScore[l] = stAdvantage + exAdvantage;
-                });
-
-                // ==========================================
-                // 2. AI予測(買い目)との連動バイアス
-                // AIが本命とした艇には見えない推進力バフを与え、
-                // 物理演算結果がAIの予測に自然と収束するようにする
-                // ==========================================
                 const w1 = fullOrder[0];
                 const w2 = fullOrder[1];
                 const w3 = fullOrder[2];
-                if (xScore[w1] !== undefined) xScore[w1] += 1200; // 1着予想バフ
-                if (xScore[w2] !== undefined) xScore[w2] += 600;  // 2着予想バフ
-                
-                // ==========================================
-                // 3. データ駆動型戦術（ロール）判定 (Makuri / Makuri-Zashi / Sashi)
-                // 各艇が「自分より内側の艇」に対してどれだけ前に出ているか（xScoreの差）を計算し、
-                // まくり、まくり差し、差し、ブロックなどの物理的挙動を全艇に対して決定する
-                // ==========================================
-                
-                // デフォルトは外追走
+
                 for (let i = 1; i <= 6; i++) {
                     roles[i] = "OUT_FOLLOW";
                 }
-                
-                // 1号艇は基本逃げの構え（ターンマークを先マイ）
-                roles[1] = "NIGE";
-                
-                // 2〜6号艇の戦術判定
-                for (let i = 2; i <= 6; i++) {
-                    let blockedBy = [];
-                    let overtaken = [];
-                    
-                    // 内側の全艇(1〜i-1)との相対位置をチェック
-                    for (let j = 1; j < i; j++) {
-                        if (xScore[i] > xScore[j] + 500) {
-                            overtaken.push(j); // 叩ける（前に出ている）
-                        } else {
-                            blockedBy.push(j); // 叩けない（壁になっている）
-                        }
-                    }
-                    
-                    if (blockedBy.length === 0) {
-                        // 内側の全艇を叩ける → 純粋な「まくり」
-                        roles[i] = "MAKURI";
-                        // 叩かれた内側の艇は引き波に沈む（ブロックされる）
-                        overtaken.forEach(j => {
-                            roles[j] = "BLOCKED_IN";
-                        });
-                    } else if (blockedBy.includes(i - 1)) {
-                        // すぐ内の隣の艇にブロックされている → まくれない
-                        // AIの予想上位(1着/2着)に入っているなら、空いた差し場を突いた「差し」
-                        // そうでなければただの「外追走」
-                        if (i === w1 || i === w2) {
-                            roles[i] = "SASHI";
-                        } else {
-                            roles[i] = "OUT_FOLLOW";
-                        }
-                    } else {
-                        // すぐ内(中枠)の艇は叩けるが、さらに内(インなど)の艇にはブロックされている
-                        // → 外を回った後に内へ切り込む「まくり差し」
-                        roles[i] = "MAKURI_ZASHI";
-                        // 叩かれた中枠の艇はブロックされる
-                        overtaken.forEach(j => {
-                            if (roles[j] !== "BLOCKED_IN") {
-                                roles[j] = "BLOCKED_IN";
-                            }
-                        });
-                    }
-                }
-                
-                // ==========================================
-                // 4. 結果（買い目）との最終連動補正
-                // 物理エンジンが算出した戦術と、AIの最終予測をすり合わせる
-                // ==========================================
-                
-                // イン逃げ決着(w1=1)なのに、外の艇がMAKURIになっている場合
-                // → 外が攻めたがインが抵抗して逃げ切った（MAKURI_FOLLOW）に補正
+
                 if (w1 === 1) {
-                    roles[1] = "NIGE"; // 念のため再設定
-                    for (let i = 2; i <= 6; i++) {
-                        if (roles[i] === "MAKURI") roles[i] = "MAKURI_FOLLOW";
-                    }
-                }
-                
-                // w1がイン以外の場合、インはまくられたか差されたためNIGE(先マイ)から降格
-                if (w1 !== 1) {
-                    if (roles[w1] === "MAKURI") {
-                        roles[1] = "IN_FOLLOW"; // まくられて沈む
-                    } else if (roles[w1] === "SASHI" || roles[w1] === "MAKURI_ZASHI") {
-                        roles[1] = "NIGE"; // 先マイはしたが差された
-                    }
+                    roles[1] = "NIGE";
+                } else if (w1 === 2) {
+                    roles[2] = (w2 === 1) ? "SASHI" : "MAKURI";
+                } else if (w1 === 3) {
+                    roles[3] = (w2 <= 2) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 4) {
+                    roles[4] = (w2 <= 3) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 5) {
+                    roles[5] = (w2 <= 4) ? "MAKURI_ZASHI" : "MAKURI";
+                } else if (w1 === 6) {
+                    roles[6] = "SASHI"; 
                 }
 
+                let makuriBoat = -1;
+                if (roles[w1] === "MAKURI") makuriBoat = w1;
 
-                // 3着予想艇の軌道補正
-                if (roles[w3] === "OUT_FOLLOW") roles[w3] = "THIRD_FOLLOW";
+                if (w2 === 1) {
+                    roles[1] = "IN_FOLLOW"; 
+                } else if (w2 === 2) {
+                    roles[2] = (w1 === 1) ? "SASHI_FOLLOW" : "OUT_FOLLOW";
+                } else {
+                    if (makuriBoat !== -1 && w2 > makuriBoat) {
+                        roles[w2] = "MAKURI_FOLLOW"; 
+                    } else {
+                        roles[w2] = "OUT_FOLLOW";
+                    }
+                }
 
-                // ドカ遅れ艇の再現(STが極端に遅く、かつ予想上位でない)
+                roles[w3] = "THIRD_FOLLOW";
+
                 for (let i = 1; i <= 6; i++) {
                     if (stVals[i] > 0.22 && i !== w1 && i !== w2 && i !== w3) {
                         roles[i] = "DELAYED";
                     }
                 }
+
+                if (makuriBoat !== -1) {
+                    for (let i = 1; i < makuriBoat; i++) {
+                        if (i !== w1 && i !== w2 && i !== w3) {
+                            roles[i] = "BLOCKED_IN"; 
+                        }
+                    }
+                }
+
                 simRacers = racers.map(r => {
                     const laneNum = parseInt(r.lane) || 1;
                     const rank = rankMap[laneNum] || 6;
@@ -4479,20 +4169,32 @@ function draw() {
                 modal.classList.add('hidden');
             }, 300);
         };
-
-        // 能力ガイドボタン トグル
-        document.addEventListener('DOMContentLoaded', function() {
-            const guideBtn = document.getElementById('toggle-guide-btn');
-            const guidePanel = document.getElementById('abilities-guide');
-            if (guideBtn && guidePanel) {
-                guideBtn.addEventListener('click', function() {
-                    const isHidden = guidePanel.classList.contains('hidden');
-                    guidePanel.classList.toggle('hidden', !isHidden);
-                    guideBtn.textContent = isHidden ? '能力ガイド ✕' : '能力ガイド ℹ';
-                });
-            }
-        });
     </script>
+
+    <!-- 広告ロック解除用のポップアップモーダル -->
+    <div id="ad-unlock-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl text-center space-y-4 relative">
+            <h3 class="text-sm font-bold text-white tracking-wider font-outfit">🔒 プレミアム予想ロック解除</h3>
+            <p class="text-xs text-slate-400">広告がロードされています。ロック解除までお待ちください。</p>
+            
+            <!-- Ad Container -->
+            <div class="w-full flex justify-center py-2 min-h-[250px] bg-slate-900/50 rounded-xl border border-white/5 items-center">
+                <div id="modal-ad-box" class="w-full text-center">
+                    <!-- ↓ ここに2つ目の忍者AdMaxタグ（300x250などのインライン枠）を貼り付けます ↓ -->
+                    <!-- admax -->
+                    <script src="https://adm.shinobi.jp/s/49471adf51751ff10c0264d812ee97ef"></script>
+                    <!-- admax -->
+                </div>
+            </div>
+
+            <div id="unlock-btn-container" class="w-full">
+                <button id="unlock-countdown-btn" disabled class="w-full py-2.5 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-not-allowed border border-white/5 transition-all">
+                    あと 5 秒お待ちください...
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 免責事項・プライバシーポリシー用モーダル -->
     <div id="terms-modal" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
         <div class="glass max-w-sm w-full mx-4 p-6 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh] relative">
@@ -4856,8 +4558,7 @@ function draw() {
                         window.predictionsCache = payload.predictions || {};
                         
                         window.dailyDefenseFund = payload.daily_defense_fund || 0;
-                        window.dailyRealtimeProfit = payload.daily_realtime_profit || 0;
-                        updateHeaderStatsUI();
+                        updateDefenseFundUI();
                         
                         checkPremiumStatusFromData(payload);
                         
@@ -4894,20 +4595,10 @@ function draw() {
                     isUnlocked = false;
                 } else {
                     isUnlocked = true;
-                    // GASからtier情報が送られてきた場合は保存する
-                    if (payload && payload.tier) {
-                        localStorage.setItem('USER_TIER_LEVEL', payload.tier);
-                    } else {
-                        // 既存の互換性維持: tier情報がない場合はとりあえずproとして扱う
-                        if (!localStorage.getItem('USER_TIER_LEVEL')) {
-                            localStorage.setItem('USER_TIER_LEVEL', 'pro');
-                        }
-                    }
                 }
             } else if (payload) {
                 if (payload.access === "granted" || payload.status === 200 || payload.is_premium === true) {
                     isUnlocked = true;
-                    if (payload.tier) localStorage.setItem('USER_TIER_LEVEL', payload.tier);
                     if (payload.username) {
                         localStorage.setItem('PREMIUM_USERNAME_KEY', payload.username);
                     }
@@ -4929,7 +4620,6 @@ function draw() {
                 localStorage.removeItem('PREMIUM_EMAIL_KEY');
                 localStorage.removeItem('PREMIUM_AUTH_TIME');
                 localStorage.removeItem('PREMIUM_USERNAME_KEY');
-                localStorage.removeItem('USER_TIER_LEVEL');
                 updateLoginIcon(false);
                 fetchLatestDataSilently();
             }
@@ -5008,63 +4698,43 @@ function draw() {
             
             if (!news || !Array.isArray(news) || news.length === 0) {
                 container.innerHTML = `
-                    <li class="flex items-start gap-1.5">
-                        <span class="px-1 py-0.5 rounded bg-emerald-900/60 text-[7px] text-emerald-300 font-mono shrink-0 mt-0.5">07/15</span>
-                        <div>🆕 <span class="text-emerald-300 font-bold">選手AIスコア表示を追加</span>。勝率・モーター・展示タイムをOVR（S〜D）で評価。6艇マトリクスで一覧できます。</div>
+                    <li class="flex items-start gap-2">
+                        <span class="px-1.5 py-0.5 rounded bg-emerald-900/60 text-[8px] text-emerald-300 font-mono tracking-tighter shrink-0 mt-0.5">2026/07/02</span>
+                        <div>
+                            📈 <span class="text-emerald-300 font-bold">【新機能】日次・月次収支実績を公開</span>しました。7/1以降の的中結果・回収率を日次グラフで確認できます（ページ下部「収支実績」をタップ）。
+                        </div>
                     </li>
-                    <li class="flex items-start gap-1.5">
-                        <span class="px-1 py-0.5 rounded bg-blue-900/60 text-[7px] text-blue-300 font-mono shrink-0 mt-0.5">07/14</span>
-                        <div>🌙 <span class="text-blue-300 font-bold">ミッドナイト競艇（深夜開催）も監視対象に追加</span>。深夜レースもAIが自動で予想します。</div>
+                    <li class="flex items-start gap-2">
+                        <span class="px-1.5 py-0.5 rounded bg-emerald-900/60 text-[8px] text-emerald-300 font-mono tracking-tighter shrink-0 mt-0.5">2026/07/02</span>
+                        <div>
+                            🏊 <span class="text-emerald-300 font-bold">【新機能】選手名タップで詳細情報を表示</span>。展示マージ詳細データの選手名をタップすると、AIスコア・ST評価・勝率・モーター機力の内訳が確認できます。
+                        </div>
                     </li>
-                    <li class="flex items-start gap-1.5">
-                        <span class="px-1 py-0.5 rounded bg-slate-700/80 text-[7px] text-slate-400 font-mono shrink-0 mt-0.5">07/02</span>
-                        <div>📈 <span class="text-slate-300 font-bold">日次・月次収支実績を公開</span>。的中結果・回収率を日次グラフで確認できます。</div>
+                    <li class="flex items-start gap-2">
+                        <span class="px-1.5 py-0.5 rounded bg-slate-700/80 text-[8px] text-slate-400 font-mono tracking-tighter shrink-0 mt-0.5">2026/07/01</span>
+                        <div>
+                            🛡️ <span class="text-rose-300 font-bold">【新機能】資金防衛AIマネージャー</span>を実装しました。Gemini 2.5 Flashによる冷徹な投資判断を表示します。
+                        </div>
                     </li>
                 `;
                 return;
             }
             
-            // 日付降順（新しい順）でソート
-            const sorted = [...news].sort((a, b) => {
-                const da = new Date(a.date || 0);
-                const db = new Date(b.date || 0);
-                return db - da;
-            });
-            
             container.innerHTML = '';
-            sorted.forEach(item => {
+            news.forEach(item => {
                 const li = document.createElement('li');
-                li.className = 'flex items-start gap-1.5';
+                li.className = 'flex items-start gap-2';
                 
                 const badge = document.createElement('span');
                 const badgeClass = item.badge_class || 'bg-slate-700/80 text-slate-400';
-                badge.className = `px-1 py-0.5 rounded text-[7px] font-mono shrink-0 mt-0.5 ${badgeClass}`;
-                // 日付を短縮表示（"Wed Jul 01 2026 00:00:00 GMT+..." → "07/01"）
-                let displayDate = item.date || '';
-                try {
-                    const d = new Date(displayDate);
-                    if (!isNaN(d.getTime())) {
-                        const m = String(d.getMonth() + 1).padStart(2, '0');
-                        const day = String(d.getDate()).padStart(2, '0');
-                        displayDate = `${m}/${day}`;
-                    } else {
-                        const match = displayDate.match(/(\d{1,2})\/(\d{2})\s*$/);
-                        if (match) displayDate = `${match[1].padStart(2,'0')}/${match[2]}`;
-                        else displayDate = displayDate.slice(-5);
-                    }
-                } catch(e) { displayDate = displayDate.slice(-5); }
-                badge.textContent = displayDate;
+                badge.className = `px-1.5 py-0.5 rounded text-[8px] font-mono tracking-tighter shrink-0 mt-0.5 ${badgeClass}`;
+                badge.textContent = item.date;
                 
                 const div = document.createElement('div');
                 
                 const titleSpan = document.createElement('span');
-                titleSpan.className = 'font-bold';
-                // カテゴリ別に色を変える
-                const cat = item.category || '';
-                if (cat.includes('新機能')) titleSpan.classList.add('text-emerald-300');
-                else if (cat.includes('対応') || cat.includes('追加')) titleSpan.classList.add('text-blue-300');
-                else titleSpan.classList.add('text-slate-300');
-                titleSpan.textContent = `${item.title || ''} `;
+                titleSpan.className = 'text-emerald-300 font-bold';
+                titleSpan.textContent = `【${item.category || 'お知らせ'}】${item.title || ''} `;
                 
                 const contentText = document.createTextNode(item.content || '');
                 
@@ -5221,9 +4891,18 @@ function draw() {
 
             // ============================
             // パワプロ風 能力グレード計算
+            // ============================
+            function calcGrade(value, thresholds) {
+                // thresholds: [S, A, B, C, D] 降順
+                if (value >= thresholds[0]) return 'S';
+                if (value >= thresholds[1]) return 'A';
+                if (value >= thresholds[2]) return 'B';
+                if (value >= thresholds[3]) return 'C';
+                if (value >= thresholds[4]) return 'D';
+                return 'E';
+            }
 
-
-            window.gradeConfig = window.gradeConfig || {
+            const gradeConfig = {
                 color: { S: '#f59e0b', A: '#ef4444', B: '#f97316', C: '#22c55e', D: '#06b6d4', E: '#6b7280' },
                 bg:    { S: 'rgba(245,158,11,0.15)', A: 'rgba(239,68,68,0.12)', B: 'rgba(249,115,22,0.12)', C: 'rgba(34,197,94,0.10)', D: 'rgba(6,182,212,0.10)', E: 'rgba(107,114,128,0.08)' },
             };
@@ -5302,8 +4981,8 @@ function draw() {
             barsEl.innerHTML = '';
             abilities.forEach(ab => {
                 const g = ab.grade;
-                const col = window.gradeConfig.color[g];
-                const bg = window.gradeConfig.bg[g];
+                const col = gradeConfig.color[g];
+                const bg = gradeConfig.bg[g];
                 const barWidth = Math.round(ab.score);
                 barsEl.innerHTML += `
                     <div class="flex items-center gap-2">
@@ -5450,33 +5129,47 @@ function draw() {
                 }
             }
 
-            async function loadROIHistory() {
-                const pass = localStorage.getItem('boatrace_admin_pass');
-                const queryPass = pass ? `&pass=${encodeURIComponent(pass)}` : '';
-                try {
-                    const res = await fetch(`${GAS_API_URL}?action=get_roi_history${queryPass}&t=${new Date().getTime()}`);
-                    const data = await res.json();
-                    if (data && data.success && data.history && Array.isArray(data.history)) {
-                        renderROIHistory(data.history);
-                    } else {
-                        showROIFallback();
-                    }
-                } catch (e) {
-                    console.error("ROI history fetch error", e);
-                    showROIFallback();
+            const STATIC_HISTORY_FALLBACK = [
+                {
+                    date: "20260701",
+                    invest: 168000,
+                    payout: 201300,
+                    balance: 33300,
+                    roi: 119.8,
+                    hits: 18,
+                    races: 168,
+                    solid_roi: 130.8,
+                    upset_roi: 115.4
                 }
+            ];
+
+            function loadROIHistory() {
+                renderROIHistory(STATIC_HISTORY_FALLBACK);
+
+                console.log('Fetching latest ROI history from GAS...');
+                fetch(`${GAS_API_URL}?action=get_roi_history&from=20260701`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.history && data.history.length > 0) {
+                            renderROIHistory(data.history);
+                        }
+                    })
+                    .catch(err => {
+                        console.warn('Failed to fetch ROI history from GAS, using fallback.', err);
+                        renderROIHistory(STATIC_HISTORY_FALLBACK);
+                    });
             }
 
             function showROIFallback() {
-                // Return empty history on error, no more hardcoded fallback
-                renderROIHistory([]);
+                // fallback to static history instead of showing empty state
+                renderROIHistory(STATIC_HISTORY_FALLBACK);
             }
 
             function renderROIHistory(history) {
                 // history: [{date, balance, roi, hits, invest, payout}, ...]
                 // ソート（日付昇順） - 念のため文字列化してから比較
                 history.sort((a, b) => String(a.date).localeCompare(String(b.date)));
-                const filter2026 = history.filter(d => String(d.date) >= '20260720');
+                const filter2026 = history.filter(d => String(d.date) >= '20260701');
 
                 // 月次集計
                 const totalBalance = filter2026.reduce((s, d) => s + (d.balance || 0), 0);
@@ -5551,7 +5244,7 @@ function draw() {
                 // 日次一覧
                 const listEl = document.getElementById('roi-daily-list');
                 if (filter2026.length === 0) {
-                    listEl.innerHTML = '<div class="text-center py-4 text-[10px] text-slate-500">7月20日以降のデータがまだありません。</div>';
+                    listEl.innerHTML = '<div class="text-center py-4 text-[10px] text-slate-500">7月1日以降のデータがまだありません。</div>';
                     return;
                 }
                 listEl.innerHTML = [...filter2026].reverse().map(d => {
