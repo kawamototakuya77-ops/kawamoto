@@ -223,11 +223,12 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
             {/* Row 2: AIスコアバー */}
             {rScore ? (
               <div className="space-y-2 py-1 px-1">
-                <ScoreBar label="AI勝率" score={rScore.win} color="bg-emerald-500" />
-                <ScoreBar label="S力" score={rScore.start} color="bg-indigo-500" />
-                <ScoreBar label={racer.lane === 1 ? "イン" : "差し"} score={racer.lane === 1 ? rScore.escape : rScore.turn} color="bg-amber-500" />
-                <ScoreBar label="機力" score={rScore.maint} color="bg-rose-500" />
-                <ScoreBar label="安定性" score={rScore.safety} color="bg-blue-400" />
+                <ScoreBar label="勝率(走力)" score={rScore.win} color="bg-emerald-500" />
+                <ScoreBar label="スタート" score={rScore.start} color="bg-indigo-500" />
+                <ScoreBar label="旋回・捌き" score={rScore.turn} color="bg-amber-500" />
+                <ScoreBar label="整備・調整" score={rScore.maint} color="bg-rose-500" />
+                <ScoreBar label="イン逃げ率" score={rScore.escape} color="bg-orange-500" />
+                <ScoreBar label="安定感" score={rScore.safety} color="bg-blue-400" />
               </div>
             ) : (
               <p className="text-xs text-slate-500 px-1 py-2">※ AI評価データがありません</p>
@@ -289,12 +290,12 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
 function ScoreBar({ label, score, color }: { label: string; score: number; color: string }) {
   const percent = Math.min(100, Math.max(0, score));
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs font-bold text-slate-400 w-10 shrink-0 text-right">{label}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-[11px] font-bold text-slate-400 w-16 shrink-0 text-right">{label}</span>
       <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-all duration-1000`} style={{ width: `${percent}%` }} />
       </div>
-      <span className="text-xs font-black font-mono text-slate-300 w-8 shrink-0 text-right">{score}</span>
+      <span className="text-[11px] font-black font-mono text-slate-300 w-8 shrink-0 text-right">{score}</span>
     </div>
   );
 }
