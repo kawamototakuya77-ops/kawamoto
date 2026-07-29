@@ -21,33 +21,38 @@ export default function TermsPage() {
 
         <div className="space-y-6 text-sm text-slate-300 leading-relaxed">
           <section className="space-y-2">
-            <h2 className="text-base font-black text-white">第1条（適用）</h2>
-            <p>本規約は、競艇直前物理AI（以下「当サービス」）の利用に関する条件を定めるものです。ユーザーは本規約に同意した上でサービスをご利用ください。</p>
+            <h2 className="text-base font-black text-white">第1条（適用およびサービス定義）</h2>
+            <p>本規約は、ABYSS EXPLORER（以下「事業者」）が提供する「競艇直前物理AI」（以下「本サービス」）の利用条件を定めるものです。本サービスは、モーターボート競走に関する統計データおよび物理展示指標を独自アルゴリズムで解析・可視化するデータ分析・情報提供ソフトウェアです。勝舟投票券（舟券）の購入代行、賭博行為への勧誘、あるいは特定の経済的利益・的中結果を保証するものではありません。</p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-black text-white">第2条（サービスの内容）</h2>
-            <p>当サービスは、競艇レースのAI予測情報を提供するサービスです。予測情報はあくまで参考情報であり、舟券の的中・収益を保証するものではありません。</p>
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-base font-black text-white">第3条（免責事項）</h2>
-            <ul className="list-disc list-inside space-y-1 text-slate-400">
-              <li>当サービスの予測情報に基づいた投資判断はユーザー自身の責任で行ってください</li>
-              <li>AIの予測精度・的中率を保証するものではありません</li>
-              <li>通信障害・システム障害による損害について責任を負いません</li>
-              <li>公営競技は18歳未満の方は購入できません</li>
+            <h2 className="text-base font-black text-white">第2条（Stripe決済および特定商取引法に基づく表記）</h2>
+            <ul className="list-disc list-inside space-y-1.5 text-slate-300">
+              <li><strong>提供価格</strong>: PROプラン 月額1,980円（税込）</li>
+              <li><strong>無料体験期間</strong>: 初回登録後3日間は無料トライアル期間となります。無料期間中に解約された場合、利用料金は一切発生いたしません。</li>
+              <li><strong>自動継続課金</strong>: 無料期間終了までに解約手続きがない場合、4日目に初回月額料金（1,980円）が自動決済され、以降1ヶ月ごとに自動更新・課金されます。</li>
+              <li><strong>決済手段</strong>: Stripe（クレジットカード・デビットカード決済）経由で安全に処理されます。</li>
+              <li><strong>返金特約</strong>: デジタルコンテンツおよび月額SaaSサービスの性質上、決済完了後の返金・換金・日割計算には一切対応いたしかねます。</li>
+              <li><strong>解約方法</strong>: 会員ダッシュボード画面またはサポート問い合わせより、次回更新日の前日までいつでも解約手続きが可能です。</li>
             </ul>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-black text-white">第4条（料金・支払い）</h2>
+            <h2 className="text-base font-black text-white">第3条（厳格な免責事項および責任制限）</h2>
+            <ul className="list-disc list-inside space-y-1.5 text-slate-400">
+              <li>本サービスが提供する数値・スコア・予測情報はAIアルゴリズムによる統計結果であり、実際のレース結果を保証するものではありません。</li>
+              <li>モーターボート競走法第11条の定めにより、20歳未満の者は勝舟投票券（舟券）を購入・譲り受けることが禁止されています。</li>
+              <li>本サービスの提供情報に基づいて行われた勝舟投票券の購入、投資判断、およびそれに伴い発生した損害・損失について、事業者は理由の如何を問わず一切の損害賠償責任・補償義務を負いません。</li>
+              <li>通信障害、サーバー停止、外部データの遅延等により生じた損害についても一切の責任を負いません。</li>
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-black text-white">第4条（禁止事項）</h2>
             <ul className="list-disc list-inside space-y-1 text-slate-400">
-              <li>ライトプラン：月額500円（税込）</li>
-              <li>プロプラン：月額1,980円（税込）</li>
-              <li>支払いはStripeを通じて処理されます</li>
-              <li>解約は次回更新日の前日までにお手続きください</li>
-              <li>返金は原則として対応しておりません</li>
+              <li>アカウントまたはライセンスの第三者への譲渡・転売・共有</li>
+              <li>当サービスのデータ・コンテンツの無断転載・スクレイピング・二次利用</li>
+              <li>不正アクセス、不当景示法違反に該当する虚偽の宣伝行為</li>
             </ul>
           </section>
 
