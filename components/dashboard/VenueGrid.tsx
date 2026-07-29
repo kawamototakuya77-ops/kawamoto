@@ -140,11 +140,26 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
             {Array.from({ length: 12 }, (_, i) => i + 1).map((rno) => {
               const key = `${selectedJcd}_${rno}`;
               const pred = predictions[key];
-              // 展示完了(phase 2) かつ レース未終了(結果なし) の場合のみ LIVE 表示
-              const hasLive = pred?.phase === 2 && !(pred as any)?.has_result && !(pred as any)?.actual_combo;
               
               // このレースの締切時間
               const rTime = cutoffTimes?.[selectedJcd]?.[rno.toString()];
+              
+              // 現在時刻と締切時刻の比較（締切後3分経過で終了とみなす）
+              const now = new Date();
+              const currentMins = now.getHours() * 60 + now.getMinutes();
+              let isPast = false;
+              if (rTime) {
+                const parts = rTime.split(":");
+                if (parts.length === 2) {
+                  const raceMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                  if (currentMins > raceMins + 3) {
+                    isPast = true;
+                  }
+                }
+              }
+
+              // 展示完了(phase 2) かつ レース締切直前(isPast=false) のみ LIVE 表示
+              const hasLive = pred?.phase === 2 && !isPast;
 
               return (
                 <button
@@ -156,7 +171,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
                       ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 animate-pulse"
                       : rno === selectedRno
                       ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300"
-                      : "bg-slate-800 border-white/5 text-slate-400 hover:bg-slate-700 hover:text-white",
+                      : isPast
+                      ? "bg-slate-900/60 border-white/5 text-slate-500 opacity-60 hover:bg-slate-800 hover:opacity-100"
+                      : "bg-slate-800 border-white/5 text-slate-300 hover:bg-slate-700 hover:text-white",
                   ].join(" ")}
                 >
                   <span>{rno}R</span>
@@ -165,6 +182,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
                   )}
                   {hasLive && (
                     <span className="block text-xs font-bold text-emerald-400 mt-0.5">LIVE</span>
+                  )}
+                  {isPast && !hasLive && (
+                    <span className="block text-[9px] font-bold text-slate-500 mt-0.5">終了</span>
                   )}
                 </button>
               );
