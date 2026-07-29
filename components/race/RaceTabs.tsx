@@ -10,6 +10,7 @@ const TABS = [
   { id: "ability", label: "📊 能力評価" },
   { id: "weather", label: "🌤 気象・展開" },
   { id: "defense", label: "🛡️ 資金防衛AI" },
+  { id: "result", label: "🏁 レース結果" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -24,6 +25,9 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("prediction");
   const { data, loading, error, refresh } = useLivePrediction(jcd, rno);
 
+  const isLiveActive = data?.phase === 2 && !data?.result;
+  const isFinished = Boolean(data?.result);
+
   return (
     <div className="space-y-4">
       {/* Status bar */}
@@ -36,8 +40,14 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
             </span>
           )}
           {data && (
-            <span className="px-2 py-0.5 rounded-full text-sm font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-400">
-              {data.phase === 2 || data.phase === 3 ? "● LIVE AI 推論" : "○ 事前予想"}
+            <span className={`px-2 py-0.5 rounded-full text-sm font-bold ${
+              isLiveActive
+                ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400"
+                : isFinished
+                ? "bg-slate-800 border border-slate-700 text-slate-400"
+                : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-400"
+            }`}>
+              {isLiveActive ? "● LIVE AI 推論" : isFinished ? "🏁 レース終了" : "○ 事前予想"}
             </span>
           )}
           {error && (
@@ -78,6 +88,7 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
         {activeTab === "ability" && <AbilityTab data={data} loading={loading} />}
         {activeTab === "weather" && <WeatherTab data={data} loading={loading} />}
         {activeTab === "defense" && <DefenseTab data={data} loading={loading} />}
+        {activeTab === "result" && <ResultTab data={data} loading={loading} />}
       </div>
     </div>
   );
@@ -477,6 +488,77 @@ function XShareButton({ data }: { data: PredictionData }) {
     >
       𝕏 この結果をシェアする
     </a>
+  );
+}
+
+// ─── タブ5: レース結果 ───────────────────────────────────────────
+function ResultTab({ data, loading }: { data: PredictionData | null; loading: boolean }) {
+  if (loading) return <TabSkeleton />;
+  if (!data) return <TabEmpty message="レースを選択すると結果が表示されます" />;
+
+  const { result, ai } = data;
+
+  if (!result) {
+    return (
+      <div className="p-8 rounded-2xl bg-slate-900/60 border border-white/5 text-center space-y-3">
+        <div className="text-3xl">⏳</div>
+        <p className="text-base font-bold text-slate-300">レース結果はまだ確定していません</p>
+        <p className="text-xs text-slate-500">
+          公式のレース結果が確定次第、リアルタイムでここに勝敗・払い戻しが表示されます。
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* 判定カード */}
+      <div className={`p-5 rounded-2xl border flex items-center justify-between ${
+        result.is_hit
+          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+          : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+      }`}>
+        <div>
+          <span className="text-xs font-bold px-2 py-0.5 rounded bg-black/30 border border-white/10">
+            {result.is_hit ? "✅ AI予測 的中" : "❌ AI予測 不的中 / 見送り"}
+          </span>
+          <p className="text-3xl font-black font-outfit mt-2 tracking-wider">
+            {result.combo}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-slate-400 font-bold mb-1">三連単払戻金</p>
+          <p className="text-2xl font-black font-outfit text-amber-300">
+            {result.payout ? `¥${result.payout.toLocaleString()}` : "--"}
+          </p>
+        </div>
+      </div>
+
+      {/* 答え合わせ詳細 */}
+      <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
+        <h4 className="text-sm font-bold text-slate-300 border-b border-white/10 pb-2 flex items-center justify-between">
+          <span>🔍 AI予想との答え合わせ</span>
+          <span className="text-xs text-indigo-400">事前評価: {ai.confidence ? (typeof ai.confidence === 'string' ? ai.confidence : ai.confidence.stars) : "--"}</span>
+        </h4>
+
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-slate-800/50 space-y-1">
+            <span className="text-slate-400 font-bold block">本命AIターゲット</span>
+            <span className="text-sm font-black text-indigo-300">
+              {ai.solid_focus && ai.solid_focus.length > 0 ? ai.solid_focus.join(", ") : "---"}
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-800/50 space-y-1">
+            <span className="text-slate-400 font-bold block">穴・波乱ターゲット</span>
+            <span className="text-sm font-black text-amber-300">
+              {ai.upset_focus && ai.upset_focus.length > 0 ? ai.upset_focus.join(", ") : "---"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <XShareButton data={data} />
+    </div>
   );
 }
 

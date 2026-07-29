@@ -140,7 +140,8 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
             {Array.from({ length: 12 }, (_, i) => i + 1).map((rno) => {
               const key = `${selectedJcd}_${rno}`;
               const pred = predictions[key];
-              const hasLive = pred?.phase === 2 || pred?.phase === 3;
+              // 展示完了(phase 2) かつ レース未終了(結果なし) の場合のみ LIVE 表示
+              const hasLive = pred?.phase === 2 && !pred?.has_result && !pred?.actual_combo;
               
               // このレースの締切時間
               const rTime = cutoffTimes?.[selectedJcd]?.[rno.toString()];
