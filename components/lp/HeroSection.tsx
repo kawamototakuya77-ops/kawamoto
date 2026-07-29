@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * LP Hero Section
  * - 3段階CTAフロー

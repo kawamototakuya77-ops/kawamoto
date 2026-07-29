@@ -235,9 +235,9 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
             {(() => {
               // スコアランキング計算用
               const allScores = data.data.map(r => r.regNo ? globalScores[r.regNo] : null).filter(Boolean);
-              const getRank = (key: keyof (typeof allScores)[0], value: number) => {
-                if (!value) return 99;
-                const sorted = [...new Set(allScores.map(s => s![key] as number))].sort((a, b) => b - a);
+              const getRank = (key: string, value: number) => {
+                if (!value || allScores.length === 0) return 99;
+                const sorted = [...new Set(allScores.map(s => (s as any)?.[key] as number))].sort((a, b) => b - a);
                 return sorted.indexOf(value) + 1;
               };
               const getScoreColor = (rank: number) => {
@@ -314,7 +314,8 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                   </td>
                 </tr>
               );
-            })}
+            });
+          })()}
           </tbody>
         </table>
       </div>

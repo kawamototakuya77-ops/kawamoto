@@ -1,9 +1,2 @@
-import Stripe from 'stripe';
-
-export const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || '',
-  {
-    apiVersion: '2025-02-24.acacia' as any,
-    typescript: true,
-  }
-);
+export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+export const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEr2GEp1jrZpX8NfxOpwR6XbwlsjbhubveRF8u1QvkX8XP6Z1mAudef3IczCd5joQxrXLNUPS35ZM3fjI1aLYOn00uQGXo95L';
