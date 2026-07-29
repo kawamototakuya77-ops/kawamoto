@@ -213,7 +213,6 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               <th className="p-2 font-bold text-center">当地勝率</th>
               <th className="p-2 font-bold text-center">ST順位</th>
               <th className="p-2 font-bold text-center">F/L</th>
-              <th className="p-2 font-bold text-center text-indigo-300">戦法</th>
               <th className="p-2 font-bold text-center">展示ST</th>
               <th className="p-2 font-bold text-center text-indigo-300">展示T</th>
               <th className="p-2 font-bold text-center text-amber-300">一周</th>
@@ -238,22 +237,7 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               };
 
               return data.data.map((racer) => {
-                // 戦法の判定
                 const stats = racer.stats;
-                let tactic = "--";
-                if (stats) {
-                  const tactics = [
-                    { name: "逃げ", val: Number(stats.course_nige) || 0 },
-                    { name: "差し", val: Number(stats.course_sashi) || 0 },
-                    { name: "捲り", val: Number(stats.course_makuri) || 0 },
-                    { name: "捲差", val: Number(stats.course_makurizashi) || 0 }
-                  ];
-                  tactics.sort((a, b) => b.val - a.val);
-                  if (tactics[0].val > 0) {
-                    tactic = tactics[0].name;
-                  }
-                }
-
                 const rScore = racer.regNo ? globalScores[racer.regNo] : null;
 
                 return (
@@ -299,15 +283,6 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                   {/* ペナルティ & 戦法 */}
                   <td className="p-2 text-center text-[10px] font-bold text-amber-500">
                     F{(stats as any)?.f_count || 0} / L{(stats as any)?.l_count || 0}
-                  </td>
-                  <td className="p-2 text-center">
-                    {tactic !== "--" ? (
-                      <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] border border-indigo-500/30">
-                        {tactic}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-500">--</span>
-                    )}
                   </td>
 
                   {/* 展示・オリ展データ */}
