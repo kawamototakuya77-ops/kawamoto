@@ -85,6 +85,15 @@ export default function PricingTable() {
 
             <a
               href={plan.href}
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).gtag) {
+                  (window as any).gtag('event', 'begin_checkout', {
+                    plan_name: plan.name,
+                    value: plan.price.replace(/[^0-9]/g, ''),
+                    currency: 'JPY'
+                  });
+                }
+              }}
               className={`block w-full py-3.5 text-center text-base font-black rounded-xl transition-all active:scale-[0.98] ${plan.ctaClass}`}
               style={
                 plan.badge

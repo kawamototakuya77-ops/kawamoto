@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+
 export default function RootLayout({
   children,
 }: {
@@ -32,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${outfit.variable} ${noto.variable}`}>
       <body className="min-h-screen bg-slate-950 antialiased font-sans">
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID as string} />
         {children}
       </body>
     </html>
