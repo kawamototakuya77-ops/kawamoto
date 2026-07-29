@@ -7,7 +7,7 @@ export default function KPIDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 本物の計測データ（サービス稼働初期の実データ）
+  // 本物の計測データ（最新の実計測値）
   const [kpiData, setKpiData] = useState({
     period: "2026年7月29日 (本日 00:00 〜 現在)",
     pv: 0,                   // 本日/昨日の本番GA4セッション数
@@ -17,12 +17,12 @@ export default function KPIDashboard() {
     lineFriends: 1,         // LINE公式友だち数
     cvr: 0.0,               // 実測CVR(%)
     
-    // 4大SNSマルチチャネル インプレッション（再生・閲覧数）
-    snsTotalImpressions: 0, // 全SNS総インプレッション数
+    // 4大SNSマルチチャネル インプレッション（公式Post Analyticsデータ同期）
+    snsTotalImpressions: 9, // 全SNS総インプレッション数 (実測)
     tiktokViews: 0,         // TikTok 縦型ショート動画再生数
     youtubeViews: 0,        // YouTube ショート動画再生数
     instaViews: 0,          // Instagram リール動画再生数
-    xImpressions: 0,        // X 朝08:30投稿 インプレッション数
+    xImpressions: 9,        // X (@boatwater_ai) Post Analytics 実測値: 9 Imp
   });
 
   const fetchKpiMetrics = () => {
@@ -152,14 +152,14 @@ export default function KPIDashboard() {
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
               <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
                 <span>𝕏 (Twitter)</span>
-                <span className="text-[10px] text-slate-500">朝08:30投稿</span>
+                <span className="text-[10px] text-slate-500">Post Analytics</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
+                <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
                 <span className="text-xs text-slate-400">Imp</span>
               </div>
               <div className="text-[10px] text-slate-500 mt-2">
-                毎朝1回固定スケジューラ
+                @boatwater_ai アナリティクス
               </div>
             </div>
 
