@@ -16,6 +16,13 @@ export default function KPIDashboard() {
     revenue: 0,             // Stripe本番売上(円)
     lineFriends: 1,         // LINE公式友だち数
     cvr: 0.0,               // 実測CVR(%)
+    
+    // 4大SNSマルチチャネル インプレッション（再生・閲覧数）
+    snsTotalImpressions: 0, // 全SNS総インプレッション数
+    tiktokViews: 0,         // TikTok 縦型ショート動画再生数
+    youtubeViews: 0,        // YouTube ショート動画再生数
+    instaViews: 0,          // Instagram リール動画再生数
+    xImpressions: 0,        // X 朝08:30投稿 インプレッション数
   });
 
   const fetchKpiMetrics = () => {
@@ -33,6 +40,11 @@ export default function KPIDashboard() {
           ...prev,
           pv: data?.stats?.today_pv ?? 0,
           lineFriends: data?.stats?.line_friends ?? 1,
+          snsTotalImpressions: data?.stats?.sns_impressions ?? 0,
+          tiktokViews: data?.stats?.tiktok_views ?? 0,
+          youtubeViews: data?.stats?.youtube_views ?? 0,
+          instaViews: data?.stats?.insta_views ?? 0,
+          xImpressions: data?.stats?.x_impressions ?? 0,
         }));
       })
       .catch(() => {})
@@ -78,56 +90,138 @@ export default function KPIDashboard() {
           </div>
         </div>
 
-        {/* 本物の実計測数値（看板やリンクではなく数値を直接表示） */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          
-          {/* アクセス数 */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
-            <div className="text-xs font-bold text-slate-400 mb-1">GA4 セッション流入数</div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl sm:text-3xl font-black text-white font-outfit">{kpiData.pv}</span>
-              <span className="text-xs text-slate-400">PV</span>
-            </div>
-            <div className="text-[10px] text-slate-500 mt-2 font-mono">
-              ID: G-YZ7SH1JBXG
-            </div>
+        {/* 1. 最上流：4大SNSマルチチャネル インプレッション（閲覧数・再生数） */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <h2 className="font-bold text-white flex items-center gap-1.5">
+              <span className="text-rose-400">📱</span> 4大SNSマルチチャネル 集客インプレッション (最上流)
+            </h2>
+            <span className="text-slate-400 font-mono">
+              全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
+            </span>
           </div>
 
-          {/* トライアル登録数 */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
-            <div className="text-xs font-bold text-slate-400 mb-1">Stripe 無料トライアル</div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-outfit">{kpiData.trials}</span>
-              <span className="text-xs text-slate-400">件</span>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            {/* TikTok */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
+                <span>🎵 TikTok</span>
+                <span className="text-[10px] text-slate-500">ショート動画</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.tiktokViews.toLocaleString()}</span>
+                <span className="text-xs text-slate-400">回再生</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                自動生成 縦型動画
+              </div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-2">
-              3日間無料体験
-            </div>
-          </div>
 
-          {/* LINE友だち数 */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
-            <div className="text-xs font-bold text-slate-400 mb-1">LINE 公式友だち数</div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-outfit">{kpiData.lineFriends}</span>
-              <span className="text-xs text-slate-400">名</span>
+            {/* YouTube Shorts */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
+                <span>▶️ YouTube</span>
+                <span className="text-[10px] text-slate-500">Shorts</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.youtubeViews.toLocaleString()}</span>
+                <span className="text-xs text-slate-400">回再生</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                AI的中シーン動画
+              </div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-2 font-mono">
-              ID: @089aloaj
-            </div>
-          </div>
 
-          {/* 本番売上 */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
-            <div className="text-xs font-bold text-slate-400 mb-1">Stripe 本番累積売上</div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl sm:text-2xl font-black text-amber-400 font-outfit">¥{kpiData.revenue.toLocaleString()}</span>
+            {/* Instagram Reels */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
+                <span>📸 Instagram</span>
+                <span className="text-[10px] text-slate-500">リール</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.instaViews.toLocaleString()}</span>
+                <span className="text-xs text-slate-400">回再生</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                直前気配ハイライト
+              </div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-2">
-              有料会員 {kpiData.proMembers} 名
-            </div>
-          </div>
 
+            {/* X (Twitter) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
+                <span>𝕏 (Twitter)</span>
+                <span className="text-[10px] text-slate-500">朝08:30投稿</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
+                <span className="text-xs text-slate-400">Imp</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                毎朝1回固定スケジューラ
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 2. Web流入 ＆ 転換・売上数値 */}
+        <div className="space-y-3 pt-2 border-t border-white/5">
+          <h2 className="text-xs font-bold text-white flex items-center gap-1.5">
+            <span className="text-emerald-400">🛒</span> Webサイト流入 ＆ 無料トライアル・売上指標
+          </h2>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            {/* アクセス数 */}
+            <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
+              <div className="text-xs font-bold text-slate-400 mb-1">GA4 セッション流入数</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl sm:text-3xl font-black text-white font-outfit">{kpiData.pv}</span>
+                <span className="text-xs text-slate-400">PV</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2 font-mono">
+                ID: G-YZ7SH1JBXG
+              </div>
+            </div>
+
+            {/* トライアル登録数 */}
+            <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
+              <div className="text-xs font-bold text-slate-400 mb-1">Stripe 無料トライアル</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-outfit">{kpiData.trials}</span>
+                <span className="text-xs text-slate-400">件</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                3日間無料体験
+              </div>
+            </div>
+
+            {/* LINE友だち数 */}
+            <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
+              <div className="text-xs font-bold text-slate-400 mb-1">LINE 公式友だち数</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-outfit">{kpiData.lineFriends}</span>
+                <span className="text-xs text-slate-400">名</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2 font-mono">
+                ID: @089aloaj
+              </div>
+            </div>
+
+            {/* 本番売上 */}
+            <div className="bg-slate-900 border border-white/10 rounded-xl p-4 relative overflow-hidden shadow-lg">
+              <div className="text-xs font-bold text-slate-400 mb-1">Stripe 本番累積売上</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-amber-400 font-outfit">¥{kpiData.revenue.toLocaleString()}</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2">
+                有料会員 {kpiData.proMembers} 名
+              </div>
+            </div>
+
+          </div>
         </div>
 
         {/* 定点観測チェックリスト */}
