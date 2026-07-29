@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${outfit.variable} ${noto.variable}`}>
       <body className="min-h-screen bg-slate-950 antialiased font-sans">
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID as string} />
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-YZ7SH1JBXG"} />
         {children}
       </body>
     </html>
