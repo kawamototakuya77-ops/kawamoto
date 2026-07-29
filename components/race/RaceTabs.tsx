@@ -222,53 +222,68 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {data.data.map((racer) => {
-              // 戦法の判定
-              const stats = racer.stats;
-              let tactic = "--";
-              if (stats) {
-                const tactics = [
-                  { name: "逃げ", val: stats.course_nige || 0 },
-                  { name: "差し", val: stats.course_sashi || 0 },
-                  { name: "捲り", val: stats.course_makuri || 0 },
-                  { name: "捲差", val: stats.course_makurizashi || 0 }
-                ];
-                tactics.sort((a, b) => b.val - a.val);
-                if (tactics[0].val > 0) {
-                  tactic = tactics[0].name;
+            {(() => {
+              // スコアランキング計算用
+              const allScores = data.data.map(r => r.regNo ? globalScores[r.regNo] : null).filter(Boolean);
+              const getRank = (key: keyof (typeof allScores)[0], value: number) => {
+                if (!value) return 99;
+                const sorted = [...new Set(allScores.map(s => s![key] as number))].sort((a, b) => b - a);
+                return sorted.indexOf(value) + 1;
+              };
+              const getScoreColor = (rank: number) => {
+                if (rank === 1) return "text-red-400 font-black drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]";
+                if (rank === 2) return "text-yellow-400 font-black";
+                if (rank === 3) return "text-emerald-400 font-bold";
+                return "text-slate-300 font-normal";
+              };
+
+              return data.data.map((racer) => {
+                // 戦法の判定
+                const stats = racer.stats;
+                let tactic = "--";
+                if (stats) {
+                  const tactics = [
+                    { name: "逃げ", val: Number(stats.course_nige) || 0 },
+                    { name: "差し", val: Number(stats.course_sashi) || 0 },
+                    { name: "捲り", val: Number(stats.course_makuri) || 0 },
+                    { name: "捲差", val: Number(stats.course_makurizashi) || 0 }
+                  ];
+                  tactics.sort((a, b) => b.val - a.val);
+                  if (tactics[0].val > 0) {
+                    tactic = tactics[0].name;
+                  }
                 }
-              }
 
-              const rScore = racer.regNo ? globalScores[racer.regNo] : null;
+                const rScore = racer.regNo ? globalScores[racer.regNo] : null;
 
-              return (
-                <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="p-2 flex items-center gap-2">
-                    <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black shrink-0 boat-${racer.lane}`}>
-                      {racer.lane}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-white truncate leading-none">{racer.name}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{racer.cls}</p>
-                    </div>
-                  </td>
-                  
-                  {/* AI Scores */}
-                  <td className="p-2 text-center text-[11px] font-black font-outfit text-emerald-400">
-                    {rScore ? Math.round(rScore.win) : "--"}
-                  </td>
-                  <td className="p-2 text-center text-[11px] font-black font-outfit text-rose-400">
-                    {rScore ? Math.round(rScore.maint) : "--"}
-                  </td>
-                  <td className="p-2 text-center text-[11px] font-black font-outfit text-indigo-400">
-                    {rScore ? Math.round(rScore.start) : "--"}
-                  </td>
-                  <td className="p-2 text-center text-[11px] font-black font-outfit text-amber-400">
-                    {rScore ? Math.round(rScore.turn) : "--"}
-                  </td>
-                  <td className="p-2 text-center text-[11px] font-black font-outfit text-orange-400">
-                    {rScore ? Math.round(rScore.escape) : "--"}
-                  </td>
+                return (
+                  <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="p-2 flex items-center gap-2 sticky left-0 z-20 bg-slate-900/95 group-hover:bg-slate-800/95 transition-colors border-r border-white/5 shadow-[4px_0_12px_rgba(0,0,0,0.5)]">
+                      <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-black shrink-0 boat-${racer.lane}`}>
+                        {racer.lane}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-white truncate leading-none">{racer.name}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{racer.cls}</p>
+                      </div>
+                    </td>
+                    
+                    {/* AI Scores */}
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('win', rScore.win)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.win) : "--"}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('maint', rScore.maint)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.maint) : "--"}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('start', rScore.start)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.start) : "--"}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('turn', rScore.turn)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.turn) : "--"}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('escape', rScore.escape)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.escape) : "--"}
+                    </td>
 
                   {/* 艇国DBデータ */}
                   <td className="p-2 text-center text-xs font-bold text-white">
@@ -303,7 +318,7 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                     {racer.ex_time !== "N/A" && racer.ex_time ? racer.ex_time : "--"}
                   </td>
                   <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                    {racer.lap_time !== "N/A" && racer.lap_time ? racer.lap_time : "--"}
+                    {((racer as any).loop_time || racer.lap_time) !== "N/A" && ((racer as any).loop_time || racer.lap_time) ? ((racer as any).loop_time || racer.lap_time) : "--"}
                   </td>
                   <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
                     {racer.turn_time !== "N/A" && racer.turn_time ? racer.turn_time : "--"}
