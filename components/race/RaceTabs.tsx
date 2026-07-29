@@ -26,27 +26,6 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* LINE Notification Banner */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/30 flex items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#06C755] flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-md">
-            LINE
-          </div>
-          <div>
-            <div className="text-xs font-bold text-emerald-300">展示確定・直前通知をLINEで受け取る</div>
-            <div className="text-[10px] text-slate-400">S・A評価の勝負レースのみ、締切12分前に直前AI速報を届ける</div>
-          </div>
-        </div>
-        <a
-          href="https://line.me/R/ti/p/@kyotei_ai_official"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#06C755] text-white hover:bg-[#05b34c] transition-all shadow-md shadow-emerald-950"
-        >
-          友だち追加
-        </a>
-      </div>
-
       {/* Status bar */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
