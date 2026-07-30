@@ -74,7 +74,7 @@ export default function HeroSection() {
           <p className="text-base text-slate-400 leading-relaxed">
             Gemini 2.5 Flash × LightGBM の二段階AIエンジンが、スリット・展示タイム・チルト・機力データを統合解析。
             全レース自動監視・見送りAI込みで
-            <span className="text-white font-bold">月500円</span>から。
+            <span className="text-emerald-400 font-bold">月額1,980円 (3日間無料体験付き)</span>。
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function HeroSection() {
           {[
             { value: "24場", label: "全場対応" },
             { value: "AI自動", label: "見送り判定" },
-            { value: "¥500〜", label: "月額 / 解約自由" },
+            { value: "¥1,980", label: "月額 / 3日間無料" },
           ].map(({ value, label }) => (
             <div
               key={label}
@@ -98,13 +98,13 @@ export default function HeroSection() {
         {/* CTAs */}
         <div className="space-y-3">
           <a
-            href="https://buy.stripe.com/eVq6oH9Qi39w3BT8rtgjC01"
+            href="https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02"
             className="block w-full py-4 text-center font-black text-base text-white rounded-2xl shadow-lg transition-all active:scale-[0.98]"
             style={{
               background: "linear-gradient(135deg, #10b981, #0d9488)",
             }}
           >
-            🔐 ライトプラン登録（月額500円）で事前予想を解禁
+            🎁 3日間無料体験を試す（月額1,980円・期間内解約0円）
           </a>
           <a
             href="https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02"
