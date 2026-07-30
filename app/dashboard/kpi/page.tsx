@@ -17,10 +17,10 @@ export default function KPIDashboard() {
     lineFriends: 1,         // LINE公式友だち数
     cvr: 0.0,               // 実測CVR(%)
     
-    // 4大SNSマルチチャネル インプレッション ＆ 本日自走投稿数 (実測/目標)
+    // 4大SNSマルチチャネル インプレッション ＆ 本日自走投稿数 (本日実測/目標)
     snsTotalImpressions: 9, // 全SNS総インプレッション数 (実測)
     tiktokViews: 0,         // TikTok 縦型ショート動画再生数
-    tiktokPostsToday: 0,    // TikTok 本日投稿数
+    tiktokPostsToday: 1,    // TikTok 本日実効投稿数 (1/2件完了)
     tiktokPostsTarget: 2,   // TikTok 本日目標数
     
     youtubeViews: 0,        // YouTube ショート動画再生数
@@ -28,11 +28,11 @@ export default function KPIDashboard() {
     youtubePostsTarget: 2,  // YouTube 本日目標数
     
     instaViews: 0,          // Instagram リール動画再生数
-    instaPostsToday: 0,     // Instagram 本日投稿数
+    instaPostsToday: 1,     // Instagram 本日実効投稿数 (1/2件完了)
     instaPostsTarget: 2,    // Instagram 本日目標数
     
     xImpressions: 9,        // X (@boatwater_ai) Post Analytics 実測値
-    xPostsToday: 2,         // X 本日実効投稿数
+    xPostsToday: 3,         // X 本日実効投稿数 (3/5件完了)
     xPostsTarget: 5,        // X 本日目標投稿数 (朝/日中3枠/夜)
   });
 
