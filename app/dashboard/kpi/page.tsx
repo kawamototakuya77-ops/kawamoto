@@ -42,23 +42,23 @@ export default function KPIDashboard() {
     const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     setLastUpdated(formattedDate);
     
-    // GAS / 本番エンドポイントからのデータ同期
+    // GAS / 本番エンドポイントからのデータ同期（有効数値がある場合のみ更新、0リセット防衛）
     fetch('/api/gas?action=get_initial_payload')
       .then((res) => res.json())
       .then((data) => {
         setKpiData(prev => ({
           ...prev,
-          pv: data?.stats?.today_pv ?? 0,
-          lineFriends: data?.stats?.line_friends ?? 1,
-          snsTotalImpressions: data?.stats?.sns_impressions ?? 9,
-          tiktokViews: data?.stats?.tiktok_views ?? 0,
-          tiktokPostsToday: data?.stats?.tiktok_posts_today ?? 0,
-          youtubeViews: data?.stats?.youtube_views ?? 0,
-          youtubePostsToday: data?.stats?.youtube_posts_today ?? 0,
-          instaViews: data?.stats?.insta_views ?? 0,
-          instaPostsToday: data?.stats?.insta_posts_today ?? 0,
-          xImpressions: data?.stats?.x_impressions ?? 9,
-          xPostsToday: data?.stats?.x_posts_today ?? 2,
+          pv: data?.stats?.today_pv || prev.pv,
+          lineFriends: data?.stats?.line_friends || prev.lineFriends,
+          snsTotalImpressions: (data?.stats?.sns_impressions && data?.stats?.sns_impressions > 0) ? data.stats.sns_impressions : prev.snsTotalImpressions,
+          tiktokViews: (data?.stats?.tiktok_views && data?.stats?.tiktok_views > 0) ? data.stats.tiktok_views : prev.tiktokViews,
+          tiktokPostsToday: (data?.stats?.tiktok_posts_today && data?.stats?.tiktok_posts_today > 0) ? data.stats.tiktok_posts_today : prev.tiktokPostsToday,
+          youtubeViews: (data?.stats?.youtube_views && data?.stats?.youtube_views > 0) ? data.stats.youtube_views : prev.youtubeViews,
+          youtubePostsToday: (data?.stats?.youtube_posts_today && data?.stats?.youtube_posts_today > 0) ? data.stats.youtube_posts_today : prev.youtubePostsToday,
+          instaViews: (data?.stats?.insta_views && data?.stats?.insta_views > 0) ? data.stats.insta_views : prev.instaViews,
+          instaPostsToday: (data?.stats?.insta_posts_today && data?.stats?.insta_posts_today > 0) ? data.stats.insta_posts_today : prev.instaPostsToday,
+          xImpressions: (data?.stats?.x_impressions && data?.stats?.x_impressions > 0) ? data.stats.x_impressions : prev.xImpressions,
+          xPostsToday: (data?.stats?.x_posts_today && data?.stats?.x_posts_today > 0) ? data.stats.x_posts_today : prev.xPostsToday,
         }));
       })
       .catch(() => {})
