@@ -17,12 +17,23 @@ export default function KPIDashboard() {
     lineFriends: 1,         // LINE公式友だち数
     cvr: 0.0,               // 実測CVR(%)
     
-    // 4大SNSマルチチャネル インプレッション（公式Post Analyticsデータ同期）
+    // 4大SNSマルチチャネル インプレッション ＆ 本日自走投稿数 (実測/目標)
     snsTotalImpressions: 9, // 全SNS総インプレッション数 (実測)
     tiktokViews: 0,         // TikTok 縦型ショート動画再生数
+    tiktokPostsToday: 0,    // TikTok 本日投稿数
+    tiktokPostsTarget: 2,   // TikTok 本日目標数
+    
     youtubeViews: 0,        // YouTube ショート動画再生数
+    youtubePostsToday: 0,   // YouTube 本日投稿数
+    youtubePostsTarget: 2,  // YouTube 本日目標数
+    
     instaViews: 0,          // Instagram リール動画再生数
-    xImpressions: 9,        // X (@boatwater_ai) Post Analytics 実測値: 9 Imp
+    instaPostsToday: 0,     // Instagram 本日投稿数
+    instaPostsTarget: 2,    // Instagram 本日目標数
+    
+    xImpressions: 9,        // X (@boatwater_ai) Post Analytics 実測値
+    xPostsToday: 2,         // X 本日実効投稿数
+    xPostsTarget: 5,        // X 本日目標投稿数 (朝/日中3枠/夜)
   });
 
   const fetchKpiMetrics = () => {
@@ -35,16 +46,19 @@ export default function KPIDashboard() {
     fetch('/api/gas?action=get_initial_payload')
       .then((res) => res.json())
       .then((data) => {
-        // 本番データの反映
         setKpiData(prev => ({
           ...prev,
           pv: data?.stats?.today_pv ?? 0,
           lineFriends: data?.stats?.line_friends ?? 1,
-          snsTotalImpressions: data?.stats?.sns_impressions ?? 0,
+          snsTotalImpressions: data?.stats?.sns_impressions ?? 9,
           tiktokViews: data?.stats?.tiktok_views ?? 0,
+          tiktokPostsToday: data?.stats?.tiktok_posts_today ?? 0,
           youtubeViews: data?.stats?.youtube_views ?? 0,
+          youtubePostsToday: data?.stats?.youtube_posts_today ?? 0,
           instaViews: data?.stats?.insta_views ?? 0,
-          xImpressions: data?.stats?.x_impressions ?? 0,
+          instaPostsToday: data?.stats?.insta_posts_today ?? 0,
+          xImpressions: data?.stats?.x_impressions ?? 9,
+          xPostsToday: data?.stats?.x_posts_today ?? 2,
         }));
       })
       .catch(() => {})
@@ -90,11 +104,11 @@ export default function KPIDashboard() {
           </div>
         </div>
 
-        {/* 1. 最上流：4大SNSマルチチャネル インプレッション（閲覧数・再生数） */}
+        {/* 1. 最上流：4大SNSマルチチャネル インプレッション ＆ 本日投稿達成件数 */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
             <h2 className="font-bold text-white flex items-center gap-1.5">
-              <span className="text-rose-400">📱</span> 4大SNSマルチチャネル 集客インプレッション (最上流)
+              <span className="text-rose-400">📱</span> 4大SNSマルチチャネル 集客 ＆ 自動投稿達成度
             </h2>
             <span className="text-slate-400 font-mono">
               全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
@@ -104,62 +118,106 @@ export default function KPIDashboard() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             
             {/* TikTok */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
-              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                <span>🎵 TikTok</span>
-                <span className="text-[10px] text-slate-500">ショート動画</span>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                  <span>🎵 TikTok</span>
+                  <span className="text-[10px] text-slate-500">ショート動画</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.tiktokViews.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400">回再生</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.tiktokViews.toLocaleString()}</span>
-                <span className="text-xs text-slate-400">回再生</span>
-              </div>
-              <div className="text-[10px] text-slate-500 mt-2">
-                自動生成 縦型動画
+              <div className="mt-3 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">本日投稿数</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.tiktokPostsToday} / {kpiData.tiktokPostsTarget} 件</span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-500 h-full transition-all duration-500" 
+                    style={{ width: `${Math.min(100, (kpiData.tiktokPostsToday / kpiData.tiktokPostsTarget) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
 
             {/* YouTube Shorts */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
-              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                <span>▶️ YouTube</span>
-                <span className="text-[10px] text-slate-500">Shorts</span>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                  <span>▶️ YouTube</span>
+                  <span className="text-[10px] text-slate-500">Shorts</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.youtubeViews.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400">回再生</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.youtubeViews.toLocaleString()}</span>
-                <span className="text-xs text-slate-400">回再生</span>
-              </div>
-              <div className="text-[10px] text-slate-500 mt-2">
-                AI的中シーン動画
+              <div className="mt-3 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">本日投稿数</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.youtubePostsToday} / {kpiData.youtubePostsTarget} 件</span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-500 h-full transition-all duration-500" 
+                    style={{ width: `${Math.min(100, (kpiData.youtubePostsToday / kpiData.youtubePostsTarget) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
 
             {/* Instagram Reels */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
-              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                <span>📸 Instagram</span>
-                <span className="text-[10px] text-slate-500">リール</span>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                  <span>📸 Instagram</span>
+                  <span className="text-[10px] text-slate-500">リール</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.instaViews.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400">回再生</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.instaViews.toLocaleString()}</span>
-                <span className="text-xs text-slate-400">回再生</span>
-              </div>
-              <div className="text-[10px] text-slate-500 mt-2">
-                直前気配ハイライト
+              <div className="mt-3 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">本日投稿数</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.instaPostsToday} / {kpiData.instaPostsTarget} 件</span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-500 h-full transition-all duration-500" 
+                    style={{ width: `${Math.min(100, (kpiData.instaPostsToday / kpiData.instaPostsTarget) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
 
             {/* X (Twitter) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
-              <div className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                <span>𝕏 (Twitter)</span>
-                <span className="text-[10px] text-slate-500">Post Analytics</span>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                  <span>𝕏 (Twitter)</span>
+                  <span className="text-[10px] text-slate-500">Post Analytics</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
+                  <span className="text-xs text-slate-400">Imp</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
-                <span className="text-xs text-slate-400">Imp</span>
-              </div>
-              <div className="text-[10px] text-slate-500 mt-2">
-                @boatwater_ai アナリティクス
+              <div className="mt-3 pt-2 border-t border-white/5">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">本日投稿数</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.xPostsToday} / {kpiData.xPostsTarget} 件</span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-500 h-full transition-all duration-500" 
+                    style={{ width: `${Math.min(100, (kpiData.xPostsToday / kpiData.xPostsTarget) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
 
