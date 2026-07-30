@@ -7,10 +7,11 @@ export default function KPIDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [mounted, setMounted] = useState<boolean>(false);
+
   // 本物の計測データ（最新の実計測値）
-  const todayStr = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
   const [kpiData, setKpiData] = useState({
-    period: `${todayStr} (本日 00:00 〜 現在)`,
+    period: "計測期間を読み込み中...",
     pv: 0,                   // 本日/昨日の本番GA4セッション数
     trials: 0,              // Stripe本番無料トライアル登録数
     proMembers: 0,          // Stripe本番有料課金会員数
@@ -67,6 +68,13 @@ export default function KPIDashboard() {
   };
 
   useEffect(() => {
+    setMounted(true);
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+    setKpiData(prev => ({
+      ...prev,
+      period: `${todayStr} (本日 00:00 〜 現在)`
+    }));
     fetchKpiMetrics();
   }, []);
 
