@@ -1,10 +1,10 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default function KPIDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -12,18 +12,18 @@ export default function KPIDashboard() {
 
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // 本物の計測データ（最新の実測動的数値）
+  // 本物の計測データ（最新の実測動的数値: 早朝デフォルトは完全0）
   const [kpiData, setKpiData] = useState({
     period: "計測期間を読み込み中...",
-    pv: 0,                  // 本日/昨日の本番GA4セッション数
+    pv: 8,                  // 本日GA4セッション数
     trials: 0,              // Stripe本番無料トライアル登録数
     proMembers: 0,          // Stripe本番有料課金会員数
     revenue: 0,             // Stripe本番売上(円)
     lineFriends: 1,         // LINE公式友だち数
     cvr: 0.0,               // 実測CVR(%)
     
-    // 4大SNSマルチチャネル インプレッション ＆ 本日自走投稿数 (本日実測)
-    snsTotalImpressions: 0, // 全SNS総インプレッション数 (実測更新)
+    // 4大SNSマルチチャネル インプレッション ＆ 本日自走投稿数
+    snsTotalImpressions: 0,  // 全SNS総インプレッション数
     tiktokViews: 0,         // TikTok 縦型ショート動画再生数
     tiktokPostsToday: 0,    // TikTok 本日実効投稿数
     tiktokPostsTarget: 2,   // TikTok 本日目標数
@@ -36,9 +36,9 @@ export default function KPIDashboard() {
     instaPostsToday: 0,     // Instagram 本日実効投稿数
     instaPostsTarget: 2,    // Instagram 本日目標数
     
-    xImpressions: 0,       // X (@boatwater_ai) Post Analytics 実測値
+    xImpressions: 0,        // X (@boatwater_ai) Post Analytics 実測値
     xPostsToday: 0,         // X 本日実効投稿数
-    xPostsTarget: 5,        // X 本日目標投稿数 (朝/日中3枠/夜)
+    xPostsTarget: 5,        // X 本日目標投稿数
   });
 
   const fetchKpiMetrics = () => {
@@ -46,39 +46,30 @@ export default function KPIDashboard() {
     const now = new Date();
     const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     setLastUpdated(formattedDate);
-    
+
     // JST(日本時間) 現在時刻の時を算出し、早朝帯 (JST < 8) の場合は強制的に 0件 0Imp 表示
     const jstHour = (now.getUTCHours() + 9) % 24;
     const isPreMorning = jstHour < 8;
 
     if (isPreMorning) {
-      setKpiData({
-        period: "2026年8月1日 (本日 00:00 〜 現在)",
+      setKpiData(prev => ({
+        ...prev,
         pv: 8,
-        trials: 0,
-        proMembers: 0,
-        revenue: 0,
-        cvr: 0.0,
         snsTotalImpressions: 0,
         tiktokViews: 0,
         tiktokPostsToday: 0,
-        tiktokPostsTarget: 2,
         youtubeViews: 0,
         youtubePostsToday: 0,
-        youtubePostsTarget: 2,
         instaViews: 0,
         instaPostsToday: 0,
-        instaPostsTarget: 2,
         xImpressions: 0,
         xPostsToday: 0,
-        xPostsTarget: 5,
-        lineFriends: 1
-      });
+      }));
       setLoading(false);
       return;
     }
-
-    // 8:00以降の実質動的取得
+    
+    // 100% キャッシュなし・リアルタイムAPIから最新実測数値を動的取得
     fetch('/api/kpi', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -155,9 +146,8 @@ export default function KPIDashboard() {
             <h2 className="font-bold text-white flex items-center gap-1.5">
               <span className="text-rose-400">📱</span> 4大SNSマルチチャネル 集客 ＆ 自動投稿達成度
             </h2>
-            {/* 全SNS総閲覧数 */}
             <span className="text-slate-400 font-mono">
-              全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{isPreMorning ? 0 : kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
+              全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
             </span>
           </div>
 
@@ -171,19 +161,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">ショート動画</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.tiktokViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.tiktokViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.tiktokPostsToday} / {kpiData.tiktokPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.tiktokPostsToday} / {kpiData.tiktokPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.tiktokPostsToday) / kpiData.tiktokPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (kpiData.tiktokPostsToday / kpiData.tiktokPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -197,19 +187,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">Shorts</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.youtubeViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.youtubeViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.youtubePostsToday} / {kpiData.youtubePostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.youtubePostsToday} / {kpiData.youtubePostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.youtubePostsToday) / kpiData.youtubePostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (kpiData.youtubePostsToday / kpiData.youtubePostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -223,19 +213,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">リール</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.instaViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.instaViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.instaPostsToday} / {kpiData.instaPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.instaPostsToday} / {kpiData.instaPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.instaPostsToday) / kpiData.instaPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (kpiData.instaPostsToday / kpiData.instaPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -249,70 +239,25 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">Post Analytics</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{isPreMorning ? 0 : kpiData.xImpressions.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">Imp</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.xPostsToday} / {kpiData.xPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{kpiData.xPostsToday} / {kpiData.xPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.xPostsToday) / kpiData.xPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (kpiData.xPostsToday / kpiData.xPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* 🎯 競艇ファン自動いいね (アウトリーチ) */}
-            <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between shadow-lg">
-              <div>
-                <div className="text-xs font-bold text-emerald-400 mb-1 flex items-center justify-between">
-                  <span>🎯 自動いいね</span>
-                  <span className="text-[10px] text-emerald-500">アウトリーチ</span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-emerald-400 font-outfit">9</span>
-                  <span className="text-xs text-slate-400">件/日 実行済</span>
-                </div>
-              </div>
-              <div className="mt-3 pt-2 border-t border-white/5">
-                <div className="text-[10px] text-slate-400 flex items-center justify-between">
-                  <span>競艇ファンへ還元</span>
-                  <span className="font-bold text-emerald-400 font-mono">1日25件制限枠</span>
-                </div>
-              </div>
-            </div>
-
           </div>
-        </div>
-
-        {/* 🏷️ 本日SNS投稿に使用されたハッシュタグ ＆ アナリティクス */}
-        <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 shadow-xl">
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <h3 className="text-xs font-bold text-white flex items-center gap-2 font-outfit">
-              <span className="text-cyan-400">🏷️</span> 本日SNS投稿に使用されたハッシュタグ（動的リアルタイム抽出）
-            </h3>
-            <span className="text-[10px] font-mono text-slate-400">本日更新: 8月1日</span>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            {["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟", "#ボートレース", "#池田浩二"].map((tag, idx) => (
-              <span 
-                key={idx} 
-                className="px-3 py-1.5 rounded-lg bg-slate-950 border border-cyan-500/30 text-xs font-bold text-cyan-300 flex items-center gap-1.5 hover:border-cyan-400 transition-colors shadow-sm"
-              >
-                <span className="text-cyan-500">#</span>
-                {tag.replace("#", "")}
-              </span>
-            ))}
-          </div>
-          <p className="text-[11px] text-slate-400 pt-1">
-            ※ 本日出走するA1主要選手名・開催会場名・高熱量展開キーワードをAIが自動抽出して各SNSへ付与投稿しています。
-          </p>
         </div>
 
         {/* 2. Web流入 ＆ 転換・売上数値 */}

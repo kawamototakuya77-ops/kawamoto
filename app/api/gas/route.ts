@@ -27,73 +27,18 @@ export async function GET(request: NextRequest) {
       next: { revalidate: 30 },
     });
 
-    let data: any = {};
-    try {
-      const res = await fetch(url, {
-        headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
-        next: { revalidate: 0 },
-      });
-      if (res.ok) {
-        data = await res.json();
-      }
-    } catch (e) {}
-
-    // 日本標準時 (JST: UTC+9) の現在時刻・日付を計算
-    const nowUtc = new Date();
-    const jstNow = new Date(nowUtc.getTime() + 9 * 60 * 60 * 1000);
-    const jstHour = jstNow.getUTCHours(); // JSTの現在の時 (0〜23)
-
-    // 朝8:00前の深夜・早朝帯 (00:00〜07:59 JST) はモーニング1枠発火前のため投稿数は0件が正解
-    const isPreMorning = jstHour < 8;
-
-    const todayStats = {
-      today_pv: isPreMorning ? 8 : 42,
-      line_friends: 1,
-      sns_impressions: isPreMorning ? 12 : 210,
-      tiktok_views: 0,
-      tiktok_posts_today: isPreMorning ? 0 : 1,
-      tiktok_posts_target: 2,
-      youtube_views: 0,
-      youtube_posts_today: 0,
-      youtube_posts_target: 2,
-      insta_views: 0,
-      insta_posts_today: isPreMorning ? 0 : 1,
-      insta_posts_target: 2,
-      x_impressions: isPreMorning ? 12 : 210,
-      x_posts_today: isPreMorning ? 0 : 4,
-      x_posts_target: 5,
-      outreach_likes_today: isPreMorning ? 0 : 9,
-      today_hashtags: ["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟"]
-    };
-
-    // GASスプレッドシートの古い固定キャッシュ値を完全遮断し、JST厳密判定の最新リアルタイム値を強制採用
-    if (isPreMorning) {
-      data.stats = {
-        today_pv: 8,
-        line_friends: 1,
-        sns_impressions: 0,
-        tiktok_views: 0,
-        tiktok_posts_today: 0,
-        tiktok_posts_target: 2,
-        youtube_views: 0,
-        youtube_posts_today: 0,
-        youtube_posts_target: 2,
-        insta_views: 0,
-        insta_posts_today: 0,
-        insta_posts_target: 2,
-        x_impressions: 0,
-        x_posts_today: 0,
-        x_posts_target: 5,
-        outreach_likes_today: 0,
-        today_hashtags: ["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟"]
-      };
-    } else {
-      data.stats = todayStats;
+    if (!res.ok) {
+      return NextResponse.json(
+        { success: false, error: `GAS returned ${res.status}` },
+        { status: 502 }
+      );
     }
 
+    const data = await res.json();
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate",
+        // ブラウザキャッシュ: 20秒
+        "Cache-Control": "public, s-maxage=20, stale-while-revalidate=30",
       },
     });
   } catch (err) {
