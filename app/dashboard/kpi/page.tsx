@@ -155,8 +155,9 @@ export default function KPIDashboard() {
             <h2 className="font-bold text-white flex items-center gap-1.5">
               <span className="text-rose-400">📱</span> 4大SNSマルチチャネル 集客 ＆ 自動投稿達成度
             </h2>
+            {/* 全SNS総閲覧数 */}
             <span className="text-slate-400 font-mono">
-              全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
+              全SNS総閲覧数: <strong className="text-rose-400 text-sm font-outfit">{isPreMorning ? 0 : kpiData.snsTotalImpressions.toLocaleString()}</strong> 回
             </span>
           </div>
 
@@ -170,19 +171,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">ショート動画</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.tiktokViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.tiktokViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{kpiData.tiktokPostsToday} / {kpiData.tiktokPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.tiktokPostsToday} / {kpiData.tiktokPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, (kpiData.tiktokPostsToday / kpiData.tiktokPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.tiktokPostsToday) / kpiData.tiktokPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -196,19 +197,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">Shorts</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.youtubeViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.youtubeViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{kpiData.youtubePostsToday} / {kpiData.youtubePostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.youtubePostsToday} / {kpiData.youtubePostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, (kpiData.youtubePostsToday / kpiData.youtubePostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.youtubePostsToday) / kpiData.youtubePostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -222,19 +223,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">リール</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{kpiData.instaViews.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-outfit">{isPreMorning ? 0 : kpiData.instaViews.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">回再生</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{kpiData.instaPostsToday} / {kpiData.instaPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.instaPostsToday} / {kpiData.instaPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, (kpiData.instaPostsToday / kpiData.instaPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.instaPostsToday) / kpiData.instaPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -248,19 +249,19 @@ export default function KPIDashboard() {
                   <span className="text-[10px] text-slate-500">Post Analytics</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{kpiData.xImpressions.toLocaleString()}</span>
+                  <span className="text-xl sm:text-2xl font-black text-rose-400 font-outfit">{isPreMorning ? 0 : kpiData.xImpressions.toLocaleString()}</span>
                   <span className="text-xs text-slate-400">Imp</span>
                 </div>
               </div>
               <div className="mt-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between text-[11px] mb-1">
                   <span className="text-slate-400">本日投稿数</span>
-                  <span className="font-bold text-emerald-400 font-mono">{kpiData.xPostsToday} / {kpiData.xPostsTarget} 件</span>
+                  <span className="font-bold text-emerald-400 font-mono">{isPreMorning ? 0 : kpiData.xPostsToday} / {kpiData.xPostsTarget} 件</span>
                 </div>
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-emerald-500 h-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, (kpiData.xPostsToday / kpiData.xPostsTarget) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((isPreMorning ? 0 : kpiData.xPostsToday) / kpiData.xPostsTarget) * 100)}%` }}
                   />
                 </div>
               </div>
