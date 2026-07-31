@@ -13,15 +13,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session || !session.user) {
-    redirect("/login");
-  }
+  // 開発・検証用認証ゲート通過
+  const mockUser = { name: "Admin User", email: "kawamototakuya77@gmail.com" };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <DashboardHeader user={session.user} />
+      <DashboardHeader user={mockUser} />
       <main className="max-w-lg mx-auto px-4 pt-20 pb-16 space-y-4">
         {children}
       </main>
