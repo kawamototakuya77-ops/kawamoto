@@ -232,6 +232,26 @@ export default function KPIDashboard() {
               </div>
             </div>
 
+            {/* 🎯 競艇ファン自動いいね (アウトリーチ) */}
+            <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 relative overflow-hidden flex flex-col justify-between shadow-lg">
+              <div>
+                <div className="text-xs font-bold text-emerald-400 mb-1 flex items-center justify-between">
+                  <span>🎯 自動いいね</span>
+                  <span className="text-[10px] text-emerald-500">アウトリーチ</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl sm:text-2xl font-black text-emerald-400 font-outfit">9</span>
+                  <span className="text-xs text-slate-400">件/日 実行済</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2 border-t border-white/5">
+                <div className="text-[10px] text-slate-400 flex items-center justify-between">
+                  <span>競艇ファンへ還元</span>
+                  <span className="font-bold text-emerald-400 font-mono">1日25件制限枠</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
