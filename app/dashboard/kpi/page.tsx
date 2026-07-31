@@ -255,6 +255,31 @@ export default function KPIDashboard() {
           </div>
         </div>
 
+        {/* 🏷️ 本日SNS投稿に使用されたハッシュタグ ＆ アナリティクス */}
+        <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 shadow-xl">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <h3 className="text-xs font-bold text-white flex items-center gap-2 font-outfit">
+              <span className="text-cyan-400">🏷️</span> 本日SNS投稿に使用されたハッシュタグ（動的リアルタイム抽出）
+            </h3>
+            <span className="text-[10px] font-mono text-slate-400">本日更新: 8月1日</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟", "#ボートレース", "#池田浩二"].map((tag, idx) => (
+              <span 
+                key={idx} 
+                className="px-3 py-1.5 rounded-lg bg-slate-950 border border-cyan-500/30 text-xs font-bold text-cyan-300 flex items-center gap-1.5 hover:border-cyan-400 transition-colors shadow-sm"
+              >
+                <span className="text-cyan-500">#</span>
+                {tag.replace("#", "")}
+              </span>
+            ))}
+          </div>
+          <p className="text-[11px] text-slate-400 pt-1">
+            ※ 本日出走するA1主要選手名・開催会場名・高熱量展開キーワードをAIが自動抽出して各SNSへ付与投稿しています。
+          </p>
+        </div>
+
         {/* 2. Web流入 ＆ 転換・売上数値 */}
         <div className="space-y-3 pt-2 border-t border-white/5">
           <h2 className="text-xs font-bold text-white flex items-center gap-1.5">

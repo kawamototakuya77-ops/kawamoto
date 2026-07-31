@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       }
     } catch (e) {}
 
-    // 本日（8/1）の最新実力動的インクリメント数値（アウトリーチ実績を含む）
+    // 本日（8/1）の最新実力動的インクリメント数値（アウトリーチ実績 ＆ 使用ハッシュタグを含む）
     const todayStats = {
       today_pv: 42,
       line_friends: 1,
@@ -51,7 +51,8 @@ export async function GET(request: NextRequest) {
       insta_posts_today: 1,
       x_impressions: 210,
       x_posts_today: 4,
-      outreach_likes_today: 9 // 本日8/1に実際に発火された競艇ファンいいね実数
+      outreach_likes_today: 9,
+      today_hashtags: ["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟"]
     };
 
     if (!data.stats) {
