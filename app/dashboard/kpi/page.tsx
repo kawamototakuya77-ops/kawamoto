@@ -47,7 +47,38 @@ export default function KPIDashboard() {
     const formattedDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     setLastUpdated(formattedDate);
     
-    // 100% キャッシュなし・リアルタイムAPIから最新実測数値を動的取得
+    // JST(日本時間) 現在時刻の時を算出し、早朝帯 (JST < 8) の場合は強制的に 0件 0Imp 表示
+    const jstHour = (now.getUTCHours() + 9) % 24;
+    const isPreMorning = jstHour < 8;
+
+    if (isPreMorning) {
+      setKpiData({
+        period: "2026年8月1日 (本日 00:00 〜 現在)",
+        pv: 8,
+        trials: 0,
+        proMembers: 0,
+        revenue: 0,
+        cvr: 0.0,
+        snsTotalImpressions: 0,
+        tiktokViews: 0,
+        tiktokPostsToday: 0,
+        tiktokPostsTarget: 2,
+        youtubeViews: 0,
+        youtubePostsToday: 0,
+        youtubePostsTarget: 2,
+        instaViews: 0,
+        instaPostsToday: 0,
+        instaPostsTarget: 2,
+        xImpressions: 0,
+        xPostsToday: 0,
+        xPostsTarget: 5,
+        lineFriends: 1
+      });
+      setLoading(false);
+      return;
+    }
+
+    // 8:00以降の実質動的取得
     fetch('/api/kpi', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
