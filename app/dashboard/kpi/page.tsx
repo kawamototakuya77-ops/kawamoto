@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -51,17 +54,17 @@ export default function KPIDashboard() {
         if (data && data.stats) {
           setKpiData(prev => ({
             ...prev,
-            pv: data.stats.today_pv || prev.pv,
-            lineFriends: data.stats.line_friends || prev.lineFriends,
-            snsTotalImpressions: data.stats.sns_impressions || prev.snsTotalImpressions,
-            tiktokViews: data.stats.tiktok_views || prev.tiktokViews,
-            tiktokPostsToday: data.stats.tiktok_posts_today || prev.tiktokPostsToday,
-            youtubeViews: data.stats.youtube_views || prev.youtubeViews,
-            youtubePostsToday: data.stats.youtube_posts_today || prev.youtubePostsToday,
-            instaViews: data.stats.insta_views || prev.instaViews,
-            instaPostsToday: data.stats.insta_posts_today || prev.instaPostsToday,
-            xImpressions: data.stats.x_impressions || prev.xImpressions,
-            xPostsToday: data.stats.x_posts_today || prev.xPostsToday,
+            pv: data.stats.today_pv ?? 0,
+            lineFriends: data.stats.line_friends ?? 0,
+            snsTotalImpressions: data.stats.sns_impressions ?? 0,
+            tiktokViews: data.stats.tiktok_views ?? 0,
+            tiktokPostsToday: data.stats.tiktok_posts_today ?? 0,
+            youtubeViews: data.stats.youtube_views ?? 0,
+            youtubePostsToday: data.stats.youtube_posts_today ?? 0,
+            instaViews: data.stats.insta_views ?? 0,
+            instaPostsToday: data.stats.insta_posts_today ?? 0,
+            xImpressions: data.stats.x_impressions ?? 0,
+            xPostsToday: data.stats.x_posts_today ?? 0,
           }));
         }
       })
