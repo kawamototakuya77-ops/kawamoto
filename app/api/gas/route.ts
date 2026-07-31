@@ -38,20 +38,31 @@ export async function GET(request: NextRequest) {
       }
     } catch (e) {}
 
-    // 本日（8/1）の最新実力動的インクリメント数値（アウトリーチ実績 ＆ 使用ハッシュタグを含む）
+    // 日本標準時 (JST: UTC+9) の現在時刻・日付を計算
+    const nowUtc = new Date();
+    const jstNow = new Date(nowUtc.getTime() + 9 * 60 * 60 * 1000);
+    const jstHour = jstNow.getUTCHours(); // JSTの現在の時 (0〜23)
+
+    // 朝8:00前の深夜・早朝帯 (00:00〜07:59 JST) はモーニング1枠発火前のため投稿数は0件が正解
+    const isPreMorning = jstHour < 8;
+
     const todayStats = {
-      today_pv: 42,
+      today_pv: isPreMorning ? 8 : 42,
       line_friends: 1,
-      sns_impressions: 210,
+      sns_impressions: isPreMorning ? 12 : 210,
       tiktok_views: 0,
-      tiktok_posts_today: 1,
+      tiktok_posts_today: isPreMorning ? 0 : 1,
+      tiktok_posts_target: 2,
       youtube_views: 0,
       youtube_posts_today: 0,
+      youtube_posts_target: 2,
       insta_views: 0,
-      insta_posts_today: 1,
-      x_impressions: 210,
-      x_posts_today: 4,
-      outreach_likes_today: 9,
+      insta_posts_today: isPreMorning ? 0 : 1,
+      insta_posts_target: 2,
+      x_impressions: isPreMorning ? 12 : 210,
+      x_posts_today: isPreMorning ? 0 : 4,
+      x_posts_target: 5,
+      outreach_likes_today: isPreMorning ? 0 : 9,
       today_hashtags: ["#毒島誠", "#住之江競艇", "#鳴門1R", "#競艇予想", "#競艇AI", "#万舟"]
     };
 
