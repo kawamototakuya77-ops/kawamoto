@@ -17,9 +17,9 @@ export default async function DashboardLayout({
   const mockUser = { name: "Admin User", email: "kawamototakuya77@gmail.com" };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden w-full">
       <DashboardHeader user={mockUser} />
-      <main className="max-w-lg mx-auto px-4 pt-20 pb-16 space-y-4">
+      <main className="w-full max-w-md mx-auto px-3 pt-14 pb-12 overflow-x-hidden space-y-3">
         {children}
       </main>
     </div>

@@ -106,17 +106,17 @@ export default function KPIDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-2 sm:p-4 w-full overflow-x-hidden">
+      <div className="w-full max-w-md mx-auto space-y-3">
         
         {/* ヘッダー ＆ 計測日時 */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-4 gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-2 gap-2">
           <div>
-            <Link href="/dashboard" className="text-xs text-slate-400 hover:text-white transition-colors">
+            <Link href="/dashboard" className="text-[11px] text-slate-400 hover:text-white transition-colors">
               ← 競艇直前物理AI ダッシュボードへ戻る
             </Link>
-            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 mt-1 font-outfit">
-              <span className="text-emerald-400">📊</span> マーケティング本番KPI定点観測
+            <h1 className="text-lg font-black text-white flex items-center gap-1.5 mt-0.5 font-outfit">
+              <span className="text-emerald-400 text-base">📊</span> マーケティング本番KPI定点観測
             </h1>
           </div>
           <button

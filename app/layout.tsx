@@ -22,6 +22,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@kyotei_ai",
   },
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 import GoogleAnalytics from "@/components/GoogleAnalytics";
@@ -33,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" className={`${outfit.variable} ${noto.variable}`}>
-      <body className="min-h-screen bg-slate-950 antialiased font-sans">
+      <body className="min-h-screen bg-slate-950 antialiased font-sans overflow-x-hidden w-full">
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-YZ7SH1JBXG"} />
         {children}
       </body>
