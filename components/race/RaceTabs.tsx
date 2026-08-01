@@ -328,10 +328,18 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                     {((racer as any).loop_time || racer.lap_time) !== "N/A" && ((racer as any).loop_time || racer.lap_time) ? ((racer as any).loop_time || racer.lap_time) : "--"}
                   </td>
                   <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                    {racer.turn_time !== "N/A" && racer.turn_time ? racer.turn_time : "--"}
+                    {(() => {
+                      const val = (racer as any).turn_time || (racer as any).mawari_ashi || racer.turn_time;
+                      if (!val || val === "N/A" || String(val).includes("-0.") || String(val).includes("0.0")) return "--";
+                      return val;
+                    })()}
                   </td>
                   <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                    {racer.straight_time !== "N/A" && racer.straight_time ? racer.straight_time : "--"}
+                    {(() => {
+                      const val = (racer as any).straight_time || (racer as any).chokusen;
+                      if (!val || val === "N/A") return "--";
+                      return val;
+                    })()}
                   </td>
                 </tr>
               );
