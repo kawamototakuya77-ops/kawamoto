@@ -317,27 +317,48 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                     F{(stats as any)?.f_count || 0} / L{(stats as any)?.l_count || 0}
                   </td>
 
-                  {/* 展示・オリ展データ */}
+                  {/* 展示・オリ展データ (100%全キー救済マッピング) */}
+                  {/* 1. 展示ST */}
                   <td className="p-2 text-center text-xs font-black font-outfit text-emerald-400">
-                    {racer.st_val !== "N/A" && racer.st_val ? `F${racer.st_val}` : "--"}
-                  </td>
-                  <td className="p-2 text-center text-xs font-black font-outfit text-indigo-300">
-                    {racer.ex_time !== "N/A" && racer.ex_time ? racer.ex_time : "--"}
-                  </td>
-                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
-                    {((racer as any).loop_time || racer.lap_time) !== "N/A" && ((racer as any).loop_time || racer.lap_time) ? ((racer as any).loop_time || racer.lap_time) : "--"}
-                  </td>
-                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
                     {(() => {
-                      const val = (racer as any).turn_time || (racer as any).mawari_ashi || racer.turn_time;
-                      if (!val || val === "N/A" || String(val).includes("-0.") || String(val).includes("0.0")) return "--";
+                      const val = racer.st_val || (racer as any).st || (racer.stats as any)?.st;
+                      if (!val || val === "N/A") return "--";
+                      return String(val).startsWith("F") || String(val).startsWith("L") ? val : `.${val}`;
+                    })()}
+                  </td>
+
+                  {/* 2. 展示タイム */}
+                  <td className="p-2 text-center text-xs font-black font-outfit text-indigo-300">
+                    {(() => {
+                      const val = racer.ex_time || (racer as any).exhibition_time || (racer as any).ex_time || (racer.stats as any)?.ex_time;
+                      if (!val || val === "N/A") return "--";
                       return val;
                     })()}
                   </td>
+
+                  {/* 3. 一周タイム */}
                   <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
                     {(() => {
-                      const val = (racer as any).straight_time || (racer as any).chokusen;
-                      if (!val || val === "N/A") return "--";
+                      const val = (racer as any).loop_time || (racer as any).isshu || racer.lap_time || (racer as any).exhibition?.loop_time || (racer.stats as any)?.loop_time;
+                      if (!val || val === "N/A" || String(val) === "0" || String(val) === "0.0") return "--";
+                      return val;
+                    })()}
+                  </td>
+
+                  {/* 4. まわり足タイム */}
+                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                    {(() => {
+                      const val = (racer as any).turn_time || (racer as any).mawari_ashi || (racer as any).exhibition?.turn_time || (racer.stats as any)?.turn_time;
+                      if (!val || val === "N/A" || String(val).includes("-0.") || String(val) === "0" || String(val) === "0.0") return "--";
+                      return val;
+                    })()}
+                  </td>
+
+                  {/* 5. 直線タイム */}
+                  <td className="p-2 text-center text-xs font-black font-outfit text-amber-300">
+                    {(() => {
+                      const val = (racer as any).straight_time || (racer as any).chokusen || (racer as any).exhibition?.straight_time || (racer.stats as any)?.straight_time;
+                      if (!val || val === "N/A" || String(val) === "0" || String(val) === "0.0") return "--";
                       return val;
                     })()}
                   </td>
