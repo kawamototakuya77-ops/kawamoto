@@ -20,17 +20,20 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get("action");
 
   // 【ユーザー指示】オリ展フロントエンド検証用テストデータ返却モード
-  if (action === "get_race_cache") {
+  if (action === "get_race_cache" || searchParams.has("jcd")) {
     return NextResponse.json({
       success: true,
       has_phase1: true,
       has_phase2: true,
       cache: {
         phase: 2,
-        ai: {
-          confidence: "S",
-          escape_rate: 78.5,
+        first_prediction: {
+          ai: { confidence: "S", escape_rate: 78.5 }
         },
+        second_prediction: {
+          ai: { confidence: "S", escape_rate: 78.5 }
+        },
+        ai: { confidence: "S", escape_rate: 78.5 },
         racers: [
           { lane: 1, name: "毒島 誠", cls: "A1", regNo: 4238, st_val: "12", ex_time: "6.72", loop_time: "36.85", turn_time: "5.12", straight_time: "7.45", stats: { course_top2_rate: 82.5, venue_win_rate: 65.4, course_st_rank: 1.8 } },
           { lane: 2, name: "池田 浩二", cls: "A1", regNo: 3941, st_val: "14", ex_time: "6.75", loop_time: "36.92", turn_time: "5.18", straight_time: "7.48", stats: { course_top2_rate: 75.0, venue_win_rate: 58.2, course_st_rank: 2.1 } },
@@ -39,6 +42,10 @@ export async function GET(request: NextRequest) {
           { lane: 5, name: "馬場 貴也", cls: "A1", regNo: 4266, st_val: "13", ex_time: "6.71", loop_time: "36.88", turn_time: "5.10", straight_time: "7.43", stats: { course_top2_rate: 70.5, venue_win_rate: 60.3, course_st_rank: 2.0 } },
           { lane: 6, name: "白井 英治", cls: "A1", regNo: 3897, st_val: "16", ex_time: "6.80", loop_time: "37.08", turn_time: "5.25", straight_time: "7.55", stats: { course_top2_rate: 55.0, venue_win_rate: 48.9, course_st_rank: 3.2 } }
         ]
+      }
+    }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       }
     });
   }
