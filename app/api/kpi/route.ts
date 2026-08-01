@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     let youtubePosts = 0;
 
     // 1. 本日の投稿実効数 (post_history.json から実測動的カウントアップ)
-    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     const altTodayStr = new Date().toLocaleDateString('ja-JP').replace(/\//g, '-');
     
     if (fs.existsSync(historyPath)) {

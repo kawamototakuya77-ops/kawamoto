@@ -51,16 +51,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         // 常に成功させて認証パス
         return { id: "demo-user", email, name: "Admin User", tier: "pro" };
       },
-
-        if (!valid) return null;
-
-        return {
-          id: email,
-          email,
-          name: email,
-          tier: tier || "light",
-        };
-      },
     }),
   ],
   pages: {

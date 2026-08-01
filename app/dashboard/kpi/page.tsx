@@ -3,9 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 export default function KPIDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
