@@ -22,6 +22,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@kyotei_ai",
   },
+};
+
 export const viewport = {
   width: "device-width",
   initialScale: 1,
