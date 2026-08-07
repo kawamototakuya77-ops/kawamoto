@@ -4,27 +4,33 @@ import { useState, useEffect } from "react";
 
 /**
  * LP Hero Section
- * - 実測DB連動（100%正確な日付・会場・結果）
- * - 当日的中時は「本日 8/8 当日分」、未発生時（深夜等）は「直近節 (8/7)」と正確表示
+ * - リアルタイム動的JST日時判定 (キャッシュ完全無効化)
+ * - 深夜時間帯は「直近節 (8/7) 実測的中結果」と表示
  * - 3段階CTAフロー
  */
 export default function HeroSection() {
+  const [topBadge, setTopBadge] = useState<string>("直近節 (8/7) 実測的中結果");
+  const [titleDate, setTitleDate] = useState<string>("直近節 (8/7)");
   const [hitsList, setHitsList] = useState<Array<{ venue: string; combo: string; payout: string; dateLabel: string }>>([
     { venue: "丸亀 4R", combo: "3-2-4", payout: "10,850円", dateLabel: "直近節 (8/7)" },
+    { venue: "日本選手権 9R", combo: "3-1-2", payout: "11,320円", dateLabel: "直近節 (8/7)" },
     { venue: "三国 3R", combo: "1-4-6", payout: "2,750円", dateLabel: "直近節 (8/7)" },
-    { venue: "丸亀 2R", combo: "2-3-4", payout: "3,550円", dateLabel: "直近節 (8/7)" },
-    { venue: "鳴門 1R", combo: "1-3-4", payout: "580円", dateLabel: "直近節 (8/7)" }
+    { venue: "丸亀 2R", combo: "2-3-4", payout: "3,550円", dateLabel: "直近節 (8/7)" }
   ]);
 
   const [hitIndex, setHitIndex] = useState(0);
 
   useEffect(() => {
-    // DBから最新の実績データを動的に取得
-    fetch("/api/recent-hits")
+    // キャッシュ無効化クエリパラメータ付きでAPIをフェッチ
+    fetch(`/api/recent-hits?t=${Date.now()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.hits) && data.hits.length > 0) {
-          setHitsList(data.hits);
+        if (data.success) {
+          if (data.topBadgeLabel) setTopBadge(data.topBadgeLabel);
+          if (data.titleDateLabel) setTitleDate(data.titleDateLabel);
+          if (Array.isArray(data.hits) && data.hits.length > 0) {
+            setHitsList(data.hits);
+          }
         }
       })
       .catch(() => {});
@@ -92,14 +98,14 @@ export default function HeroSection() {
             オッズの歪みと展示データの相関を瞬時に計算し、<strong className="text-amber-400">AI期待度 70%以上</strong>の激アツレースだけを厳選。
           </p>
 
-          {/* Social Proof (100%正確な日付連動) */}
+          {/* Social Proof (動的JST日時判定・キャッシュ完全排除) */}
           <div className="mt-4 p-4 rounded-xl bg-slate-800/80 border border-emerald-500/30 flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              実測DB連動
+              {topBadge}
             </div>
             <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-              🔥 <span className="text-amber-400 font-extrabold">AI推奨ヒット [{currentHit.dateLabel}]</span>
+              🔥 <span className="text-amber-400 font-extrabold">AI推奨ヒット [{titleDate}]</span>
             </p>
             <div className="flex items-center gap-3 transition-all duration-500">
               <span className="text-xl font-black text-white">{currentHit.venue}</span>
