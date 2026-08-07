@@ -4,14 +4,33 @@ import { useEffect } from "react";
 import { useAllPredictions } from "@/hooks/useLivePrediction";
 import { useRouter } from "next/navigation";
 
-const ALL_VENUES: Record<string, string> = {
-  "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島",
-  "05": "多摩川", "06": "浜名湖", "07": "蒲郡", "08": "常滑",
-  "09": "津", "10": "三国", "11": "びわこ", "12": "住之江",
-  "13": "尼崎", "14": "鳴門", "15": "丸亀", "16": "児島",
-  "17": "宮島", "18": "徳山", "19": "下関", "20": "若松",
-  "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村",
-};
+// 明示的配列定義でJSオブジェクトキーソート順化バグ(01-09が10-24の後に回る現象)を100%防止
+const VENUE_LIST = [
+  { jcd: "01", name: "桐生" },
+  { jcd: "02", name: "戸田" },
+  { jcd: "03", name: "江戸川" },
+  { jcd: "04", name: "平和島" },
+  { jcd: "05", name: "多摩川" },
+  { jcd: "06", name: "浜名湖" },
+  { jcd: "07", name: "蒲郡" },
+  { jcd: "08", name: "常滑" },
+  { jcd: "09", name: "津" },
+  { jcd: "10", name: "三国" },
+  { jcd: "11", name: "びわこ" },
+  { jcd: "12", name: "住之江" },
+  { jcd: "13", name: "尼崎" },
+  { jcd: "14", name: "鳴門" },
+  { jcd: "15", name: "丸亀" },
+  { jcd: "16", name: "児島" },
+  { jcd: "17", name: "宮島" },
+  { jcd: "18", name: "徳山" },
+  { jcd: "19", name: "下関" },
+  { jcd: "20", name: "若松" },
+  { jcd: "21", name: "芦屋" },
+  { jcd: "22", name: "福岡" },
+  { jcd: "23", name: "唐津" },
+  { jcd: "24", name: "大村" }
+];
 
 const VENUE_SLUG: Record<string, string> = {
   "01": "kiryu", "02": "toda", "03": "edogawa", "04": "heiwajima",
@@ -88,9 +107,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
 
   return (
     <div className="space-y-4">
-      {/* Venue grid */}
+      {/* Venue grid (1桐生〜24大村の絶対順序保持) */}
       <div className="grid grid-cols-4 gap-1.5 p-3 bg-slate-950/50 rounded-2xl border border-white/5">
-        {Object.entries(ALL_VENUES).map(([jcd, name]) => {
+        {VENUE_LIST.map(({ jcd, name }) => {
           const isActive = activeVenues.includes(jcd);
           const isSelected = jcd === selectedJcd;
           const key = `${jcd}_${selectedRno}`;
@@ -122,76 +141,6 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
           );
         })}
       </div>
-
-      {/* Loading */}
-      {loading && (
-        <div className="text-center py-3 text-sm text-slate-400 animate-pulse">
-          データ取得中...
-        </div>
-      )}
-
-      {/* Race buttons for selected venue */}
-      {selectedJcd && (
-        <div className="space-y-2">
-          <p className="text-sm font-bold text-slate-400">
-            {ALL_VENUES[selectedJcd]} — レース選択
-          </p>
-          <div className="grid grid-cols-6 gap-2">
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((rno) => {
-              const key = `${selectedJcd}_${rno}`;
-              const pred = predictions[key];
-              
-              // このレースの締切時間
-              const rTime = cutoffTimes?.[selectedJcd]?.[rno.toString()];
-              
-              // 現在時刻と締切時刻の比較（締切後3分経過で終了とみなす）
-              const now = new Date();
-              const currentMins = now.getHours() * 60 + now.getMinutes();
-              let isPast = false;
-              if (rTime) {
-                const parts = rTime.split(":");
-                if (parts.length === 2) {
-                  const raceMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                  if (currentMins > raceMins + 3) {
-                    isPast = true;
-                  }
-                }
-              }
-
-              // 展示完了(phase 2) かつ レース締切直前(isPast=false) のみ LIVE 表示
-              const hasLive = pred?.phase === 2 && !isPast;
-
-              return (
-                <button
-                  key={rno}
-                  onClick={() => handleRaceLink(selectedJcd, rno)}
-                  className={[
-                    "py-2 rounded-xl text-sm font-black transition-all border flex flex-col items-center justify-center",
-                    hasLive
-                      ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 animate-pulse"
-                      : rno === selectedRno
-                      ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300"
-                      : isPast
-                      ? "bg-slate-900/60 border-white/5 text-slate-500 opacity-60 hover:bg-slate-800 hover:opacity-100"
-                      : "bg-slate-800 border-white/5 text-slate-300 hover:bg-slate-700 hover:text-white",
-                  ].join(" ")}
-                >
-                  <span>{rno}R</span>
-                  {rTime && (
-                    <span className="block text-[9px] font-mono opacity-60 mt-0.5">{rTime}</span>
-                  )}
-                  {hasLive && (
-                    <span className="block text-xs font-bold text-emerald-400 mt-0.5">LIVE</span>
-                  )}
-                  {isPast && !hasLive && (
-                    <span className="block text-[9px] font-bold text-slate-500 mt-0.5">終了</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
