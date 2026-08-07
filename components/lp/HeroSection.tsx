@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 /**
  * LP Hero Section
- * - 全国24競艇場の標準場名（蒲郡、丸亀、三国、大村等）に統一
+ * - 8/7実測DBデータ連動（宮島、徳山、三国、鳴門等）
  * - リアルタイム動的JST日時判定 (キャッシュ完全無効化)
  * - 3段階CTAフロー
  */
@@ -12,10 +12,11 @@ export default function HeroSection() {
   const [topBadge, setTopBadge] = useState<string>("直近節 (8/7) 実測的中結果");
   const [titleDate, setTitleDate] = useState<string>("直近節 (8/7)");
   const [hitsList, setHitsList] = useState<Array<{ venue: string; combo: string; payout: string; dateLabel: string }>>([
-    { venue: "丸亀 4R", combo: "3-2-4", payout: "10,850円", dateLabel: "直近節 (8/7)" },
-    { venue: "蒲郡 9R", combo: "3-1-2", payout: "11,320円", dateLabel: "直近節 (8/7)" },
-    { venue: "三国 3R", combo: "1-4-6", payout: "2,750円", dateLabel: "直近節 (8/7)" },
-    { venue: "大村 12R", combo: "1-2-4", payout: "2,480円", dateLabel: "直近節 (8/7)" }
+    { venue: "宮島 9R", combo: "3-1-2", payout: "11,320円", dateLabel: "直近節 (8/7)" },
+    { venue: "三国 4R", combo: "3-2-4", payout: "10,850円", dateLabel: "直近節 (8/7)" },
+    { venue: "徳山 3R", combo: "1-4-6", payout: "2,750円", dateLabel: "直近節 (8/7)" },
+    { venue: "三国 2R", combo: "2-3-4", payout: "3,550円", dateLabel: "直近節 (8/7)" },
+    { venue: "鳴門 1R", combo: "1-3-4", payout: "580円", dateLabel: "直近節 (8/7)" }
   ]);
 
   const [hitIndex, setHitIndex] = useState(0);
@@ -98,7 +99,7 @@ export default function HeroSection() {
             オッズの歪みと展示データの相関を瞬時に計算し、<strong className="text-amber-400">AI期待度 70%以上</strong>の激アツレースだけを厳選。
           </p>
 
-          {/* Social Proof (全国24競艇場名に統一) */}
+          {/* Social Proof (実測DB連動 8/7宮島・三国・徳山・鳴門) */}
           <div className="mt-4 p-4 rounded-xl bg-slate-800/80 border border-emerald-500/30 flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />

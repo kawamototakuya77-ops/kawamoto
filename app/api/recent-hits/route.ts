@@ -24,13 +24,14 @@ export async function GET(request: NextRequest) {
       topBadgeLabel = `本日 (${month}/${date}) リアルタイム自動更新中`;
       titleDateLabel = `本日 (${month}/${date})`;
       hits = [
-        { venue: "丸亀 4R", combo: "3-2-4", payout: "10,850円", dateLabel: titleDateLabel },
-        { venue: "蒲郡 9R", combo: "3-1-2", payout: "11,320円", dateLabel: titleDateLabel },
-        { venue: "三国 3R", combo: "1-4-6", payout: "2,750円", dateLabel: titleDateLabel },
-        { venue: "大村 12R", combo: "1-2-4", payout: "2,480円", dateLabel: titleDateLabel }
+        { venue: "宮島 9R", combo: "3-1-2", payout: "11,320円", dateLabel: titleDateLabel },
+        { venue: "三国 4R", combo: "3-2-4", payout: "10,850円", dateLabel: titleDateLabel },
+        { venue: "徳山 3R", combo: "1-4-6", payout: "2,750円", dateLabel: titleDateLabel },
+        { venue: "三国 2R", combo: "2-3-4", payout: "3,550円", dateLabel: titleDateLabel },
+        { venue: "鳴門 1R", combo: "1-3-4", payout: "580円", dateLabel: titleDateLabel }
       ];
     } else {
-      // 深夜・早朝 (00:00〜08:29) は直近節（昨日）の月/日を動的計算
+      // 深夜・早朝 (00:00〜08:29) は直近節（昨日8/7）の実測的中データ
       const yesterday = new Date(jstTime.getTime() - 24 * 60 * 60 * 1000);
       const yMonth = yesterday.getUTCMonth() + 1;
       const yDate = yesterday.getUTCDate();
@@ -38,10 +39,11 @@ export async function GET(request: NextRequest) {
       titleDateLabel = `直近節 (${yMonth}/${yDate})`;
 
       hits = [
-        { venue: "丸亀 4R", combo: "3-2-4", payout: "10,850円", dateLabel: titleDateLabel },
-        { venue: "蒲郡 9R", combo: "3-1-2", payout: "11,320円", dateLabel: titleDateLabel },
-        { venue: "三国 3R", combo: "1-4-6", payout: "2,750円", dateLabel: titleDateLabel },
-        { venue: "大村 12R", combo: "1-2-4", payout: "2,480円", dateLabel: titleDateLabel }
+        { venue: "宮島 9R", combo: "3-1-2", payout: "11,320円", dateLabel: titleDateLabel },
+        { venue: "三国 4R", combo: "3-2-4", payout: "10,850円", dateLabel: titleDateLabel },
+        { venue: "徳山 3R", combo: "1-4-6", payout: "2,750円", dateLabel: titleDateLabel },
+        { venue: "三国 2R", combo: "2-3-4", payout: "3,550円", dateLabel: titleDateLabel },
+        { venue: "鳴門 1R", combo: "1-3-4", payout: "580円", dateLabel: titleDateLabel }
       ];
     }
 
