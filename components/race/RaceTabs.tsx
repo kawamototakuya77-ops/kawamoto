@@ -269,7 +269,7 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               };
 
               return data.data.map((racer) => {
-                const stats = racer.stats;
+                const stats = racer.stats || racer;
                 const rScore = racer.regNo ? globalScores[racer.regNo] : null;
 
                 return (
