@@ -140,7 +140,7 @@ function PredictionTab({ data, loading }: { data: PredictionData | null; loading
       {/* Escape rate */}
       <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-400 font-bold mb-1">イン逃げ期待度</p>
+          <p className="text-sm text-slate-400 font-bold mb-1">AI期待度</p>
           <p className="text-3xl font-black font-outfit text-indigo-300">
             {ai.escape_rate ?? "--"}%
           </p>
@@ -301,15 +301,27 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                       {rScore ? Math.round(rScore.escape) : "--"}
                     </td>
 
-                  {/* 艇国DBデータ */}
+                  {/* 艇国DBデータ (100%全キー救済マッピング) */}
                   <td className="p-2 text-center text-xs font-bold text-white">
-                    {stats?.course_top2_rate ? `${Number(stats.course_top2_rate).toFixed(1)}%` : "--"}
+                    {(() => {
+                      const val = stats?.course_top2_rate ?? (stats as any)?.course_win_rate ?? (stats as any)?.course_rate;
+                      if (val === undefined || val === null || val === "" || val === "--") return "--";
+                      return `${Number(val).toFixed(1)}%`;
+                    })()}
                   </td>
                   <td className="p-2 text-center text-xs font-bold text-white">
-                    {stats?.venue_win_rate ? `${Number(stats.venue_win_rate).toFixed(1)}%` : "--"}
+                    {(() => {
+                      const val = stats?.venue_win_rate ?? (stats as any)?.local_win_rate ?? (stats as any)?.local_rate ?? (stats as any)?.place_win_rate;
+                      if (val === undefined || val === null || val === "" || val === "--") return "--";
+                      return `${Number(val).toFixed(1)}%`;
+                    })()}
                   </td>
                   <td className="p-2 text-center text-xs font-bold text-white">
-                    {stats?.course_st_rank ? Number(stats.course_st_rank).toFixed(2) : "--"}
+                    {(() => {
+                      const val = stats?.course_st_rank ?? (stats as any)?.st_rank ?? (stats as any)?.st_order ?? (stats as any)?.course_st_order;
+                      if (val === undefined || val === null || val === "" || val === "--") return "--";
+                      return Number(val).toFixed(2);
+                    })()}
                   </td>
 
                   {/* ペナルティ & 戦法 */}
