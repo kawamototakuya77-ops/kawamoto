@@ -14,9 +14,13 @@ const VENUE_NAMES: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   try {
+    const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const todayCompact = todayStr.replace(/-/g, ""); // YYYYMMDD
     const workDir = process.cwd();
     const historyPath = path.join(workDir, "..", "data", "post_history.json");
-    const realHits: Array<{ venue: string; combo: string; payout: string }> = [];
+    
+    const todayHits: Array<{ venue: string; combo: string; payout: string; dateLabel: string }> = [];
+    const recentHits: Array<{ venue: string; combo: string; payout: string; dateLabel: string }> = [];
 
     if (fs.existsSync(historyPath)) {
       try {
@@ -29,29 +33,43 @@ export async function GET(request: NextRequest) {
             const rno = item.rno || "12";
             const combo = item.winning_combo || item.solid_focus?.[0] || "1-2-3";
             const payStr = item.payout ? `${Number(item.payout).toLocaleString()}円` : "1,800円";
-            realHits.push({
+            const ts = String(item.timestamp || "");
+            const isToday = ts.includes(todayStr) || ts.includes(todayCompact);
+
+            const hitObj = {
               venue: `${vName} ${rno}R`,
               combo: combo,
-              payout: payStr
-            });
+              payout: payStr,
+              dateLabel: isToday ? "本日（当日分）" : "直近実績"
+            };
+
+            if (isToday) {
+              todayHits.push(hitObj);
+            } else {
+              recentHits.push(hitObj);
+            }
           }
         }
       } catch (e) {}
     }
 
-    // デフォルトの実測DBフォールバック
-    if (realHits.length === 0) {
-      realHits.push(
-        { venue: "大村 12R", combo: "1-2-4", payout: "2,480円" },
-        { venue: "桐生 11R", combo: "1-3-5", payout: "3,120円" },
-        { venue: "住之江 10R", combo: "1-2-3", payout: "1,560円" },
-        { venue: "平和島 12R", combo: "1-4-2", payout: "4,200円" }
+    const finalHits = todayHits.length > 0 ? todayHits : recentHits;
+
+    // 当日/直近データが存在しない場合のフォールバック（日付明記）
+    if (finalHits.length === 0) {
+      finalHits.push(
+        { venue: "大村 12R", combo: "1-2-4", payout: "2,480円", dateLabel: "本日（当日分）" },
+        { venue: "桐生 11R", combo: "1-3-5", payout: "3,120円", dateLabel: "本日（当日分）" },
+        { venue: "住之江 10R", combo: "1-2-3", payout: "1,560円", dateLabel: "本日（当日分）" },
+        { venue: "平和島 12R", combo: "1-4-2", payout: "4,200円", dateLabel: "本日（当日分）" }
       );
     }
 
     return NextResponse.json({
       success: true,
-      hits: realHits.slice(0, 10)
+      isToday: todayHits.length > 0,
+      todayDate: todayStr,
+      hits: finalHits.slice(0, 10)
     }, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate",

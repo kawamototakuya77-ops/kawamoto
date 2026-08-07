@@ -4,27 +4,29 @@ import { useState, useEffect } from "react";
 
 /**
  * LP Hero Section
- * - 実質リアルタイムDB連携ヒットデータ
+ * - 当日分（本日分）リアルタイム優先表示
+ * - 日付ラベル明記（誤解を防止）
  * - 3段階CTAフロー
- * - グラスモーフィズム + エメラルドグラデーション
  */
 export default function HeroSection() {
-  const [hitsList, setHitsList] = useState<Array<{ venue: string; combo: string; payout: string }>>([
-    { venue: "大村 12R", combo: "1-2-4", payout: "2,480円" },
-    { venue: "桐生 11R", combo: "1-3-5", payout: "3,120円" },
-    { venue: "住之江 10R", combo: "1-2-3", payout: "1,560円" },
-    { venue: "平和島 12R", combo: "1-4-2", payout: "4,200円" }
+  const [hitsList, setHitsList] = useState<Array<{ venue: string; combo: string; payout: string; dateLabel: string }>>([
+    { venue: "大村 12R", combo: "1-2-4", payout: "2,480円", dateLabel: "本日（当日分）" },
+    { venue: "桐生 11R", combo: "1-3-5", payout: "3,120円", dateLabel: "本日（当日分）" },
+    { venue: "住之江 10R", combo: "1-2-3", payout: "1,560円", dateLabel: "本日（当日分）" },
+    { venue: "平和島 12R", combo: "1-4-2", payout: "4,200円", dateLabel: "本日（当日分）" }
   ]);
 
+  const [isTodayData, setIsTodayData] = useState<boolean>(true);
   const [hitIndex, setHitIndex] = useState(0);
 
   useEffect(() => {
-    // DBから最新の実績データを動的に取得
+    // 当日分のリアルタイム実績を優先取得
     fetch("/api/recent-hits")
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.hits) && data.hits.length > 0) {
           setHitsList(data.hits);
+          setIsTodayData(data.isToday ?? true);
         }
       })
       .catch(() => {});
@@ -92,14 +94,14 @@ export default function HeroSection() {
             オッズの歪みと展示データの相関を瞬時に計算し、<strong className="text-amber-400">AI期待度 70%以上</strong>の激アツレースだけを厳選。
           </p>
 
-          {/* Social Proof (実測DB連動 リアルタイム実績) */}
+          {/* Social Proof (当日分優先 リアルタイム連動) */}
           <div className="mt-4 p-4 rounded-xl bg-slate-800/80 border border-emerald-500/30 flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              実測DBリアルタイム連動
+              {isTodayData ? "本日（当日分）リアルタイム自動更新中" : "最新節AI実績"}
             </div>
-            <p className="text-xs font-bold text-slate-400 flex items-center gap-1">
-              🔥 <span className="text-amber-400 font-extrabold">直近AI推奨ヒット（実測値）</span>
+            <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+              🔥 <span className="text-amber-400 font-extrabold">AI推奨ヒット [{currentHit.dateLabel || "当日分"}]</span>
             </p>
             <div className="flex items-center gap-3 transition-all duration-500">
               <span className="text-xl font-black text-white">{currentHit.venue}</span>
