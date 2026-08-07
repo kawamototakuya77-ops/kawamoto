@@ -269,6 +269,9 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               <th className="p-2 font-bold text-center text-indigo-300/80">AI ST</th>
               <th className="p-2 font-bold text-center text-amber-300/80">AI旋回</th>
               <th className="p-2 font-bold text-center text-orange-300/80">イン信頼</th>
+              <th className="p-2 font-bold text-center text-blue-300/80">差し</th>
+              <th className="p-2 font-bold text-center text-amber-300/80">まくり</th>
+              <th className="p-2 font-bold text-center text-purple-300/80">まくり差し</th>
               <th className="p-2 font-bold text-center">コース勝率</th>
               <th className="p-2 font-bold text-center">当地勝率</th>
               <th className="p-2 font-bold text-center">ST順位</th>
@@ -326,7 +329,16 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                       {rScore ? Math.round(rScore.turn) : "--"}
                     </td>
                     <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('escape', rScore.escape)) : 'text-slate-500'}`}>
-                      {rScore ? Math.round(rScore.escape) : "--"}
+                      {rScore ? Math.round(rScore.escape) : (racer.lane === 1 ? Math.round(Number(racer.rate || 5) * 12) : Math.round(Number(racer.rate || 5) * 4))}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('turn', rScore.turn * 0.95)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.turn * 0.95) : Math.round(Number(racer.rate || 5) * 9.5)}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('turn', rScore.turn * 0.90)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.turn * 0.90) : Math.round(Number(racer.rate || 5) * 9.0)}
+                    </td>
+                    <td className={`p-2 text-center text-[11px] font-outfit ${rScore ? getScoreColor(getRank('turn', rScore.turn * 0.85)) : 'text-slate-500'}`}>
+                      {rScore ? Math.round(rScore.turn * 0.85) : Math.round(Number(racer.rate || 5) * 8.5)}
                     </td>
 
                   {/* 艇国DBデータ (100%全キー救済マッピング) */}
@@ -353,8 +365,14 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                   </td>
 
                   {/* ペナルティ & 戦法 */}
-                  <td className="p-2 text-center text-[10px] font-bold text-amber-500">
-                    F{Number((stats as any)?.f_count ?? (racer as any)?.f_count ?? 0)} / L{Number((stats as any)?.l_count ?? (racer as any)?.l_count ?? 0)}
+                  <td className="p-2 text-center text-[10px] font-bold text-amber-500 font-mono">
+                    {(() => {
+                      const f = Number((stats as any)?.f_count ?? (racer as any)?.f_count ?? (stats as any)?.f ?? 0);
+                      const l = Number((stats as any)?.l_count ?? (racer as any)?.l_count ?? (stats as any)?.l ?? 0);
+                      const safeF = isNaN(f) ? 0 : f;
+                      const safeL = isNaN(l) ? 0 : l;
+                      return `F${safeF} / L${safeL}`;
+                    })()}
                   </td>
 
                   {/* 展示・オリ展データ (100%全キー救済マッピング) */}
