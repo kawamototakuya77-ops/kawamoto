@@ -169,7 +169,7 @@ function PredictionTab({ data, loading }: { data: PredictionData | null; loading
                 <span className="text-lg font-black text-blue-200 font-outfit">{sashiStr}</span>
               </div>
               <div className="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30">
-                <span className="block text-[10px] text-amber-300 font-bold mb-0.5">まくり (3-4C)</span>
+                <span className="block text-[10px] text-amber-300 font-bold mb-0.5">まくり (2-4C)</span>
                 <span className="text-lg font-black text-amber-200 font-outfit">{makuriStr}</span>
               </div>
               <div className="bg-purple-500/10 p-2.5 rounded-xl border border-purple-500/30">
