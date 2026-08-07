@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAllPredictions } from "@/hooks/useLivePrediction";
 import { useRouter } from "next/navigation";
 
@@ -50,6 +50,14 @@ interface Props {
 export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props) {
   const { activeVenues, predictions, cutoffTimes, loading } = useAllPredictions();
   const router = useRouter();
+  const [currentJcd, setCurrentJcd] = useState<string>(selectedJcd || "10");
+
+  // デフォルトの締め切り時刻マップ
+  const defaultCutoffTimes: Record<string, string> = {
+    "1": "08:32", "2": "08:58", "3": "09:24", "4": "09:50",
+    "5": "10:18", "6": "10:50", "7": "11:20", "8": "11:52",
+    "9": "12:27", "10": "12:59", "11": "13:35", "12": "14:09"
+  };
 
   // 直近のレース時間を計算する関数
   const getNextCutoff = (jcd: string) => {
@@ -78,7 +86,7 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
 
   // 初期ロード時に直近のレースがある場を自動選択
   useEffect(() => {
-    if (!selectedJcd && activeVenues.length > 0 && cutoffTimes) {
+    if (activeVenues.length > 0 && cutoffTimes) {
       let closestJcd = activeVenues[0];
       let globalMinDiff = Infinity;
       
@@ -90,13 +98,21 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
         }
       });
       
-      if (closestJcd) {
+      if (closestJcd && !selectedJcd) {
+        setCurrentJcd(closestJcd);
         onSelect(closestJcd);
       }
     }
-  }, [selectedJcd, activeVenues, cutoffTimes, onSelect]);
+  }, [activeVenues, cutoffTimes]);
+
+  useEffect(() => {
+    if (selectedJcd) {
+      setCurrentJcd(selectedJcd);
+    }
+  }, [selectedJcd]);
 
   const handleVenueClick = (jcd: string) => {
+    setCurrentJcd(jcd);
     onSelect(jcd);
   };
 
@@ -105,17 +121,16 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     router.push(`/race/${slug}-${rno}r`);
   };
 
+  const selectedVenueObj = VENUE_LIST.find(v => v.jcd === currentJcd) || VENUE_LIST[9]; // デフォルト三国
+  const timesMap = (cutoffTimes && cutoffTimes[currentJcd]) ? cutoffTimes[currentJcd] : defaultCutoffTimes;
+
   return (
-    <div className="space-y-4">
-      {/* Venue grid (1桐生〜24大村の絶対順序保持) */}
+    <div className="space-y-6">
+      {/* 24競艇場 グリッド (1桐生〜24大村の絶対順序保持) */}
       <div className="grid grid-cols-4 gap-1.5 p-3 bg-slate-950/50 rounded-2xl border border-white/5">
         {VENUE_LIST.map(({ jcd, name }) => {
           const isActive = activeVenues.includes(jcd);
-          const isSelected = jcd === selectedJcd;
-          const key = `${jcd}_${selectedRno}`;
-          const pred = predictions[key];
-          const phase = pred?.phase ?? 0;
-          
+          const isSelected = jcd === currentJcd;
           const nextCutoff = isActive ? getNextCutoff(jcd) : null;
 
           return (
@@ -125,10 +140,10 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
               className={[
                 "relative py-2 px-1 rounded-xl text-sm font-bold transition-all text-center flex flex-col items-center justify-center min-h-[4rem]",
                 isSelected
-                  ? "bg-emerald-500/20 border-2 border-emerald-500/70 text-emerald-300"
+                  ? "bg-emerald-500/20 border-2 border-emerald-500/70 text-emerald-300 scale-[1.02]"
                   : isActive
-                  ? "bg-slate-800/80 border border-emerald-500/40 text-white hover:bg-slate-700"
-                  : "bg-slate-900/40 border border-white/5 text-slate-600",
+                  ? "bg-slate-800/80 border border-emerald-500/40 text-white hover:bg-slate-700 cursor-pointer"
+                  : "bg-slate-900/40 border border-white/5 text-slate-600 cursor-pointer hover:border-white/20",
               ].join(" ")}
             >
               <span className="block">{name}</span>
@@ -140,6 +155,37 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
             </button>
           );
         })}
+      </div>
+
+      {/* 1R〜12R レース選択グリッド */}
+      <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-black text-white flex items-center gap-2">
+            <span>{selectedVenueObj.name}</span>
+            <span className="text-slate-400 font-normal text-sm">— レース選択</span>
+          </h3>
+          <span className="text-xs text-slate-400">タップで詳細予想へ</span>
+        </div>
+
+        <div className="grid grid-cols-6 gap-2">
+          {Array.from({ length: 12 }, (_, i) => i + 1).map((rno) => {
+            const timeStr = timesMap[String(rno)] || timesMap[rno] || "締切前";
+            return (
+              <button
+                key={rno}
+                onClick={() => handleRaceLink(currentJcd, rno)}
+                className="py-3 px-2 rounded-xl bg-slate-800/80 hover:bg-emerald-500/20 hover:border-emerald-500/50 border border-slate-700/60 text-center transition-all group flex flex-col items-center justify-center gap-1 active:scale-95"
+              >
+                <span className="text-base font-black text-white group-hover:text-emerald-400">
+                  {rno}R
+                </span>
+                <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-emerald-300">
+                  {timeStr}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
