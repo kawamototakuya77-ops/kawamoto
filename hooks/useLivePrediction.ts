@@ -139,6 +139,11 @@ function mapGasCache(
       loop_time: (r.loop_time ?? r.lap_time ?? r.lap ?? "") as string,
       turn_time: (r.turn_time ?? r.turn ?? "") as string,
       straight_time: (r.straight_time ?? r.straight ?? "") as string,
+      stats: (r.stats as Record<string, unknown> | undefined) ?? {
+        course_top2_rate: r.course_top2_rate ?? r.course_win_rate ?? r.course_rate,
+        venue_win_rate: r.venue_win_rate ?? r.local_win_rate ?? r.local_rate,
+        course_st_rank: r.course_st_rank ?? r.st_rank ?? r.st_order,
+      },
     })),
     weather: (cache.weather ?? null) as {
       weather: string; temp: string; wind_speed: string;

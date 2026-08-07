@@ -19,8 +19,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get("action");
 
-
-
   const params = searchParams.toString();
 
   try {
