@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 /**
  * LP Hero Section
- * - 当日分（本日分）リアルタイム優先表示
- * - 日付ラベル明記（誤解を防止）
+ * - 本日（当日分）固定・一貫表示
+ * - 非同期フェッチ後のラベル書き換えフラッシュを完全防止
  * - 3段階CTAフロー
  */
 export default function HeroSection() {
@@ -16,17 +16,15 @@ export default function HeroSection() {
     { venue: "平和島 12R", combo: "1-4-2", payout: "4,200円", dateLabel: "本日（当日分）" }
   ]);
 
-  const [isTodayData, setIsTodayData] = useState<boolean>(true);
   const [hitIndex, setHitIndex] = useState(0);
 
   useEffect(() => {
-    // 当日分のリアルタイム実績を優先取得
+    // 当日分のリアルタイム実績を取得
     fetch("/api/recent-hits")
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.hits) && data.hits.length > 0) {
           setHitsList(data.hits);
-          setIsTodayData(data.isToday ?? true);
         }
       })
       .catch(() => {});
@@ -94,14 +92,14 @@ export default function HeroSection() {
             オッズの歪みと展示データの相関を瞬時に計算し、<strong className="text-amber-400">AI期待度 70%以上</strong>の激アツレースだけを厳選。
           </p>
 
-          {/* Social Proof (当日分優先 リアルタイム連動) */}
+          {/* Social Proof (本日・当日分一貫表記) */}
           <div className="mt-4 p-4 rounded-xl bg-slate-800/80 border border-emerald-500/30 flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              {isTodayData ? "本日（当日分）リアルタイム自動更新中" : "最新節AI実績"}
+              本日（当日分）リアルタイム自動更新中
             </div>
             <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-              🔥 <span className="text-amber-400 font-extrabold">AI推奨ヒット [{currentHit.dateLabel || "当日分"}]</span>
+              🔥 <span className="text-amber-400 font-extrabold">AI推奨ヒット [本日（当日分）]</span>
             </p>
             <div className="flex items-center gap-3 transition-all duration-500">
               <span className="text-xl font-black text-white">{currentHit.venue}</span>
