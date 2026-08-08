@@ -122,32 +122,51 @@ function mapGasCache(
       upset_focus: ((ai.upset_focus ?? active.upset_focus ?? []) as string[]),
       comment: (active.comment ?? ai.comment ?? active.ai_comment ?? "") as string,
       recommendation_reason: ((active.recommendation_reason ?? ai.recommendation_reason ?? "") as string),
+  const beforeRacers = ((cache.before_data as any)?.racers ?? {}) as Record<string, any>;
+
+  return {
+    phase,
+    ai: {
+      escape_rate: (ai.escape_rate ?? active.escape_rate ?? fp.escape_rate ?? null) as string | null,
+      confidence: (active.confidence ?? ai.confidence ?? null) as string | null,
+      solid_focus: ((ai.solid_focus ?? active.solid_focus ?? ai.focus ?? []) as string[]),
+      upset_focus: ((ai.upset_focus ?? active.upset_focus ?? []) as string[]),
+      comment: (active.comment ?? ai.comment ?? active.ai_comment ?? "") as string,
+      recommendation_reason: ((active.recommendation_reason ?? ai.recommendation_reason ?? "") as string),
       ev_details: ((active.ev_details ?? ai.ev_details ?? {}) as Record<string, number>),
     },
-    data: racerArray.map((r) => ({
-      lane: r.lane as number,
-      name: r.name as string,
-      regNo: String(r.regNo ?? r.toban ?? r.id ?? ""),
-      cls: r.cls as string,
-      rate: r.rate as string,
-      motor_rate: r.motor_rate as string,
-      f_count: r.f_count ?? (r.stats as any)?.f_count ?? 0,
-      l_count: r.l_count ?? (r.stats as any)?.l_count ?? 0,
-      avg_st: r.avg_st ?? (r.stats as any)?.avg_st ?? "",
-      ex_time: (r.ex_time ?? r.exhibition_time ?? "") as string,
-      st_val: (r.st_val ?? r.st ?? "") as string,
-      tilt: (r.tilt ?? "") as string,
-      score_grade: (r.score_grade as "S" | "A" | "B" | "C" | "D" | undefined),
-      lap_time: (r.loop_time ?? r.lap_time ?? r.lap ?? "") as string,
-      loop_time: (r.loop_time ?? r.lap_time ?? r.lap ?? "") as string,
-      turn_time: (r.turn_time ?? r.turn ?? "") as string,
-      straight_time: (r.straight_time ?? r.straight ?? "") as string,
-      stats: (r.stats as Record<string, unknown> | undefined) ?? {
-        course_top2_rate: r.course_top2_rate ?? r.course_win_rate ?? r.course_rate,
-        venue_win_rate: r.venue_win_rate ?? r.local_win_rate ?? r.local_rate,
-        course_st_rank: r.course_st_rank ?? r.st_rank ?? r.st_order,
-      },
-    })),
+    data: racerArray.map((r) => {
+      const laneNum = r.lane as number;
+      const bEx = beforeRacers[laneNum] || beforeRacers[String(laneNum)] || {};
+      const loopTime = (r.loop_time ?? r.lap_time ?? r.lap ?? bEx.loop_time ?? "N/A") as string;
+      const turnTime = (r.turn_time ?? r.turn ?? bEx.turn_time ?? "N/A") as string;
+      const straightTime = (r.straight_time ?? r.straight ?? bEx.straight_time ?? "N/A") as string;
+
+      return {
+        lane: laneNum,
+        name: r.name as string,
+        regNo: String(r.regNo ?? r.toban ?? r.id ?? ""),
+        cls: r.cls as string,
+        rate: r.rate as string,
+        motor_rate: r.motor_rate as string,
+        f_count: r.f_count ?? (r.stats as any)?.f_count ?? 0,
+        l_count: r.l_count ?? (r.stats as any)?.l_count ?? 0,
+        avg_st: r.avg_st ?? (r.stats as any)?.avg_st ?? "",
+        ex_time: (r.ex_time ?? r.exhibition_time ?? bEx.ex_time ?? "") as string,
+        st_val: (r.st_val ?? r.st ?? "") as string,
+        tilt: (r.tilt ?? bEx.tilt ?? "") as string,
+        score_grade: (r.score_grade as "S" | "A" | "B" | "C" | "D" | undefined),
+        lap_time: loopTime,
+        loop_time: loopTime,
+        turn_time: turnTime,
+        straight_time: straightTime,
+        stats: (r.stats as Record<string, unknown> | undefined) ?? {
+          course_top2_rate: r.course_top2_rate ?? r.course_win_rate ?? r.course_rate,
+          venue_win_rate: r.venue_win_rate ?? r.local_win_rate ?? r.local_rate,
+          course_st_rank: r.course_st_rank ?? r.st_rank ?? r.st_order,
+        },
+      };
+    }),
     weather: (cache.weather ?? null) as {
       weather: string; temp: string; wind_speed: string;
       wind_dir_name: string; water_temp: string; wave_height: string;
