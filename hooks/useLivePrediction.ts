@@ -25,9 +25,9 @@ export function useLivePrediction(jcd: string, rno: number) {
     has_phase1?: boolean;
     has_phase2?: boolean;
   }>(key, fetcher, {
-    refreshInterval: 30_000,
+    refreshInterval: 10_000,
     revalidateOnFocus: true,
-    dedupingInterval: 10_000,
+    dedupingInterval: 2_000,
   });
 
   // GAS の cache フィールドを PredictionData 形式に変換

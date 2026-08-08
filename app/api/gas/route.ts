@@ -27,8 +27,7 @@ export async function GET(request: NextRequest) {
     const url = params ? `${GAS_API_URL}?${params}` : GAS_API_URL;
     const res = await fetch(url, {
       headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
-      // Next.js のデータキャッシュ: 30秒間は再フェッチしない
-      next: { revalidate: 30 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -41,8 +40,9 @@ export async function GET(request: NextRequest) {
     const data = await res.json();
     return NextResponse.json(data, {
       headers: {
-        // ブラウザキャッシュ: 20秒
-        "Cache-Control": "public, s-maxage=20, stale-while-revalidate=30",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
       },
     });
   } catch (err) {
