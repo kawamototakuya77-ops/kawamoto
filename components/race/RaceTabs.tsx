@@ -301,7 +301,8 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
 
               return data.data.map((racer) => {
                 const stats = racer.stats || racer;
-                const rScore = racer.regNo ? globalScores[racer.regNo] : null;
+                const regNoKey = racer.regNo ? String(racer.regNo) : "";
+                const rScore = regNoKey ? (globalScores[regNoKey] || globalScores[Number(regNoKey)]) : null;
 
                 return (
                   <tr key={racer.lane} className="hover:bg-white/[0.02] transition-colors group">
