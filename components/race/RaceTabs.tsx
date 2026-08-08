@@ -368,13 +368,18 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                       return score.toFixed(2);
                     })()}
                   </td>
-                  <td className="p-2 text-center text-xs font-bold text-white">
+                  <td className="p-2 text-center text-xs font-bold text-white font-outfit">
                     {(() => {
-                      const raw = stats?.course_st_rank || (stats as any)?.st_rank || (stats as any)?.st_order || (stats as any)?.course_st_order;
-                      const val = (raw !== undefined && raw !== null && raw !== "" && raw !== "--")
-                        ? Number(raw)
-                        : (2.40 + racer.lane * 0.25);
-                      return val.toFixed(2);
+                      const raw = stats?.course_st_rank ?? (stats as any)?.st_rank ?? (stats as any)?.st_order;
+                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--") {
+                        const num = Number(raw);
+                        if (!isNaN(num)) return num.toFixed(2);
+                      }
+                      const stVal = parseFloat(String(racer.avg_st || 0.17));
+                      const baseRank = (stVal - 0.10) * 32.0 + 1.5;
+                      const courseAdj = racer.lane === 1 ? -0.4 : racer.lane <= 3 ? -0.2 : racer.lane >= 5 ? 0.3 : 0.0;
+                      const calcRank = Math.min(6.0, Math.max(1.0, baseRank + courseAdj));
+                      return calcRank.toFixed(2);
                     })()}
                   </td>
 
