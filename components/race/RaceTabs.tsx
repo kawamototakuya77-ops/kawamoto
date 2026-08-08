@@ -272,8 +272,8 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               <th className="p-2 font-bold text-center text-blue-300/80">差し</th>
               <th className="p-2 font-bold text-center text-amber-300/80">まくり</th>
               <th className="p-2 font-bold text-center text-purple-300/80">まくり差し</th>
-              <th className="p-2 font-bold text-center">コース勝率</th>
-              <th className="p-2 font-bold text-center">当地勝率</th>
+              <th className="p-2 font-bold text-center text-emerald-300">コース2連率</th>
+              <th className="p-2 font-bold text-center text-cyan-300">当地勝率</th>
               <th className="p-2 font-bold text-center">ST順位</th>
               <th className="p-2 font-bold text-center">F/L</th>
               <th className="p-2 font-bold text-center">展示ST</th>
