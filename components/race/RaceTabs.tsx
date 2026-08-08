@@ -342,44 +342,37 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
                       {rScore ? Math.round(rScore.turn * 0.85) : Math.round(Number(racer.rate || 5) * 8.5)}
                     </td>
 
-                  {/* コース2連対率 (%) */}
+                  {/* コース2連率 (%) */}
                   <td className="p-2 text-center text-xs font-bold text-white font-outfit">
                     {(() => {
                       const raw = stats?.course_top2_rate ?? (stats as any)?.course_win_rate ?? (stats as any)?.course_rate;
-                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--") {
+                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--" && raw !== "N/A") {
                         const num = Number(raw);
-                        if (!isNaN(num)) return `${num.toFixed(1)}%`;
+                        if (!isNaN(num) && num > 0) return `${num.toFixed(1)}%`;
                       }
-                      const basePct = Number(racer.rate || 5.0) * 8.5;
-                      const laneAdj = racer.lane === 1 ? 15 : racer.lane === 2 ? 5 : 0;
-                      const pct = Math.min(88.0, Math.max(12.0, basePct + laneAdj));
-                      return `${pct.toFixed(1)}%`;
+                      return "--";
                     })()}
                   </td>
-                  {/* 当地勝率 (競艇出走表標準: 0.00〜10.00 勝率スコア) */}
+                  {/* 当地勝率 (0.00〜10.00 勝率スコア) */}
                   <td className="p-2 text-center text-xs font-bold text-white font-outfit">
                     {(() => {
                       const raw = stats?.venue_win_rate ?? (stats as any)?.local_win_rate ?? (stats as any)?.local_rate ?? (stats as any)?.place_win_rate;
-                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--") {
+                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--" && raw !== "N/A") {
                         const num = Number(raw);
-                        if (!isNaN(num)) return num > 10 ? `${num.toFixed(1)}%` : num.toFixed(2);
+                        if (!isNaN(num) && num > 0) return num > 10 ? `${num.toFixed(1)}%` : num.toFixed(2);
                       }
-                      const score = Math.min(9.50, Math.max(1.00, Number(racer.rate || 5.0) * 0.95));
-                      return score.toFixed(2);
+                      return "--";
                     })()}
                   </td>
+                  {/* ST順位 (コース別平均ST順位) */}
                   <td className="p-2 text-center text-xs font-bold text-white font-outfit">
                     {(() => {
                       const raw = stats?.course_st_rank ?? (stats as any)?.st_rank ?? (stats as any)?.st_order;
-                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--") {
+                      if (raw !== undefined && raw !== null && raw !== "" && raw !== "--" && raw !== "N/A") {
                         const num = Number(raw);
-                        if (!isNaN(num)) return num.toFixed(2);
+                        if (!isNaN(num) && num > 0) return num.toFixed(2);
                       }
-                      const stVal = parseFloat(String(racer.avg_st || 0.17));
-                      const baseRank = (stVal - 0.10) * 32.0 + 1.5;
-                      const courseAdj = racer.lane === 1 ? -0.4 : racer.lane <= 3 ? -0.2 : racer.lane >= 5 ? 0.3 : 0.0;
-                      const calcRank = Math.min(6.0, Math.max(1.0, baseRank + courseAdj));
-                      return calcRank.toFixed(2);
+                      return "--";
                     })()}
                   </td>
 
