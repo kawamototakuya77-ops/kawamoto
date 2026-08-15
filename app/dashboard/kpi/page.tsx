@@ -285,7 +285,7 @@ export default function KPIDashboard() {
                 <span className="text-xs text-slate-400">件</span>
               </div>
               <div className="text-[10px] text-slate-500 mt-2">
-                3日間無料体験
+                いつでも解約可能
               </div>
             </div>
 
@@ -390,7 +390,7 @@ export default function KPIDashboard() {
               1日100PV未満の場合、Xの朝1回投稿文面やSNSショート動画のフックをAIが自動テコ入れ。
             </div>
             <div className="p-3 rounded-lg bg-slate-950/60 border border-white/5">
-              <span className="font-bold text-white block mb-1">2. 転換（無料体験数）</span>
+              <span className="font-bold text-white block mb-1">2. 転換（解禁数）</span>
               PVに対して無料トライアル数が3%未満の場合、LINE展示直後通知の文面をAIが自動最適化。
             </div>
           </div>

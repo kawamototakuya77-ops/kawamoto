@@ -14,11 +14,11 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   // 開発・検証用認証ゲート通過
-  const mockUser = { name: "Admin User", email: "kawamototakuya77@gmail.com" };
+  
 
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden w-full">
-      <DashboardHeader user={mockUser} />
+      <DashboardHeader user={{ email: "guest@kyotei-ai.com", name: "ゲスト" }} />
       <main className="w-full max-w-md mx-auto px-3 pt-14 pb-12 overflow-x-hidden space-y-3">
         {children}
       </main>

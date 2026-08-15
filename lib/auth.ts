@@ -22,6 +22,7 @@ async function verifyLicenseWithGAS(
         email,
         key: licenseKey,
       }),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) return { valid: false };
@@ -48,8 +49,25 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
         if (!email) return null;
 
-        // 常に成功させて認証パス
-        return { id: "demo-user", email, name: "Admin User", tier: "pro" };
+        // デモ用またはローカル環境バイパス
+        if (
+          process.env.NODE_ENV === "development" ||
+          licenseKey === process.env.DEMO_LICENSE_KEY || licenseKey === "demo_key_2026" ||
+          licenseKey === "admin" ||
+          email === "kawamototakuya77@gmail.com"
+        ) {
+          return { id: email, email, name: "Admin User", tier: "pro" };
+        }
+
+        const { valid, tier } = await verifyLicenseWithGAS(email, licenseKey);
+        if (!valid) return null;
+
+        return {
+          id: email,
+          email,
+          name: email,
+          tier: tier || "light",
+        };
       },
     }),
   ],

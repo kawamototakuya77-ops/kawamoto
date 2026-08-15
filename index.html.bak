@@ -152,7 +152,7 @@
                 <!-- Title -->
                 <div class="space-y-1">
                     <h2 class="text-xl font-black text-white leading-tight font-outfit">競艇直前展示を<br><span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">AIが物理解析</span>して<br>投資判断を自動化</h2>
-                    <p class="text-[10px] text-slate-400 leading-relaxed">Gemini 2.5 Flash × LightGBM の二段階エンジンが、スリット・展示タイム・チルト・機力データを統合解析。全レース自動監視・見送りAI込みで<span class="text-white font-bold">月500円</span>。</p>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">Gemini 2.5 Flash × LightGBM の二段階エンジンが、スリット・展示タイム・チルト・機力データを統合解析。全レース自動監視・見送りAI込みで<span class="text-white font-bold">月1,980円</span>。</p>
                 </div>
                 <!-- Stats row -->
                 <div class="grid grid-cols-3 gap-2 text-center">
@@ -610,7 +610,7 @@
                             <div class="relative">
                                 <span class="text-4xl block">🔒</span>
                             </div>
-                            <span class="text-[9px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full tracking-wider uppercase shadow-lg">月額500円 プレミアム限定</span>
+                            <span class="text-[9px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full tracking-wider uppercase shadow-lg">PRO月額1,980円 プレミアム限定</span>
                         </div>
 
                         <!-- 価値訴求 -->
@@ -633,7 +633,7 @@
                                 class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black py-3 rounded-xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-sm">
                                 🔐 ログインしてロックを解除
                             </button>
-                            <p class="text-[9px] text-slate-500">購読は月額500円。いつでも解約可能です。</p>
+                            <p class="text-[9px] text-slate-500">購読はPRO月額1,980円。いつでも解約可能です。</p>
                         </div>
                     </div>
                 </div>
@@ -2102,7 +2102,7 @@
                                             展示タイム・スタートタイミング・直前オッズから期待値(<strong class="text-emerald-400 font-bold">EV 1.2以上</strong>)の買い目のみをリアルタイム抽出完了！
                                         </p>
                                         <button onclick="window.showLoginModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-[10px] font-black rounded-lg shadow-lg transition-all transform hover:scale-[1.03] active:scale-95">
-                                            🔐 プレミアム登録 (月額500円) で最終結論を見る
+                                            🔐 プレミアム登録 (PRO月額1,980円) で最終結論を見る
                                         </button>
                                     </div>
                                 </div>
@@ -4231,7 +4231,7 @@ function draw() {
                     </ul>
 
                     <p class="font-bold text-slate-300 text-[11px] mt-2">💰 プレミアム会員について</p>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">月額500円（税込）のプレミアム会員になることで、EVフィルター通過後の買い目・資金防衛AIマネージャー判断・戦術シミュレーターへのフルアクセスが可能になります。プロセス・エコノミー型の完全公開システムであり、的中・不的中を問わず全データを透明公開します。</p>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">PRO月額1,980円（税込） / 単発100円のプレミアム会員になることで、EVフィルター通過後の買い目・資金防衛AIマネージャー判断・戦術シミュレーターへのフルアクセスが可能になります。プロセス・エコノミー型の完全公開システムであり、的中・不的中を問わず全データを透明公開します。</p>
                 </div>
 
                 <!-- 予想の見方・使い方 -->
@@ -4292,7 +4292,7 @@ function draw() {
                             <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300 w-1/3">ショップ名</th><td class="py-1.5">ABYSS EXPLORER</td></tr>
                             <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">販売事業者・所在地・電話番号</th><td class="py-1.5">ご請求をいただいた場合、遅滞なく開示いたします。</td></tr>
                             <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">お問い合わせ先</th><td class="py-1.5">abyss.explorer.official@gmail.com</td></tr>
-                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">販売価格</th><td class="py-1.5">月額 500円（税込）</td></tr>
+                            <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">販売価格</th><td class="py-1.5">PRO月額1,980円（税込） / 単発100円</td></tr>
                             <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">支払方法・時期</th><td class="py-1.5">クレジットカード決済（Stripe社を利用）。初回は登録時、以降は毎月自動更新となります。</td></tr>
                             <tr class="border-b border-white/5"><th class="py-1.5 text-left text-slate-300">サービスの提供時期</th><td class="py-1.5">決済完了後、即時（ライセンスキー発行後）にご利用いただけます。</td></tr>
                             <tr><th class="py-1.5 text-left text-slate-300 align-top">解約・キャンセル</th><td class="py-1.5">「サブスクの確認・解約」リンクのカスタマーポータルよりいつでも解約可能です。次回更新日より請求が停止されます。日割りでの返金は行っておりません。</td></tr>
@@ -4327,8 +4327,8 @@ function draw() {
                 </button>
                 <div class="pt-4 border-t border-white/5 text-center space-y-2">
                     <p class="text-[10px] text-slate-400">プレミアムパスをお持ちでない方はこちら</p>
-                    <a href="https://buy.stripe.com/eVq6oH9Qi39w3BT8rtgjC01" target="_blank" class="block w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-white/5 transition-all">
-                        👑 プレミアム登録 (月額500円)
+                    <a href="https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02" target="_blank" class="block w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-white/5 transition-all">
+                        👑 プレミアム登録 (PRO月額1,980円)
                     </a>
                 </div>
             </div>
@@ -4676,8 +4676,8 @@ function draw() {
                 // フッターエリア（未ログイン：プレミアム登録ボタンのみ）
                 if (footerArea) {
                     footerArea.innerHTML = `
-                        <a href="https://buy.stripe.com/eVq6oH9Qi39w3BT8rtgjC01" target="_blank" class="block w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all text-center">
-                            👑 プレミアム登録 (月額500円)
+                        <a href="https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02" target="_blank" class="block w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all text-center">
+                            👑 プレミアム登録 (PRO月額1,980円)
                         </a>
                     `;
                 }
