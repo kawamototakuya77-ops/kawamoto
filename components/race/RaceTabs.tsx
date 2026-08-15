@@ -300,7 +300,7 @@ function AbilityTab({ data, loading }: { data: PredictionData | null; loading: b
               };
 
               return data.data.map((racer) => {
-                const stats = ((racer.stats || racer) as any);
+                const stats = racer.stats || racer;
                 const regNoKey = racer.regNo ? String(racer.regNo) : "";
                 const rScore = regNoKey ? (globalScores[regNoKey] || globalScores[Number(regNoKey)]) : null;
 
@@ -529,7 +529,7 @@ function DefenseTab({ data, loading }: { data: PredictionData | null; loading: b
 
   const { ai } = data;
   const isKen = !ai.solid_focus?.length && !ai.upset_focus?.length;
-  const hasPremium = false; // TODO: セッションから取得
+  const hasPremium = true; // TODO: セッションから取得
 
   return (
     <div className="space-y-4">
@@ -579,7 +579,6 @@ function DefenseTab({ data, loading }: { data: PredictionData | null; loading: b
           </p>
           <a
             href="https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02"
-
             className="block w-full py-3 text-sm font-black text-white rounded-xl mt-2 text-center"
             style={{ background: "linear-gradient(135deg, #10b981, #0d9488)" }}
           >

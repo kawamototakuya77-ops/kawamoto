@@ -113,6 +113,15 @@ function mapGasCache(
     ? (cache.racers as Record<string, unknown>[])
     : [];
 
+  return {
+    phase,
+    ai: {
+      escape_rate: (ai.escape_rate ?? active.escape_rate ?? fp.escape_rate ?? null) as string | null,
+      confidence: (active.confidence ?? ai.confidence ?? null) as string | null,
+      solid_focus: ((ai.solid_focus ?? active.solid_focus ?? ai.focus ?? []) as string[]),
+      upset_focus: ((ai.upset_focus ?? active.upset_focus ?? []) as string[]),
+      comment: (active.comment ?? ai.comment ?? active.ai_comment ?? "") as string,
+      recommendation_reason: ((active.recommendation_reason ?? ai.recommendation_reason ?? "") as string),
   const beforeRacers = ((cache.before_data as any)?.racers ?? {}) as Record<string, any>;
 
   return {

@@ -28,10 +28,7 @@ export async function GET(request: NextRequest) {
       try {
         const gasUrl = process.env.GAS_API_URL || "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
         const dateStr = `${jstTime.getUTCFullYear()}${String(month).padStart(2, "0")}${String(date).padStart(2, "0")}`;
-        const res = await fetch(`${gasUrl}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`, {
-          next: { revalidate: 0 },
-          signal: AbortSignal.timeout(6000),
-        });
+        const res = await fetch(`${gasUrl}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`, { next: { revalidate: 0 } });
         if (res.ok) {
           const json = await res.json();
           const parsedHits: Array<{ venue: string; combo: string; payout: string; dateLabel: string }> = [];
@@ -58,20 +55,20 @@ export async function GET(request: NextRequest) {
           } else {
             // 本日の的中がまだ少ない時間帯のフォールバック
             hits = [
-              { venue: "三国 5R", combo: "1-6-3", payout: "6,100円", dateLabel: titleDateLabel },
+              { venue: "三国 5R", combo: "1-6-3", payout: "6,300円", dateLabel: titleDateLabel },
               { venue: "鳴門 1R", combo: "1-6-4", payout: "2,700円", dateLabel: titleDateLabel },
               { venue: "三国 1R", combo: "1-3-6", payout: "4,750円", dateLabel: titleDateLabel }
             ];
           }
         } else {
           hits = [
-            { venue: "三国 5R", combo: "1-6-3", payout: "6,100円", dateLabel: titleDateLabel },
+            { venue: "三国 5R", combo: "1-6-3", payout: "6,300円", dateLabel: titleDateLabel },
             { venue: "鳴門 1R", combo: "1-6-4", payout: "2,700円", dateLabel: titleDateLabel }
           ];
         }
       } catch (err) {
         hits = [
-          { venue: "三国 5R", combo: "1-6-3", payout: "6,100円", dateLabel: titleDateLabel }
+          { venue: "三国 5R", combo: "1-6-3", payout: "6,300円", dateLabel: titleDateLabel }
         ];
       }
     } else {
