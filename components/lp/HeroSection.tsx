@@ -108,16 +108,14 @@ export default function HeroSection() {
             👑 PROプランを全場完全解禁（月額1,980円）
           </a>
           <a
-            href={stripeSingleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/dashboard"
             className="block w-full py-3 text-center font-extrabold text-sm text-amber-300 rounded-2xl border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 transition-all"
           >
-            🎯 まずは1レースだけ試す（単発 100円）
+            🎯 本日の出走レース一覧を見る（単発 100円〜）
           </a>
           <div className="text-center pt-1">
             <p className="text-[11px] text-slate-500">
-              ※ Stripeによる暗号化安全決済（クレジットカード / Apple Pay 対応）。無料期間中の解約は請求0円。
+              ※ 単発予想（100円）はレース一覧よりお好きな勝負レースを1レースごとに購入解禁いただけます。
             </p>
           </div>
         </div>
