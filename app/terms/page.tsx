@@ -28,9 +28,9 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-black text-white">第2条（Stripe決済および特定商取引法に基づく表記）</h2>
             <ul className="list-disc list-inside space-y-1.5 text-slate-300">
-              <li><strong>提供価格</strong>: PROプラン 月額1,980円（税込）</li>
-              <li><strong>解禁期間</strong>: 初回登録後3日間は無料トライアル期間となります。無料期間中に解約された場合、利用料金は一切発生いたしません。</li>
-              <li><strong>自動継続課金</strong>: 無料期間終了までに解約手続きがない場合、4日目に初回月額料金（1,980円）が自動決済され、以降1ヶ月ごとに自動更新・課金されます。</li>
+              <li><strong>提供価格</strong>: PROプラン 月額1,980円（税込） / 単発予想 1レース 100円（税込）</li>
+              
+              <li><strong>自動継続課金</strong>: PROプランは初回購入時より月額1,980円（税込）の即時決済となり、以降1ヶ月ごとに自動更新・課金されます。</li>
               <li><strong>決済手段</strong>: Stripe（クレジットカード・デビットカード決済）経由で安全に処理されます。</li>
               <li><strong>返金特約</strong>: デジタルコンテンツおよび月額SaaSサービスの性質上、決済完了後の返金・換金・日割計算には一切対応いたしかねます。</li>
               <li><strong>解約方法</strong>: 会員ダッシュボード画面またはサポート問い合わせより、次回更新日の前日までいつでも解約手続きが可能です。</li>

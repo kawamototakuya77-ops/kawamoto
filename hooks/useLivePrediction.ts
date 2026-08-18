@@ -113,15 +113,6 @@ function mapGasCache(
     ? (cache.racers as Record<string, unknown>[])
     : [];
 
-  return {
-    phase,
-    ai: {
-      escape_rate: (ai.escape_rate ?? active.escape_rate ?? fp.escape_rate ?? null) as string | null,
-      confidence: (active.confidence ?? ai.confidence ?? null) as string | null,
-      solid_focus: ((ai.solid_focus ?? active.solid_focus ?? ai.focus ?? []) as string[]),
-      upset_focus: ((ai.upset_focus ?? active.upset_focus ?? []) as string[]),
-      comment: (active.comment ?? ai.comment ?? active.ai_comment ?? "") as string,
-      recommendation_reason: ((active.recommendation_reason ?? ai.recommendation_reason ?? "") as string),
   const beforeRacers = ((cache.before_data as any)?.racers ?? {}) as Record<string, any>;
 
   return {
@@ -171,8 +162,17 @@ function mapGasCache(
       weather: string; temp: string; wind_speed: string;
       wind_dir_name: string; water_temp: string; wave_height: string;
     } | null,
-    result: (cache.result ?? null) as {
-      is_hit: boolean; combo: string;
-    } | null,
+    result: (() => {
+      const res = cache.result || cache.review;
+      if (!res || typeof res !== "object") return null;
+      const r = res as Record<string, unknown>;
+      const combo = (r.combo || r.winning_combo || "") as string;
+      if (!combo) return null;
+      return {
+        is_hit: Boolean(r.is_hit),
+        combo,
+        payout: typeof r.payout === "number" ? r.payout : parseInt(String(r.payout || 0), 10) || 0,
+      };
+    })(),
   };
 }
