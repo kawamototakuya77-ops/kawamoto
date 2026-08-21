@@ -96,7 +96,7 @@ export default async function OgImage({ params }: Props) {
             fontWeight: 600,
           }}
         >
-          競艇直前物理AI — Gemini 2.5 Flash × LightGBM
+          競艇直前物理AI — Gemini Flash × LightGBM
         </div>
       </div>
     ),

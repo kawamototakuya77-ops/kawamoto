@@ -2,26 +2,50 @@
 
 import React, { useState, useEffect } from "react";
 
+interface HitItem {
+  venue: string;
+  combo: string;
+  payout: string;
+  dateLabel: string;
+  rank?: string;
+}
+
 export default function HeroSection() {
-  const stripeSingleUrl = "https://buy.stripe.com/3cI3cv3rUbG28Wd9vxgjC05";
   const stripeProUrl = "https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02";
 
-  // Real Hit Proof Logger
-  const recentHits = [
-    { venue: "宮島 9R", combo: "3-1-2", payout: "11,320円", rank: "S" },
-    { venue: "三国 4R", combo: "1-4-5", payout: "4,820円", rank: "SS" },
-    { venue: "鳴門 1R", combo: "2-1-4", payout: "6,100円", rank: "S" },
-  ];
+  // 動的フェッチ用状態（ダミー固定データの完全廃止）
+  const [hits, setHits] = useState<HitItem[]>([
+    { venue: "直近的中実績", combo: "--", payout: "--円", dateLabel: "データ読み込み中...", rank: "S" }
+  ]);
   const [hitIdx, setHitIdx] = useState(0);
 
   useEffect(() => {
+    // APIから本物の確定的中実績を取得
+    async function fetchRealHits() {
+      try {
+        const res = await fetch("/api/recent-hits");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.hits && data.hits.length > 0) {
+            setHits(data.hits);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch real hits:", e);
+      }
+    }
+    fetchRealHits();
+  }, []);
+
+  useEffect(() => {
+    if (hits.length <= 1) return;
     const timer = setInterval(() => {
-      setHitIdx((prev) => (prev + 1) % recentHits.length);
+      setHitIdx((prev) => (prev + 1) % hits.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [recentHits.length]);
+  }, [hits.length]);
 
-  const currentHit = recentHits[hitIdx];
+  const currentHit = hits[hitIdx] || hits[0];
 
   return (
     <section className="relative py-12 px-4 max-w-4xl mx-auto overflow-hidden">
@@ -60,18 +84,21 @@ export default function HeroSection() {
         <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
           展示タイムの数字や過剰人気オッズに騙されていませんか？
           <br className="hidden sm:inline" />
-          スリットの行き足・回り足の物理データをGemini 2.5 × LightGBMがミリ秒解析。
+          スリットの行き足・回り足の物理データをGemini × LightGBMがミリ秒解析。
           <strong className="text-amber-400 font-bold"> 期待値(EV) 1.2以上の激アツレース</strong>だけを冷徹に厳選。
         </p>
 
-        {/* Realtime Hit Evidence Card */}
+        {/* Realtime Hit Evidence Card (100% Real Data Dynamic) */}
         <div className="p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 max-w-lg mx-auto shadow-2xl relative overflow-hidden text-left">
           <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            AI信頼度 {currentHit.rank}ランク
+            AI信頼度 {currentHit.rank || "S"}ランク
           </div>
-          <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5 mb-1">
-            🔥 <span className="text-amber-400 font-extrabold">直近のリアルタイムAI推奨ヒット実績</span>
+          <p className="text-xs font-bold text-slate-400 flex items-center justify-between gap-1.5 mb-1.5 pr-20">
+            <span>🔥 <strong className="text-amber-400 font-extrabold">直近のAI推奨ヒット実績</strong></span>
+            <span className="text-[11px] text-emerald-400 font-mono font-semibold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+              {currentHit.dateLabel}
+            </span>
           </p>
           <div className="flex items-baseline gap-3">
             <span className="text-xl font-black text-white">{currentHit.venue}</span>
@@ -96,28 +123,14 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Dual CTAs */}
-        <div className="space-y-3 max-w-md mx-auto pt-2">
+        {/* CTA Button */}
+        <div className="pt-2 max-w-lg mx-auto">
           <a
             href={stripeProUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-4 text-center font-black text-base text-white rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-            style={{ background: "linear-gradient(135deg, #10b981, #0d9488)" }}
+            className="block w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-base shadow-xl shadow-emerald-900/20 active:scale-[0.98] transition-all text-center"
           >
             👑 PROプランを全場完全解禁（月額1,980円）
           </a>
-          <a
-            href="/dashboard"
-            className="block w-full py-3 text-center font-extrabold text-sm text-amber-300 rounded-2xl border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 transition-all"
-          >
-            🎯 本日の出走レース一覧を見る（単発 100円〜）
-          </a>
-          <div className="text-center pt-1">
-            <p className="text-[11px] text-slate-500">
-              ※ 単発予想（100円）はレース一覧よりお好きな勝負レースを1レースごとに購入解禁いただけます。
-            </p>
-          </div>
         </div>
       </div>
     </section>

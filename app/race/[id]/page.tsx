@@ -101,7 +101,7 @@ export default async function RacePage({ params }: Props) {
             </span>
           </div>
           <p className="text-sm text-slate-400">
-            Gemini 2.5 Flash × LightGBM — 三段階AIリアルタイム解析
+            Gemini Flash × LightGBM — 三段階AIリアルタイム解析
           </p>
         </div>
 

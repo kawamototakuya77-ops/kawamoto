@@ -11,12 +11,20 @@ export default function LpHeader() {
             競艇直前物理AI
           </span>
         </Link>
-        <Link
-          href="/login"
-          className="px-4 py-2 rounded-full text-sm font-bold text-slate-200 bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors"
-        >
-          🔑 ログイン
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/hits"
+            className="px-3 py-1.5 rounded-full text-xs font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+          >
+            📊 的中・回収率ログ
+          </Link>
+          <Link
+            href="/login"
+            className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800/80 border border-white/10 hover:bg-slate-700 transition-colors"
+          >
+            🔑 ログイン
+          </Link>
+        </div>
       </div>
     </header>
   );
