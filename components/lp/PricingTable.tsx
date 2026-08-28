@@ -11,9 +11,10 @@ export default function PricingTable() {
         "✅ 24場 全開催グリッド閲覧",
         "✅ 出走表＆全国/当地勝率データ",
         "✅ 直前展示タイム＆スタート順位",
-        "❌ 2次予想（LIVE AI解禁）",
-        "❌ 期待値(EV)フィルター",
-        "❌ 資金防衛AI（ケン判定）",
+        "✅ 本日のAI厳選Sランクレース一覧",
+        "❌ 2次予想（直前LIVE AI推論）",
+        "❌ 期待値(EV)フィルター・買い目",
+        "❌ 資金防衛AI（見送り判定）",
       ],
       cta: "登録不要で今すぐ体験",
       href: "/dashboard",
@@ -28,11 +29,11 @@ export default function PricingTable() {
       badge: "本命勝負に！",
       features: [
         "✅ 指定1レースの2次予想（直前AI推論）",
-        "✅ 直前展示の物理解析スコア（OVR）",
-        "✅ 期待値(EV1.2以上)買い目選別",
+        "✅ 直前展示の物理解析スコア（OVR※）",
+        "✅ 期待値(EV※1.2以上)の買い目選別",
         "✅ リアルタイム展開予想（逃げ/差し/まくり）",
         "❌ 24場 全レース見放題",
-        "❌ LINE直前AI速報配信",
+        "❌ 回収率(ROI)・的中実績ログ閲覧",
       ],
       cta: "🎯 レース一覧から勝負レースを選ぶ",
       href: "/dashboard",
@@ -44,14 +45,14 @@ export default function PricingTable() {
       name: "プロプラン (PRO)",
       price: "¥1,980",
       period: "/月",
-      badge: "人気 No.1 / 推奨",
+      badge: "全機能完全解禁",
       features: [
         "✅ 全国24場・全レースリアルタイム完全解禁",
-        "✅ 直前展示の『偽物』を暴く物理解析エンジン",
-        "✅ 資金防衛AI（見送り・ケン判定自動アラート）",
-        "✅ 期待値1.2以上の激アツ買い目を自動抽出",
-        "✅ LINE直前AI速報通知（締切10分前）",
+        "✅ 直前展示の物理解析エンジン（全レース）",
+        "✅ 資金防衛AI（見送り・ケン※判定自動アラート）",
+        "✅ 期待値(EV)1.2以上の買い目を自動抽出",
         "✅ 月間回収率(ROI)＆的中実績リアルタイムログ",
+        "✅ いつでも解約可能（解約金0円）",
       ],
       cta: "👑 PROプランを即時解禁 (月額1,980円)",
       href: "https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02",
@@ -124,6 +125,9 @@ export default function PricingTable() {
 
       <p className="text-center text-xs text-slate-500 mt-8">
         Stripeによる暗号化安全決済（クレジットカード / Apple Pay 対応）。
+      </p>
+      <p className="text-center text-xs text-slate-600 mt-3">
+        ※ OVR = AIが算出した選手総合能力スコア（S/A/B/C/D）　EV = 期待値（1.2以上が投資価値あり）　ケン = 見送り推奨（購入しない判断）
       </p>
     </section>
   );

@@ -124,12 +124,20 @@ export default function HeroSection() {
         </div>
 
         {/* CTA Button */}
-        <div className="pt-2 max-w-lg mx-auto">
+        <div className="pt-2 max-w-lg mx-auto space-y-3">
+          {/* 第一CTA: まず無料で体験 */}
           <a
-            href={stripeProUrl}
+            href="/dashboard"
             className="block w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-base shadow-xl shadow-emerald-900/20 active:scale-[0.98] transition-all text-center"
           >
-            👑 PROプランを全場完全解禁（月額1,980円）
+            🎯 今日のSランクレースをチェック（無料）
+          </a>
+          {/* 第二CTA: PRO課金 */}
+          <a
+            href={stripeProUrl}
+            className="block w-full py-3 px-6 rounded-2xl bg-slate-800/80 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 font-bold text-sm active:scale-[0.98] transition-all text-center"
+          >
+            👑 全場完全解禁 PROプラン（月額1,980円）
           </a>
         </div>
       </div>

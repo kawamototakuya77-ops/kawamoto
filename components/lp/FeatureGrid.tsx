@@ -20,7 +20,7 @@ const features = [
   {
     icon: "⚡",
     title: "Firebase リアルタイム同期",
-    desc: "24場のデータをFire base Realtime DBに即時反映。ポーリング不要で画面が自動更新される。",
+    desc: "24場のデータをFirebase Realtime DBに即時反映。ポーリング不要で画面が自動更新される。",
     color: "amber",
   },
 ];

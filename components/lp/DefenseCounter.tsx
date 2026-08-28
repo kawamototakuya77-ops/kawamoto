@@ -1,84 +1,53 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
- * 社会的証明カウンター（損失回避の法則）
- * 「今日、AIの見送り推奨でユーザーが回避した損失額」をリアルタイム動的計算表示
+ * 本日の見送り推奨レース実績カウンター
+ * - /api/today-stats から実際のDBデータを取得して表示
+ * - データがない場合はセクション自体を非表示（架空の数値は出さない）
  */
 export default function DefenseCounter() {
-  const [count, setCount] = useState(0);
-  const [todayLabel, setTodayLabel] = useState("");
-  const [skipCount, setSkipCount] = useState(31);
-  const [targetAmount, setTargetAmount] = useState(24800);
-  const [successRate, setSuccessRate] = useState(80);
-  const rafRef = useRef<number>(0);
+  const [data, setData] = useState<{ skipCount: number; totalRaces: number; successRate: number; dateLabel: string } | null>(null);
 
   useEffect(() => {
-    // 本日の日付と時間帯に応じた動的推移計算 (固定固定値の排除)
-    const now = new Date();
-    const m = now.getMonth() + 1;
-    const d = now.getDate();
-    const h = now.getHours();
-    
-    setTodayLabel(`${m}/${d}`);
-
-    // 日付固有シード＋時間経過（8:00〜21:00）でリアルタイムに動的加算
-    const daySeed = (m * 31 + d) % 7;
-    const calculatedSkips = Math.min(35, Math.max(12, Math.floor((h - 8) * 1.6) + 14 + daySeed));
-    const calculatedAmount = calculatedSkips * 800; // 800円換算
-    const calculatedRate = Math.min(92, Math.max(78, 80 + (daySeed % 5)));
-
-    setSkipCount(calculatedSkips);
-    setTargetAmount(calculatedAmount);
-    setSuccessRate(calculatedRate);
-
-    const start = performance.now();
-    const duration = 1800; // ms
-
-    const animate = (time: number) => {
-      const elapsed = time - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(calculatedAmount * eased));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(animate);
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/today-stats");
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.skipCount > 0) {
+            setData(json);
+          }
+        }
+      } catch (e) {
+        console.warn("DefenseCounter: fetch failed", e);
       }
-    };
-
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
+    }
+    fetchStats();
   }, []);
+
+  // データなし or 0件の場合は表示しない（架空数値で誤誘導しない）
+  if (!data) return null;
 
   return (
     <section className="rounded-3xl p-6 border border-amber-500/30 bg-amber-500/5 space-y-3 text-center">
       <p className="text-sm font-bold text-amber-400 tracking-wider uppercase flex items-center justify-center gap-2">
-        <span>🛡️ 本日（{todayLabel || "リアルタイム"}）プロプランユーザーが回避した損失額</span>
+        <span>🛡️ 本日（{data.dateLabel}）AI見送り推奨レース実績</span>
       </p>
-      <div
-        className="text-5xl font-black font-outfit tabular-nums"
-        style={{
-          background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        ¥{count.toLocaleString()}
+      <div className="text-5xl font-black font-outfit tabular-nums"
+        style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+        {data.skipCount}R
       </div>
       <p className="text-sm text-slate-400 leading-relaxed">
-        AIの「見送り推奨」に従ったことで支払わずに済んだ舟券代
+        AIが本日「見送り推奨」と判定したレース数
         <br />
         <span className="text-amber-300 font-semibold">
-          （本日累計 <strong className="font-extrabold text-white underline decoration-amber-500/50">{skipCount}レース</strong> 見送り成功 / 1回800円換算）
+          （本日解析対象{data.totalRaces}R中 / 見送り判定率 {data.successRate}%）
         </span>
       </p>
-      <div className="pt-1">
-        <span className="inline-block px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-sm text-amber-300 font-bold">
-          本日の見送り成功率: {successRate}%
-        </span>
-      </div>
       <p className="text-xs text-slate-500">
-        ※ 当日の全場開催レース見送りログよりリアルタイム動的集計
+        ※ 当日の全場開催レース解析データより集計。EV1.2未満を見送り推奨と判定。
       </p>
     </section>
   );
