@@ -14,10 +14,9 @@ export default function HeroSection() {
   const stripeProUrl = "https://buy.stripe.com/14A9AT6E6aBY0pHbDFgjC02";
 
   // 動的フェッチ用状態（ダミー固定データの完全廃止）
-  const [hits, setHits] = useState<HitItem[]>([
-    { venue: "直近的中実績", combo: "--", payout: "--円", dateLabel: "データ読み込み中...", rank: "S" }
-  ]);
+  const [hits, setHits] = useState<HitItem[]>([]);
   const [hitIdx, setHitIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // APIから本物の確定的中実績を取得
@@ -32,6 +31,8 @@ export default function HeroSection() {
         }
       } catch (e) {
         console.warn("Failed to fetch real hits:", e);
+      } finally {
+        setLoading(false);
       }
     }
     fetchRealHits();
@@ -88,24 +89,34 @@ export default function HeroSection() {
           <strong className="text-amber-400 font-bold"> 期待値(EV) 1.2以上の激アツレース</strong>だけを冷徹に厳選。
         </p>
 
-        {/* Realtime Hit Evidence Card (100% Real Data Dynamic) */}
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 max-w-lg mx-auto shadow-2xl relative overflow-hidden text-left">
-          <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            AI信頼度 {currentHit.rank || "S"}ランク
+        {/* Realtime Hit Evidence Card */}
+        {loading ? (
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/30 max-w-lg mx-auto text-center">
+            <p className="text-xs text-slate-500 animate-pulse">直近実績データを取得中...</p>
           </div>
-          <p className="text-xs font-bold text-slate-400 flex items-center justify-between gap-1.5 mb-1.5 pr-20">
-            <span>🔥 <strong className="text-amber-400 font-extrabold">直近のAI推奨ヒット実績</strong></span>
-            <span className="text-[11px] text-emerald-400 font-mono font-semibold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              {currentHit.dateLabel}
-            </span>
-          </p>
-          <div className="flex items-baseline gap-3">
-            <span className="text-xl font-black text-white">{currentHit.venue}</span>
-            <span className="text-emerald-400 font-bold font-mono text-lg">{currentHit.combo}</span>
-            <span className="text-amber-400 font-black text-xl">{currentHit.payout} 的中🎯</span>
+        ) : currentHit ? (
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 max-w-lg mx-auto shadow-2xl relative overflow-hidden text-left">
+            <div className="absolute top-0 right-0 px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-bl-lg flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              AI信頼度 {currentHit.rank || "S"}ランク
+            </div>
+            <p className="text-xs font-bold text-slate-400 flex items-center justify-between gap-1.5 mb-1.5 pr-20">
+              <span>🔥 <strong className="text-amber-400 font-extrabold">直近のAI推奨ヒット実績</strong></span>
+              <span className="text-[11px] text-emerald-400 font-mono font-semibold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+                {currentHit.dateLabel}
+              </span>
+            </p>
+            <div className="flex items-baseline gap-3">
+              <span className="text-xl font-black text-white">{currentHit.venue}</span>
+              <span className="text-emerald-400 font-bold font-mono text-lg">{currentHit.combo}</span>
+              <span className="text-amber-400 font-black text-xl">{currentHit.payout} 的中🎯</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/30 max-w-lg mx-auto text-center">
+            <p className="text-xs text-slate-500">🔄 本日の実績は21:30以降に更新されます</p>
+          </div>
+        )}
 
         {/* 3 Stats Grid */}
         <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto text-center">
