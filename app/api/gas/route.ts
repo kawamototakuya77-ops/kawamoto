@@ -38,22 +38,10 @@ export async function GET(request: NextRequest) {
 
     const data = await res.json();
 
-    // get_initial_payload で venues または cutoffTimes が空の場合の防御的自動補完
+    // get_initial_payload で venues または cutoffTimes を確実に合成して返す
     const isInitialPayload = searchParams.get("action") === "get_initial_payload" || params.includes("action=get_initial_payload");
     if (isInitialPayload && data) {
       try {
-        const now = new Date();
-        const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-        const y = jst.getUTCFullYear();
-        const m = String(jst.getUTCMonth() + 1).padStart(2, "0");
-        const d = String(jst.getUTCDate()).padStart(2, "0");
-        const dateStr = `${y}${m}${d}`;
-
-        const predRes = await fetch(
-          `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`,
-          { cache: "no-store", signal: AbortSignal.timeout(5000) }
-        );
-
         const VENUE_NAME_MAP: Record<string, string> = {
           "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島", "05": "多摩川",
           "06": "浜名湖", "07": "蒲郡", "08": "常滑", "09": "津", "10": "三国",
@@ -77,41 +65,47 @@ export async function GET(request: NextRequest) {
           "7": "18:00", "8": "18:30", "9": "19:00", "10": "19:35", "11": "20:10", "12": "20:45"
         };
 
-        const venueSet = new Map<string, string>();
-        const cutoffMap: Record<string, Record<string, string>> = {};
+        const now = new Date();
+        const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+        const y = jst.getUTCFullYear();
+        const m = String(jst.getUTCMonth() + 1).padStart(2, "0");
+        const d = String(jst.getUTCDate()).padStart(2, "0");
+        const dateStr = `${y}${m}${d}`;
 
+        const predRes = await fetch(
+          `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`,
+          { cache: "no-store", signal: AbortSignal.timeout(5000) }
+        );
+
+        const activeJcds = new Set<string>();
         if (predRes.ok) {
           const predJson = await predRes.json();
           if (predJson && predJson.predictions) {
-            for (const [k, p] of Object.entries(predJson.predictions as Record<string, any>)) {
-              const jcd = String(p.jcd || k.split("-")[0] || k.split("_")[0]).padStart(2, "0");
-              const rno = String(p.rno || (k.includes("-") ? k.split("-")[1] : k.includes("_") ? k.split("_")[1] : "1"));
-              const vname = p.venue_name || VENUE_NAME_MAP[jcd] || `場${jcd}`;
-              venueSet.set(jcd, vname);
-
-              if (!cutoffMap[jcd]) {
-                const baseSch = MORNING_VENUES.includes(jcd) ? MORNING_SCH : NIGHTER_VENUES.includes(jcd) ? NIGHTER_SCH : DAY_SCH;
-                cutoffMap[jcd] = { ...baseSch };
-              }
-              const cutoff = p.deadline || p.deadline_time || p.cutoff_str || "";
-              if (cutoff) cutoffMap[jcd][rno] = cutoff;
-            }
             data.predictions = predJson.predictions;
+            for (const k of Object.keys(predJson.predictions)) {
+              const jcd = k.split("_")[0].split("-")[0].padStart(2, "0");
+              if (VENUE_NAME_MAP[jcd]) {
+                activeJcds.add(jcd);
+              }
+            }
           }
         }
 
-        // 全24場に対応する完全なcutoffTimesテーブルを構築
-        for (const [jcd, name] of Object.entries(VENUE_NAME_MAP)) {
-          if (!cutoffMap[jcd]) {
-            const baseSch = MORNING_VENUES.includes(jcd) ? MORNING_SCH : NIGHTER_VENUES.includes(jcd) ? NIGHTER_SCH : DAY_SCH;
-            cutoffMap[jcd] = { ...baseSch };
-          }
+        // 開催場リストの作成
+        data.venues = Array.from(activeJcds)
+          .sort((a, b) => a.localeCompare(b))
+          .map((jcd) => ({ jcd, name: VENUE_NAME_MAP[jcd] }));
+
+        // 全24場の種別別締切時間マップを構築
+        const cutoffMap: Record<string, Record<string, string>> = {};
+        for (const jcd of Object.keys(VENUE_NAME_MAP)) {
+          const baseSch = MORNING_VENUES.includes(jcd)
+            ? MORNING_SCH
+            : NIGHTER_VENUES.includes(jcd)
+            ? NIGHTER_SCH
+            : DAY_SCH;
+          cutoffMap[jcd] = { ...baseSch };
         }
-
-        data.venues = Array.from(venueSet.entries())
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([jcd, name]) => ({ jcd, name }));
-
         data.cutoffTimes = cutoffMap;
       } catch (_) {}
     }
