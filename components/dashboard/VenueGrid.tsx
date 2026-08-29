@@ -110,9 +110,8 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
       {/* 24競艇場 グリッド (1桐生〜24大村の絶対順序保持) */}
       <div className="grid grid-cols-4 gap-1.5 p-3 bg-slate-950/50 rounded-2xl border border-white/5">
         {VENUE_LIST.map(({ jcd, name }) => {
-          // activeVenues が空の場合、cutoffTimesが存在する場を開催場と判定するフォールバック
-          const hasCutoff = cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0;
-          const isActive = activeVenues.includes(jcd) || Boolean(hasCutoff);
+          // 本日開催場(13場)のみがisActive=trueになり光る
+          const isActive = activeVenues.includes(jcd);
           const isSelected = jcd === currentJcd;
           const nextCutoff = isActive ? getNextCutoff(jcd) : null;
 
