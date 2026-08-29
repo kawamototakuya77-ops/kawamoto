@@ -52,12 +52,47 @@ export async function GET(request: NextRequest) {
       // GAS通信不可時は完全安全な過去実測データ
     }
 
-    // 本日の的中がまだ走っていない未確定時は直近実測
+    // 本日の的中がまだ確定していない場合（朝・日中前半）、前日・前々日のGASデータを探索
     if (hits.length === 0) {
-      hits = [
-        { venue: "蒲郡 12R", combo: "1-2-3", payout: "1,850円", dateLabel: "8/21 確定 (直近節)", rank: "S" },
-        { venue: "津 11R", combo: "1-3-4", payout: "2,410円", dateLabel: "8/21 確定 (直近節)", rank: "S" }
-      ];
+      for (let daysAgo = 1; daysAgo <= 3; daysAgo++) {
+        try {
+          const pastDate = new Date(jstTime.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+          const pMonth = pastDate.getUTCMonth() + 1;
+          const pDate = pastDate.getUTCDate();
+          const pDateStr = `${pastDate.getUTCFullYear()}${String(pMonth).padStart(2, "0")}${String(pDate).padStart(2, "0")}`;
+
+          const res = await fetch(`${gasUrl}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${pDateStr}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+            signal: AbortSignal.timeout(3000),
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.predictions) {
+              for (const k of Object.keys(json.predictions)) {
+                const p = json.predictions[k];
+                const resObj = p.result || p.actual_result;
+                if (resObj && (resObj.is_hit || resObj.actual_payout > 0)) {
+                  const vName = p.venue_name || p.jcd;
+                  const rNo = p.rno;
+                  const combo = resObj.combo || resObj.winning_combo || "";
+                  const payoutVal = Number(resObj.payout || resObj.actual_payout || 0);
+                  const payoutStr = payoutVal > 0 ? `${payoutVal.toLocaleString()}円` : "的中";
+                  hits.push({
+                    venue: `${vName} ${rNo}R`,
+                    combo: combo,
+                    payout: payoutStr,
+                    dateLabel: `${pMonth}/${pDate} 確定実績`,
+                    rank: p.confidence || "S"
+                  });
+                }
+              }
+            }
+          }
+          if (hits.length > 0) break; // 直近の日の的中が見つかったら終了
+        } catch (_) {}
+      }
     }
 
     return NextResponse.json(
@@ -77,9 +112,7 @@ export async function GET(request: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({
       success: false,
-      hits: [
-        { venue: "蒲郡 12R", combo: "1-2-3", payout: "1,850円", dateLabel: "直近確定実績", rank: "S" }
-      ]
+      hits: []
     });
   }
 }

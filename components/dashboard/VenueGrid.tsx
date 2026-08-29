@@ -129,7 +129,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
       {/* 24競艇場 グリッド (1桐生〜24大村の絶対順序保持) */}
       <div className="grid grid-cols-4 gap-1.5 p-3 bg-slate-950/50 rounded-2xl border border-white/5">
         {VENUE_LIST.map(({ jcd, name }) => {
-          const isActive = activeVenues.includes(jcd);
+          // activeVenues が空の場合、cutoffTimesが存在する場を開催場と判定するフォールバック
+          const hasCutoff = cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0;
+          const isActive = activeVenues.includes(jcd) || Boolean(hasCutoff);
           const isSelected = jcd === currentJcd;
           const nextCutoff = isActive ? getNextCutoff(jcd) : null;
 
@@ -138,19 +140,30 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
               key={jcd}
               onClick={() => handleVenueClick(jcd)}
               className={[
-                "relative py-2 px-1 rounded-xl text-sm font-bold transition-all text-center flex flex-col items-center justify-center min-h-[4rem]",
+                "relative py-2.5 px-1.5 rounded-xl text-sm font-bold transition-all text-center flex flex-col items-center justify-center min-h-[4.2rem]",
                 isSelected
-                  ? "bg-emerald-500/20 border-2 border-emerald-500/70 text-emerald-300 scale-[1.02]"
+                  ? "bg-emerald-500/25 border-2 border-emerald-400 text-emerald-300 scale-[1.03] shadow-[0_0_16px_rgba(16,185,129,0.5)] z-10"
                   : isActive
-                  ? "bg-slate-800/80 border border-emerald-500/40 text-white hover:bg-slate-700 cursor-pointer"
-                  : "bg-slate-900/40 border border-white/5 text-slate-600 cursor-pointer hover:border-white/20",
+                  ? "bg-slate-900 border-2 border-emerald-500/60 text-white hover:bg-slate-800 shadow-[0_0_10px_rgba(16,185,129,0.25)] hover:shadow-[0_0_15px_rgba(16,185,129,0.45)] cursor-pointer"
+                  : "bg-slate-950/60 border border-white/5 text-slate-600 hover:border-white/10 cursor-pointer",
               ].join(" ")}
             >
-              <span className="block">{name}</span>
-              {isActive && nextCutoff?.nextTime && (
-                <span className="block text-[10px] text-emerald-400 mt-1 font-mono font-black tracking-widest bg-emerald-900/30 px-1.5 py-0.5 rounded">
-                  {nextCutoff.nextTime} 締切
+              {/* 開催中パルスドット */}
+              {isActive && (
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
                 </span>
+              )}
+
+              <span className={`block font-black ${isActive ? "text-white" : "text-slate-500"}`}>{name}</span>
+
+              {isActive ? (
+                <span className="block text-[10px] text-emerald-400 mt-1 font-mono font-black tracking-wider bg-emerald-950/80 border border-emerald-500/40 px-1.5 py-0.5 rounded shadow-sm">
+                  {nextCutoff?.nextTime ? `${nextCutoff.nextTime}締切` : "開催中"}
+                </span>
+              ) : (
+                <span className="block text-[9px] text-slate-600 mt-1">非開催</span>
               )}
             </button>
           );

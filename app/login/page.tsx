@@ -4,6 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import LpHeader from "@/components/lp/LpHeader";
+import LpFooter from "@/components/lp/LpFooter";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -33,8 +35,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between">
+      <LpHeader />
+      <div className="w-full max-w-sm mx-auto px-4 pt-28 pb-16 space-y-6">
         {/* Logo */}
         <div className="text-center space-y-2">
           <div className="flex justify-center">
@@ -101,6 +104,7 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+      <LpFooter />
     </div>
   );
 }
