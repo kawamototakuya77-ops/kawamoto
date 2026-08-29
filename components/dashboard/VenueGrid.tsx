@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAllPredictions } from "@/hooks/useLivePrediction";
 import { useRouter } from "next/navigation";
+import { VENUE_SCHEDULES, TODAY_ACTIVE_VENUES } from "@/lib/venueSchedules";
 
 // 明示的配列定義でJSオブジェクトキーソート順化バグ(01-09が10-24の後に回る現象)を100%防止
 const VENUE_LIST = [
@@ -48,40 +49,21 @@ interface Props {
 }
 
 export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props) {
-  const { activeVenues, predictions, cutoffTimes, loading } = useAllPredictions();
+  const { activeVenues: swrActiveVenues, cutoffTimes, loading } = useAllPredictions();
   const router = useRouter();
-  const [currentJcd, setCurrentJcd] = useState<string>(selectedJcd || "10");
+  const activeVenues = swrActiveVenues && swrActiveVenues.length > 0 ? swrActiveVenues : TODAY_ACTIVE_VENUES;
+  const [currentJcd, setCurrentJcd] = useState<string>(selectedJcd || activeVenues[0] || "10");
 
-  // 競艇場ごとの開催種別（モーニング / デイ / ナイター）
-  const MORNING_VENUES = ["10", "14", "18", "21", "23"]; // 三国, 鳴門, 徳山, 芦屋, 唐津
-  const NIGHTER_VENUES = ["01", "07", "12", "15", "19", "20", "24"]; // 桐生, 蒲郡, 住之江, 丸亀, 下関, 若松, 大村
-
-  // 種別ごとの標準締切時刻テーブル
-  const MORNING_SCHEDULE: Record<string, string> = {
-    "1": "08:35", "2": "09:00", "3": "09:25", "4": "09:50", "5": "10:18", "6": "10:50",
-    "7": "11:20", "8": "11:52", "9": "12:27", "10": "13:00", "11": "13:35", "12": "14:15"
-  };
-  const DAY_SCHEDULE: Record<string, string> = {
-    "1": "10:45", "2": "11:10", "3": "11:35", "4": "12:05", "5": "12:35", "6": "13:05",
-    "7": "13:40", "8": "14:15", "9": "14:50", "10": "15:25", "11": "16:05", "12": "16:45"
-  };
-  const NIGHTER_SCHEDULE: Record<string, string> = {
-    "1": "15:15", "2": "15:40", "3": "16:05", "4": "16:30", "5": "17:00", "6": "17:30",
-    "7": "18:00", "8": "18:30", "9": "19:00", "10": "19:35", "11": "20:10", "12": "20:45"
-  };
-
-  const getDefaultScheduleForJcd = (jcd: string): Record<string, string> => {
-    if (MORNING_VENUES.includes(jcd)) return MORNING_SCHEDULE;
-    if (NIGHTER_VENUES.includes(jcd)) return NIGHTER_SCHEDULE;
-    return DAY_SCHEDULE;
+  const getScheduleForJcd = (jcd: string): Record<string, string> => {
+    if (cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0) {
+      return cutoffTimes[jcd];
+    }
+    return VENUE_SCHEDULES[jcd] || VENUE_SCHEDULES["10"];
   };
 
   // 直近のレース時間を計算する関数
   const getNextCutoff = (jcd: string) => {
-    const map = (cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0)
-      ? (cutoffTimes[jcd] as Record<string, string>)
-      : getDefaultScheduleForJcd(jcd);
-      
+    const map = getScheduleForJcd(jcd);
     const now = new Date();
     const currentMins = now.getHours() * 60 + now.getMinutes();
     
@@ -104,27 +86,6 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     return { nextTime, minDiff };
   };
 
-  // 初期ロード時に直近のレースがある場を自動選択
-  useEffect(() => {
-    if (activeVenues.length > 0 && cutoffTimes) {
-      let closestJcd = activeVenues[0];
-      let globalMinDiff = Infinity;
-      
-      activeVenues.forEach(jcd => {
-        const res = getNextCutoff(jcd);
-        if (res && res.minDiff < globalMinDiff) {
-          globalMinDiff = res.minDiff;
-          closestJcd = jcd;
-        }
-      });
-      
-      if (closestJcd && !selectedJcd) {
-        setCurrentJcd(closestJcd);
-        onSelect(closestJcd);
-      }
-    }
-  }, [activeVenues, cutoffTimes]);
-
   useEffect(() => {
     if (selectedJcd) {
       setCurrentJcd(selectedJcd);
@@ -141,10 +102,8 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     router.push(`/race/${slug}-${rno}r`);
   };
 
-  const selectedVenueObj = VENUE_LIST.find(v => v.jcd === currentJcd) || VENUE_LIST[9]; // デフォルト三国
-  const timesMap = (cutoffTimes && cutoffTimes[currentJcd] && Object.keys(cutoffTimes[currentJcd]).length > 0)
-    ? cutoffTimes[currentJcd]
-    : getDefaultScheduleForJcd(currentJcd);
+  const selectedVenueObj = VENUE_LIST.find(v => v.jcd === currentJcd) || VENUE_LIST[9];
+  const timesMap = getScheduleForJcd(currentJcd);
 
   return (
     <div className="space-y-6">
