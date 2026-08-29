@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
+const GAS_URL = process.env.GAS_API_URL || "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
+
 export async function GET(request: NextRequest) {
   try {
     const now = new Date();
@@ -17,9 +19,8 @@ export async function GET(request: NextRequest) {
     
     // GAS または DB から実測的中実績を取得
     try {
-      const gasUrl = process.env.GAS_API_URL || "https://script.google.com/macros/s/AKfycbyvJwPQZXBaFeh6DA3GnTDTapqRaOg7OEJHiBmhEDrqO3--CkpbEgZQbcjGvxQo_XLm/exec";
       const dateStr = `${jstTime.getUTCFullYear()}${String(month).padStart(2, "0")}${String(date).padStart(2, "0")}`;
-      const res = await fetch(`${gasUrl}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`, {
+      const res = await fetch(`${GAS_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
         signal: AbortSignal.timeout(4000),
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
           const pDate = pastDate.getUTCDate();
           const pDateStr = `${pastDate.getUTCFullYear()}${String(pMonth).padStart(2, "0")}${String(pDate).padStart(2, "0")}`;
 
-          const res = await fetch(`${gasUrl}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${pDateStr}`, {
+          const res = await fetch(`${GAS_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${pDateStr}`, {
             cache: "no-store",
             headers: { "Cache-Control": "no-cache" },
             signal: AbortSignal.timeout(3000),
