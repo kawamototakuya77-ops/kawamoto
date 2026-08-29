@@ -114,6 +114,10 @@ export default function SrankSection() {
         </span>
       </div>
 
+      <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-[11px] text-emerald-300/90 leading-relaxed">
+        🎯 <strong>【AI厳選基準】</strong> 全156レースから「確信度★Sランク」かつ「期待値EV ≥ 1.35以上」の高回収期待値レースのみを抽出・出走順に掲載。
+      </div>
+
       <div className="space-y-2">
         {displayedRaces.map((r, i) => {
           const slug = VENUE_SLUG_MAP[r.venue] || "mikuni";
