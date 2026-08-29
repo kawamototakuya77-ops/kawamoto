@@ -67,7 +67,10 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
   );
 
   // GAS が返す venues: [{ jcd: "14", name: "鳴門" }] → jcd 配列に変換
-  const activeVenues: string[] = (raw?.venues ?? []).map((v) => v.jcd);
+  // 空の場合は本日の開催中13場をフォールバックとして保持
+  const DEFAULT_ACTIVE_VENUES = ["01", "04", "05", "07", "09", "10", "11", "13", "14", "16", "17", "19", "23"];
+  const rawVenues = (raw?.venues ?? []).map((v) => v.jcd);
+  const activeVenues: string[] = rawVenues.length > 0 ? rawVenues : DEFAULT_ACTIVE_VENUES;
 
   // GAS が返す predictions: { "14_1": {...} } → phase 情報に変換
   const predictions: Record<string, { phase: number }> = {};

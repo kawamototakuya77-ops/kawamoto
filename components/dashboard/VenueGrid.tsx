@@ -78,14 +78,17 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
 
   // 直近のレース時間を計算する関数
   const getNextCutoff = (jcd: string) => {
-    if (!cutoffTimes || !cutoffTimes[jcd]) return null;
+    const map = (cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0)
+      ? (cutoffTimes[jcd] as Record<string, string>)
+      : getDefaultScheduleForJcd(jcd);
+      
     const now = new Date();
     const currentMins = now.getHours() * 60 + now.getMinutes();
     
     let nextTime = "";
     let minDiff = Infinity;
     
-    Object.entries(cutoffTimes[jcd] as Record<string, string>).forEach(([rno, timeStr]) => {
+    Object.entries(map).forEach(([rno, timeStr]) => {
       const parts = timeStr.split(":");
       if (parts.length === 2) {
         const hh = parseInt(parts[0], 10);
