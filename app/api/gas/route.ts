@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
     const data = await res.json();
 
     // get_initial_payload で venues または cutoffTimes が空の場合の防御的自動補完
-    if (params.includes("action=get_initial_payload") && data && (!data.venues || data.venues.length === 0)) {
+    const isInitialPayload = searchParams.get("action") === "get_initial_payload" || params.includes("action=get_initial_payload");
+    if (isInitialPayload && data) {
       try {
         const now = new Date();
         const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -50,42 +51,68 @@ export async function GET(request: NextRequest) {
 
         const predRes = await fetch(
           `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`,
-          { cache: "no-store", signal: AbortSignal.timeout(4000) }
+          { cache: "no-store", signal: AbortSignal.timeout(5000) }
         );
+
+        const VENUE_NAME_MAP: Record<string, string> = {
+          "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島", "05": "多摩川",
+          "06": "浜名湖", "07": "蒲郡", "08": "常滑", "09": "津", "10": "三国",
+          "11": "びわこ", "12": "住之江", "13": "尼崎", "14": "鳴門", "15": "丸亀",
+          "16": "児島", "17": "宮島", "18": "徳山", "19": "下関", "20": "若松",
+          "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村"
+        };
+
+        const MORNING_VENUES = ["10", "14", "18", "21", "23"];
+        const NIGHTER_VENUES = ["01", "07", "12", "15", "19", "20", "24"];
+        const MORNING_SCH: Record<string, string> = {
+          "1": "08:35", "2": "09:00", "3": "09:25", "4": "09:50", "5": "10:18", "6": "10:50",
+          "7": "11:20", "8": "11:52", "9": "12:27", "10": "13:00", "11": "13:35", "12": "14:15"
+        };
+        const DAY_SCH: Record<string, string> = {
+          "1": "10:45", "2": "11:10", "3": "11:35", "4": "12:05", "5": "12:35", "6": "13:05",
+          "7": "13:40", "8": "14:15", "9": "14:50", "10": "15:25", "11": "16:05", "12": "16:45"
+        };
+        const NIGHTER_SCH: Record<string, string> = {
+          "1": "15:15", "2": "15:40", "3": "16:05", "4": "16:30", "5": "17:00", "6": "17:30",
+          "7": "18:00", "8": "18:30", "9": "19:00", "10": "19:35", "11": "20:10", "12": "20:45"
+        };
+
+        const venueSet = new Map<string, string>();
+        const cutoffMap: Record<string, Record<string, string>> = {};
 
         if (predRes.ok) {
           const predJson = await predRes.json();
           if (predJson && predJson.predictions) {
-            const venueSet = new Map<string, string>();
-            const cutoffMap: Record<string, Record<string, string>> = {};
-
-            const VENUE_NAME_MAP: Record<string, string> = {
-              "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島", "05": "多摩川",
-              "06": "浜名湖", "07": "蒲郡", "08": "常滑", "09": "津", "10": "三国",
-              "11": "びわこ", "12": "住之江", "13": "尼崎", "14": "鳴門", "15": "丸亀",
-              "16": "児島", "17": "宮島", "18": "徳山", "19": "下関", "20": "若松",
-              "21": "芦屋", "22": "福岡", "23": "唐津", "24": "大村"
-            };
-
             for (const [k, p] of Object.entries(predJson.predictions as Record<string, any>)) {
               const jcd = String(p.jcd || k.split("-")[0] || k.split("_")[0]).padStart(2, "0");
               const rno = String(p.rno || (k.includes("-") ? k.split("-")[1] : k.includes("_") ? k.split("_")[1] : "1"));
               const vname = p.venue_name || VENUE_NAME_MAP[jcd] || `場${jcd}`;
               venueSet.set(jcd, vname);
 
-              if (!cutoffMap[jcd]) cutoffMap[jcd] = {};
+              if (!cutoffMap[jcd]) {
+                const baseSch = MORNING_VENUES.includes(jcd) ? MORNING_SCH : NIGHTER_VENUES.includes(jcd) ? NIGHTER_SCH : DAY_SCH;
+                cutoffMap[jcd] = { ...baseSch };
+              }
               const cutoff = p.deadline || p.deadline_time || p.cutoff_str || "";
               if (cutoff) cutoffMap[jcd][rno] = cutoff;
             }
-
-            data.venues = Array.from(venueSet.entries())
-              .sort((a, b) => a[0].localeCompare(b[0]))
-              .map(([jcd, name]) => ({ jcd, name }));
-
-            data.cutoffTimes = cutoffMap;
             data.predictions = predJson.predictions;
           }
         }
+
+        // 全24場に対応する完全なcutoffTimesテーブルを構築
+        for (const [jcd, name] of Object.entries(VENUE_NAME_MAP)) {
+          if (!cutoffMap[jcd]) {
+            const baseSch = MORNING_VENUES.includes(jcd) ? MORNING_SCH : NIGHTER_VENUES.includes(jcd) ? NIGHTER_SCH : DAY_SCH;
+            cutoffMap[jcd] = { ...baseSch };
+          }
+        }
+
+        data.venues = Array.from(venueSet.entries())
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([jcd, name]) => ({ jcd, name }));
+
+        data.cutoffTimes = cutoffMap;
       } catch (_) {}
     }
 
