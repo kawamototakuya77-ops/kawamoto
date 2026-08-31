@@ -8,12 +8,16 @@ import { useEffect, useState } from "react";
  * - データがない場合はセクション自体を非表示（架空の数値は出さない）
  */
 export default function DefenseCounter() {
-  const [data, setData] = useState<{ skipCount: number; srankCount?: number; totalRaces: number; successRate: number; dateLabel: string }>({
-    skipCount: 107,
-    srankCount: 49,
-    totalRaces: 156,
-    successRate: 69,
-    dateLabel: "8/29",
+  const [data, setData] = useState<{ skipCount: number; srankCount?: number; totalRaces: number; successRate: number; dateLabel: string }>(() => {
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    return {
+      skipCount: 0,
+      srankCount: 0,
+      totalRaces: 0,
+      successRate: 0,
+      dateLabel: `${jst.getUTCMonth() + 1}/${jst.getUTCDate()}`,
+    };
   });
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export default function DefenseCounter() {
         const res = await fetch("/api/today-stats");
         if (res.ok) {
           const json = await res.json();
-          if (json && json.skipCount > 0) {
+          if (json && json.success) {
             setData(json);
           }
         }
