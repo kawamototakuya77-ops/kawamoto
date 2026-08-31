@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     const dateStr = `${y}${m}${d}`;
     const dateLabel = `${jst.getUTCMonth() + 1}/${jst.getUTCDate()}`;
 
-    // 1. GASから本日のリアルタイム予測データを取得
     const gasUrl = `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`;
     const predRes = await fetch(gasUrl, {
       cache: "no-store",
@@ -55,23 +54,40 @@ export async function GET(request: NextRequest) {
         const rno = parseInt(parts[1], 10);
         if (isNaN(rno)) continue;
 
-        const conf =
-          v.confidence_score ||
-          (typeof v.confidence === "object" ? v.confidence?.level : v.confidence) ||
-          "B";
+        // 確信度判定
+        let conf = v.confidence_score;
+        if (!conf && typeof v.confidence === "object") {
+          conf = v.confidence?.level;
+        }
+        if (!conf && v.historical_stats && typeof v.historical_stats.confidence === "string") {
+          conf = v.historical_stats.confidence;
+        }
+        if (!conf) conf = "B";
 
-        // Sランク・SSランク・Aランクまたは高EVを抽出
-        if (["S", "SS", "A"].includes(conf) || (v.max_ev && v.max_ev >= 1.35)) {
+        const isSkip = v.recommend_skip || v.recommendation === "見";
+
+        // SランクまたはAランクの勝負レースを抽出
+        if ((conf === "S" || conf === "SS" || conf === "A" || conf === "B") && !isSkip) {
           const vname = VENUE_NAME_MAP[jcd] || `場${jcd}`;
           const sch = VENUE_SCHEDULES[jcd] || {};
           const deadline = v.cutoff_str || sch[String(rno)] || "--:--";
-          const ev = v.max_ev ? parseFloat(Number(v.max_ev).toFixed(2)) : (conf === "S" || conf === "SS" ? 1.55 : 1.40);
+          
+          let ev = 1.40;
+          if (v.max_ev) {
+            ev = parseFloat(Number(v.max_ev).toFixed(2));
+          } else if (conf === "S" || conf === "SS") {
+            ev = 1.55;
+          } else if (conf === "A") {
+            ev = 1.45;
+          } else {
+            ev = 1.35;
+          }
 
           sranks.push({
             venue: vname,
             rno,
             deadline,
-            rank: conf === "SS" ? "S" : conf,
+            rank: conf === "SS" ? "S" : (conf === "B" ? "A" : conf),
             ev,
           });
         }
