@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAllPredictions } from "@/hooks/useLivePrediction";
 import { useRouter } from "next/navigation";
-import { VENUE_SCHEDULES, TODAY_ACTIVE_VENUES } from "@/lib/venueSchedules";
+import { VENUE_SCHEDULES } from "@/lib/venueSchedules";
 
 // 明示的配列定義でJSオブジェクトキーソート順化バグ(01-09が10-24の後に回る現象)を100%防止
 const VENUE_LIST = [
@@ -49,16 +49,23 @@ interface Props {
 }
 
 export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props) {
-  const { activeVenues: swrActiveVenues, cutoffTimes, loading } = useAllPredictions();
+  const { activeVenues = [], cutoffTimes, loading } = useAllPredictions();
   const router = useRouter();
-  const activeVenues = swrActiveVenues && swrActiveVenues.length > 0 ? swrActiveVenues : TODAY_ACTIVE_VENUES;
-  const [currentJcd, setCurrentJcd] = useState<string>(selectedJcd || activeVenues[0] || "10");
+  const [currentJcd, setCurrentJcd] = useState<string>(selectedJcd || "");
+
+  useEffect(() => {
+    if (selectedJcd) {
+      setCurrentJcd(selectedJcd);
+    } else if (!currentJcd && activeVenues.length > 0) {
+      setCurrentJcd(activeVenues[0]);
+    }
+  }, [selectedJcd, activeVenues, currentJcd]);
 
   const getScheduleForJcd = (jcd: string): Record<string, string> => {
     if (cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0) {
       return cutoffTimes[jcd];
     }
-    return VENUE_SCHEDULES[jcd] || VENUE_SCHEDULES["10"];
+    return VENUE_SCHEDULES[jcd] || {};
   };
 
   // 直近のレース時間を計算する関数
@@ -86,12 +93,6 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     return { nextTime, minDiff };
   };
 
-  useEffect(() => {
-    if (selectedJcd) {
-      setCurrentJcd(selectedJcd);
-    }
-  }, [selectedJcd]);
-
   const handleVenueClick = (jcd: string) => {
     setCurrentJcd(jcd);
     onSelect(jcd);
@@ -102,8 +103,9 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     router.push(`/race/${slug}-${rno}r`);
   };
 
-  const selectedVenueObj = VENUE_LIST.find(v => v.jcd === currentJcd) || VENUE_LIST[9];
-  const timesMap = getScheduleForJcd(currentJcd);
+  const activeVenueJcd = currentJcd || activeVenues[0] || "05";
+  const selectedVenueObj = VENUE_LIST.find(v => v.jcd === activeVenueJcd) || VENUE_LIST[0];
+  const timesMap = getScheduleForJcd(activeVenueJcd);
 
   return (
     <div className="space-y-6">
