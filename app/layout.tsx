@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Noto_Sans_JP } from "next/font/google";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import StagingBanner from "@/components/StagingBanner";
 import "./globals.css";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${outfit.variable} ${noto.variable}`}>
       <body className="min-h-screen bg-slate-950 antialiased font-sans overflow-x-hidden w-full">
+        <StagingBanner />
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-YZ7SH1JBXG"} />
         {children}
       </body>
