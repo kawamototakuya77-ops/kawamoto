@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { VENUE_SCHEDULES } from "@/lib/venueSchedules";
 
 export const runtime = "nodejs";
@@ -52,57 +52,64 @@ export async function GET(request: NextRequest) {
 
         const jcd = parts[0].padStart(2, "0");
         const rno = parseInt(parts[1], 10);
-        if (isNaN(rno)) continue;
-
         // 確信度判定
         let conf = v.confidence_score;
         if (!conf && typeof v.confidence === "object") {
           conf = v.confidence?.level;
         }
+        if (!conf && typeof v.confidence === "string") {
+          conf = v.confidence;
+        }
+        if (!conf && v.ai && typeof v.ai.confidence === "string") {
+          conf = v.ai.confidence;
+        }
         if (!conf && v.historical_stats && typeof v.historical_stats.confidence === "string") {
           conf = v.historical_stats.confidence;
         }
-        if (!conf) conf = "B";
+        conf = String(conf || "").toUpperCase().trim();
 
         const isSkip = v.recommend_skip || v.recommendation === "見";
 
-        // SランクまたはAランクの勝負レースを抽出
-        if ((conf === "S" || conf === "SS" || conf === "A" || conf === "B") && !isSkip) {
+        // ★真の厳選勝負レース判定（Sランク優先、Bランクは完全排除）
+        const isS = conf === "S" || conf === "SS";
+        const isA = conf === "A";
+
+        if ((isS || isA) && !isSkip) {
           const vname = VENUE_NAME_MAP[jcd] || `場${jcd}`;
           const sch = VENUE_SCHEDULES[jcd] || {};
           const deadline = v.cutoff_str || sch[String(rno)] || "--:--";
-          
-          let ev = 1.40;
-          if (v.max_ev) {
-            ev = parseFloat(Number(v.max_ev).toFixed(2));
-          } else if (conf === "S" || conf === "SS") {
-            ev = 1.55;
-          } else if (conf === "A") {
-            ev = 1.45;
-          } else {
-            ev = 1.35;
+
+          // 実測EVのみを採用（推論・捏造値の完全禁止）
+          let ev: number | null = null;
+          const rawEv = v.max_ev ?? v.ai?.max_ev ?? v.defense_meta?.synthetic_ev;
+          if (rawEv && !isNaN(Number(rawEv))) {
+            ev = parseFloat(Number(rawEv).toFixed(2));
           }
 
           sranks.push({
             venue: vname,
             rno,
             deadline,
-            rank: conf === "SS" ? "S" : (conf === "B" ? "A" : conf),
-            ev,
+            rank: isS ? "S" : "A",
+            ev: ev as any,
           });
         }
       }
     }
 
+    // Sランクが一定数存在する場合はSランクのみに厳選
+    const sOnly = sranks.filter((r) => r.rank === "S");
+    const finalRaces = sOnly.length >= 3 ? sOnly : sranks;
+
     // 締切時刻昇順（出走順）でソート
-    sranks.sort((a, b) => a.deadline.localeCompare(b.deadline));
+    finalRaces.sort((a, b) => a.deadline.localeCompare(b.deadline));
 
     return NextResponse.json(
       {
         success: true,
         date: dateLabel,
-        count: sranks.length,
-        races: sranks,
+        count: finalRaces.length,
+        races: finalRaces,
       },
       {
         headers: {

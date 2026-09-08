@@ -57,9 +57,11 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     if (selectedJcd) {
       setCurrentJcd(selectedJcd);
     } else if (!currentJcd && activeVenues.length > 0) {
-      setCurrentJcd(activeVenues[0]);
+      const morningOrFirst = activeVenues.find(j => ["14", "21", "18", "10", "23"].includes(j)) || activeVenues[0];
+      setCurrentJcd(morningOrFirst);
+      onSelect(morningOrFirst);
     }
-  }, [selectedJcd, activeVenues, currentJcd]);
+  }, [selectedJcd, activeVenues, currentJcd, onSelect]);
 
   const getScheduleForJcd = (jcd: string): Record<string, string> => {
     if (cutoffTimes && cutoffTimes[jcd] && Object.keys(cutoffTimes[jcd]).length > 0) {
@@ -103,7 +105,8 @@ export default function VenueGrid({ selectedJcd, selectedRno, onSelect }: Props)
     router.push(`/race/${slug}-${rno}r`);
   };
 
-  const activeVenueJcd = currentJcd || activeVenues[0] || "05";
+  const morningOrFirst = activeVenues.find(j => ["14", "21", "18", "10", "23"].includes(j)) || activeVenues[0] || "14";
+  const activeVenueJcd = currentJcd || morningOrFirst;
   const selectedVenueObj = VENUE_LIST.find(v => v.jcd === activeVenueJcd) || VENUE_LIST[0];
   const timesMap = getScheduleForJcd(activeVenueJcd);
 

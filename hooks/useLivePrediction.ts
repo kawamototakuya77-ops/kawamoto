@@ -67,7 +67,19 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
   );
 
   // GAS が返す venues: [{ jcd: "05", name: "多摩川" }] → jcd 配列に変換
-  const rawVenues = (raw?.venues ?? []).map((v) => v.jcd);
+  let rawVenues = (raw?.venues ?? []).map((v) => v.jcd);
+  // 万が一 venues が空でも、predictions のキーから全開催場を即座に自動復元
+  if (rawVenues.length === 0 && raw?.predictions) {
+    const fromPreds = new Set<string>();
+    Object.keys(raw.predictions).forEach((k) => {
+      const jcd = k.split("_")[0].split("-")[0].padStart(2, "0");
+      const num = parseInt(jcd, 10);
+      if (num >= 1 && num <= 24) {
+        fromPreds.add(jcd);
+      }
+    });
+    rawVenues = Array.from(fromPreds).sort((a, b) => a.localeCompare(b));
+  }
   const activeVenues: string[] = rawVenues;
 
   // GAS が返す predictions: { "14_1": {...} } → phase 情報に変換

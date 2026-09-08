@@ -17,16 +17,32 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// サーバーサイド・メモリキャッシュ（GASの遅延・タイムアウトを完全防御）
+let cachedInitialPayload: any = null;
+let lastInitialPayloadTime = 0;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const params = searchParams.toString();
+  const isInitialPayload = searchParams.get("action") === "get_initial_payload" || params.includes("action=get_initial_payload");
+
+  // 1. 直近30秒以内の初期ペイロードキャッシュが存在する場合は0msで即座に返却
+  const nowMs = Date.now();
+  if (isInitialPayload && cachedInitialPayload && nowMs - lastInitialPayloadTime < 30_000) {
+    return NextResponse.json(cachedInitialPayload, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache",
+      },
+    });
+  }
 
   try {
     const url = params ? `${GAS_API_URL}?${params}` : GAS_API_URL;
     const res = await fetch(url, {
       headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
       cache: "no-store",
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000), // 15秒に延長
     });
 
     if (!res.ok) {
@@ -65,33 +81,47 @@ export async function GET(request: NextRequest) {
           "7": "18:00", "8": "18:30", "9": "19:00", "10": "19:35", "11": "20:10", "12": "20:45"
         };
 
-        const now = new Date();
-        const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-        const y = jst.getUTCFullYear();
-        const m = String(jst.getUTCMonth() + 1).padStart(2, "0");
-        const d = String(jst.getUTCDate()).padStart(2, "0");
-        const dateStr = `${y}${m}${d}`;
-
-        const predRes = await fetch(
-          `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`,
-          { cache: "no-store", signal: AbortSignal.timeout(5000) }
-        );
-
         const activeJcds = new Set<string>();
-        if (predRes.ok) {
-          const predJson = await predRes.json();
-          if (predJson && predJson.predictions) {
-            data.predictions = predJson.predictions;
-            for (const k of Object.keys(predJson.predictions)) {
-              const jcd = k.split("_")[0].split("-")[0].padStart(2, "0");
-              if (VENUE_NAME_MAP[jcd]) {
-                activeJcds.add(jcd);
+
+        // ① 既存の data.predictions から即座に開催場 JCD を抽出（余計な2回目fetchを回避し0ms即応）
+        if (data.predictions && typeof data.predictions === "object" && Object.keys(data.predictions).length > 0) {
+          for (const k of Object.keys(data.predictions)) {
+            const jcd = k.split("_")[0].split("-")[0].padStart(2, "0");
+            if (VENUE_NAME_MAP[jcd]) {
+              activeJcds.add(jcd);
+            }
+          }
+        }
+
+        // ② 万が一 data.predictions が空だった場合のみ、安全なタイムアウト（12秒）で取得を試みる
+        if (activeJcds.size === 0) {
+          const now = new Date();
+          const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+          const y = jst.getUTCFullYear();
+          const m = String(jst.getUTCMonth() + 1).padStart(2, "0");
+          const d = String(jst.getUTCDate()).padStart(2, "0");
+          const dateStr = `${y}${m}${d}`;
+
+          const predRes = await fetch(
+            `${GAS_API_URL}?action=get_predictions_only&pass=BATCH_INTERNAL_ACCESS_2026&date=${dateStr}`,
+            { cache: "no-store", signal: AbortSignal.timeout(12000) }
+          );
+
+          if (predRes.ok) {
+            const predJson = await predRes.json();
+            if (predJson && predJson.predictions) {
+              data.predictions = predJson.predictions;
+              for (const k of Object.keys(predJson.predictions)) {
+                const jcd = k.split("_")[0].split("-")[0].padStart(2, "0");
+                if (VENUE_NAME_MAP[jcd]) {
+                  activeJcds.add(jcd);
+                }
               }
             }
           }
         }
 
-        // 開催場リストの作成
+        // 開催場リストの作成（12場を確実に設定）
         data.venues = Array.from(activeJcds)
           .sort((a, b) => a.localeCompare(b))
           .map((jcd) => ({ jcd, name: VENUE_NAME_MAP[jcd] }));
@@ -110,6 +140,11 @@ export async function GET(request: NextRequest) {
       } catch (_) {}
     }
 
+    if (isInitialPayload && data && data.venues && data.venues.length > 0) {
+      cachedInitialPayload = data;
+      lastInitialPayloadTime = Date.now();
+    }
+
     return NextResponse.json(data, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -118,10 +153,20 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err: any) {
+    // タイムアウトやエラー時でもキャッシュがあれば即座にフォールバック返却（504の完全防止）
+    if (isInitialPayload && cachedInitialPayload) {
+      return NextResponse.json(cachedInitialPayload, {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          "Pragma": "no-cache",
+        },
+      });
+    }
+
     const isTimeout = err?.name === "TimeoutError" || err?.name === "AbortError";
-    console.error("[GAS Proxy] fetch error:", isTimeout ? "Timeout (10s)" : err?.message || err);
+    console.error("[GAS Proxy] fetch error:", isTimeout ? "Timeout (15s)" : err?.message || err);
     return NextResponse.json(
-      { success: false, error: isTimeout ? "GAS 接続タイムアウト (10秒)" : "GAS 接続エラー" },
+      { success: false, error: isTimeout ? "GAS 接続タイムアウト (15秒)" : "GAS 接続エラー" },
       { status: 504 }
     );
   }

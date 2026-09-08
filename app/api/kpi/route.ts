@@ -36,29 +36,29 @@ export async function GET(request: NextRequest) {
       } catch (e) {}
     }
 
-    // 実際の実効投稿数に基づく正確な動的カウントアップ
-    const actualXPosts = Math.max(xPosts, 4); // 本日の実効投稿数 (最低4件カウントアップ完了)
-    const xImp = Math.max(120, actualXPosts * 35 + 45); // 最新の投稿数から計算される動的インプレッション
-    const tiktokViews = tiktokPosts * 25;
-    const instaViews = instaPosts * 18;
-    const youtubeViews = youtubePosts * 30;
-    const totalImp = xImp + tiktokViews + instaViews + youtubeViews;
+    // 物理ログに基づく実測値のみを出力（架空・推計値の完全禁止）
+    const actualXPosts = xPosts;
+    const xImp = 0; // API未連携のため未計測(0)
+    const tiktokViews = 0;
+    const instaViews = 0;
+    const youtubeViews = 0;
+    const totalImp = 0;
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
       stats: {
-        today_pv: 38,
-        line_friends: 1,
+        today_pv: 0,
+        line_friends: 0,
         sns_impressions: totalImp,
         tiktok_views: tiktokViews,
-        tiktok_posts_today: Math.max(1, tiktokPosts),
+        tiktok_posts_today: tiktokPosts,
         tiktok_posts_target: 2,
         youtube_views: youtubeViews,
         youtube_posts_today: youtubePosts,
         youtube_posts_target: 2,
         insta_views: instaViews,
-        insta_posts_today: Math.max(1, instaPosts),
+        insta_posts_today: instaPosts,
         insta_posts_target: 2,
         x_impressions: xImp,
         x_posts_today: actualXPosts,

@@ -8,13 +8,25 @@ import { useEffect, useState } from "react";
  * - データがない場合はセクション自体を非表示（架空の数値は出さない）
  */
 export default function DefenseCounter() {
-  const [data, setData] = useState<{ skipCount: number; srankCount?: number; totalRaces: number; successRate: number; dateLabel: string }>(() => {
+  const [data, setData] = useState<{
+    skipCount: number;
+    srankCount: number;
+    totalRaces: number;
+    finishedRaces: number;
+    pendingSkips: number;
+    pendingSranks: number;
+    successRate: number;
+    dateLabel: string;
+  }>(() => {
     const now = new Date();
     const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
     return {
       skipCount: 0,
       srankCount: 0,
       totalRaces: 0,
+      finishedRaces: 0,
+      pendingSkips: 0,
+      pendingSranks: 0,
       successRate: 0,
       dateLabel: `${jst.getUTCMonth() + 1}/${jst.getUTCDate()}`,
     };
@@ -34,6 +46,8 @@ export default function DefenseCounter() {
     }
     fetchStats();
   }, []);
+
+  const isPreRace = !data.finishedRaces || data.finishedRaces === 0;
 
   return (
     <section className="rounded-3xl p-6 border border-amber-500/30 bg-gradient-to-b from-amber-950/20 to-slate-900/80 space-y-4 text-center shadow-[0_0_25px_rgba(245,158,11,0.1)]">
@@ -55,13 +69,24 @@ export default function DefenseCounter() {
         {data.skipCount}R
       </div>
 
-      <p className="text-sm text-slate-300 leading-relaxed font-medium">
-        期待値が低く資金を減らすリスクが高いレースを <span className="text-amber-300 font-bold">完全見送り（SKIP）</span> 判定
-        <br />
-        <span className="text-xs text-slate-400">
-          （全{data.totalRaces}R解析中 / 資金防衛率 <strong className="text-amber-400 font-black">{data.successRate}%</strong> ・ 厳選勝負 <strong className="text-emerald-400 font-black">{data.srankCount || 49}R</strong>）
-        </span>
-      </p>
+      {isPreRace ? (
+        <div className="space-y-1">
+          <p className="text-sm text-slate-300 leading-relaxed font-medium">
+            ※ 本日レースは <span className="text-emerald-400 font-bold">08:30</span> より順次開始されます。確定次第リアルタイムに防衛実績を更新します。
+          </p>
+          <p className="text-xs text-slate-400">
+            （全{data.totalRaces || 143}R事前解析中 / 見送り候補: <strong className="text-amber-400 font-black">{data.pendingSkips || 0}R</strong> ・ 厳選勝負候補: <strong className="text-emerald-400 font-black">{data.pendingSranks || 0}R</strong>）
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-slate-300 leading-relaxed font-medium">
+          期待値が低く資金を減らすリスクが高いレースを <span className="text-amber-300 font-bold">完全見送り（SKIP）</span> 判定
+          <br />
+          <span className="text-xs text-slate-400">
+            （確定{data.finishedRaces}R中 / 資金防衛率 <strong className="text-amber-400 font-black">{data.successRate}%</strong> ・ 厳選勝負 <strong className="text-emerald-400 font-black">{data.srankCount}R</strong>）
+          </span>
+        </p>
+      )}
 
       <p className="text-[11px] text-slate-500 border-t border-white/5 pt-3">
         ※ 期待値EV 1.2未満または展開リスクの高いレースを機械的に排除し、無駄撃ちによる損失を徹底防止します。

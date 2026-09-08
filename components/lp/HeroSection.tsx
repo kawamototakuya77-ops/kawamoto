@@ -113,8 +113,8 @@ export default function HeroSection() {
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/30 max-w-lg mx-auto text-center">
-            <p className="text-xs text-slate-500">🔄 本日の実績は21:30以降に更新されます</p>
+          <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-700/30 max-w-lg mx-auto text-center">
+            <p className="text-xs text-slate-400">⏱️ 本日の確定実績はレース終了後（08:30〜）順次リアルタイム更新されます</p>
           </div>
         )}
 

@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,9 +25,12 @@ export async function GET(request: NextRequest) {
       signal: AbortSignal.timeout(8000),
     });
 
-    let totalRaces = 144;
-    let skipCount = 95;
-    let srankCount = 49;
+    let totalRaces = 0;
+    let finishedRaces = 0;
+    let skipCount = 0;
+    let srankCount = 0;
+    let pendingSkips = 0;
+    let pendingSranks = 0;
 
     if (res.ok) {
       const json = await res.json();
@@ -35,26 +38,37 @@ export async function GET(request: NextRequest) {
       const total = Object.keys(predictions).length;
       if (total > 0) {
         totalRaces = total;
-        let skips = 0;
-        let sranks = 0;
 
         for (const val of Object.values(predictions)) {
           const v = val as Record<string, any>;
           const conf =
             v.confidence_score ||
             (typeof v.confidence === "object" ? v.confidence?.level : v.confidence);
-          if (v.recommend_skip || v.recommendation === "見" || conf === "C" || conf === "D") {
-            skips++;
-          } else if (conf === "S" || conf === "SS" || conf === "A") {
-            sranks++;
+          const isSkip = v.recommend_skip || v.recommendation === "見" || conf === "C" || conf === "D";
+          const isSrank = conf === "S" || conf === "SS" || conf === "A";
+
+          // 事前スクリーニング段階のカウント
+          if (isSkip) pendingSkips++;
+          if (isSrank) pendingSranks++;
+
+          // 確定終了したレース（着順確定データが存在するもの）のみを確定実績として集計
+          const hasFinished =
+            Boolean(v.result && typeof v.result === "object" && (v.result.combo || v.result.winning_combo)) ||
+            Boolean(v.review && typeof v.review === "object" && (v.review.combo || v.review.winning_combo));
+
+          if (hasFinished) {
+            finishedRaces++;
+            if (isSkip) {
+              skipCount++;
+            } else if (isSrank) {
+              srankCount++;
+            }
           }
         }
-        skipCount = skips;
-        srankCount = sranks;
       }
     }
 
-    const successRate = totalRaces > 0 ? Math.round((skipCount / totalRaces) * 100) : 70;
+    const successRate = finishedRaces > 0 ? Math.round((skipCount / finishedRaces) * 100) : 0;
 
     return NextResponse.json(
       {
@@ -62,6 +76,9 @@ export async function GET(request: NextRequest) {
         skipCount,
         srankCount,
         totalRaces,
+        finishedRaces,
+        pendingSkips,
+        pendingSranks,
         successRate,
         dateLabel,
       },
@@ -75,10 +92,13 @@ export async function GET(request: NextRequest) {
   } catch (_) {
     return NextResponse.json({
       success: true,
-      skipCount: 95,
-      srankCount: 49,
-      totalRaces: 144,
-      successRate: 66,
+      skipCount: 0,
+      srankCount: 0,
+      totalRaces: 0,
+      finishedRaces: 0,
+      pendingSkips: 0,
+      pendingSranks: 0,
+      successRate: 0,
       dateLabel: "",
     });
   }
