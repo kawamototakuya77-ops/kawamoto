@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLivePrediction } from "@/hooks/useLivePrediction";
 import { useRacerScores } from "@/hooks/useRacerScores";
 import type { PredictionData } from "@/types/prediction";
@@ -105,7 +105,7 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
 
       {/* Tab content */}
       <div className="min-h-[300px]">
-        {activeTab === "prediction" && <PredictionTab data={data} loading={loading} />}
+        {activeTab === "prediction" && <PredictionTab data={data} loading={loading} jcd={jcd} rno={rno} />}
         {activeTab === "ability" && <AbilityTab data={data} loading={loading} />}
         {activeTab === "weather" && <WeatherTab data={data} loading={loading} />}
         {activeTab === "defense" && <DefenseTab data={data} loading={loading} />}
@@ -115,13 +115,114 @@ export default function RaceTabs({ jcd, rno, venueName }: Props) {
   );
 }
 
+// ─── チケット管理 ＆ 初回的中保証フック ───────────────────────
+function useTicketUnlock(jcd: string, rno: number, isHit: boolean | null | undefined) {
+  const raceKey = `${jcd}-${rno}`;
+  const [tickets, setTickets] = useState<number>(1);
+  const [unlockedRaces, setUnlockedRaces] = useState<string[]>([]);
+  const [refundAlert, setRefundAlert] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      // 1. チケット残高の初期化（初回訪問ユーザーには1枚無料プレゼント）
+      const savedTickets = localStorage.getItem("kyotei_user_tickets");
+      if (savedTickets === null) {
+        localStorage.setItem("kyotei_user_tickets", "1");
+        setTickets(1);
+      } else {
+        setTickets(parseInt(savedTickets, 10) || 0);
+      }
+
+      // 2. アンロック済みレースリストの取得
+      const savedUnlocked = localStorage.getItem("kyotei_unlocked_races");
+      const unlockedList: string[] = savedUnlocked ? JSON.parse(savedUnlocked) : [];
+      setUnlockedRaces(unlockedList);
+
+      // 3. 初回的中保証の自動判定（初戦でアンロック済みかつ不的中の場合、チケットを即時返還）
+      const guaranteeUsed = localStorage.getItem("kyotei_guarantee_used");
+      if (
+        isHit === false &&
+        unlockedList.includes(raceKey) &&
+        guaranteeUsed !== "true"
+      ) {
+        const refundedRaces: string[] = JSON.parse(localStorage.getItem("kyotei_refunded_races") || "[]");
+        if (!refundedRaces.includes(raceKey)) {
+          refundedRaces.push(raceKey);
+          localStorage.setItem("kyotei_refunded_races", JSON.stringify(refundedRaces));
+          localStorage.setItem("kyotei_guarantee_used", "true");
+          const curTickets = parseInt(localStorage.getItem("kyotei_user_tickets") || "0", 10);
+          const newTickets = curTickets + 1;
+          localStorage.setItem("kyotei_user_tickets", newTickets.toString());
+          setTickets(newTickets);
+          setRefundAlert(true);
+        }
+      }
+    } catch {
+      // ignore localStorage errors
+    }
+  }, [raceKey, isHit]);
+
+  const unlockWithTicket = () => {
+    try {
+      if (tickets <= 0) return false;
+      const newTickets = tickets - 1;
+      localStorage.setItem("kyotei_user_tickets", newTickets.toString());
+      setTickets(newTickets);
+
+      const savedUnlocked = localStorage.getItem("kyotei_unlocked_races");
+      const unlockedList: string[] = savedUnlocked ? JSON.parse(savedUnlocked) : [];
+      if (!unlockedList.includes(raceKey)) {
+        unlockedList.push(raceKey);
+        localStorage.setItem("kyotei_unlocked_races", JSON.stringify(unlockedList));
+        setUnlockedRaces(unlockedList);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const isUnlocked = unlockedRaces.includes(raceKey);
+
+  return {
+    tickets,
+    isUnlocked,
+    unlockWithTicket,
+    refundAlert,
+  };
+}
+
 // ─── タブ1: 予想到着 ───────────────────────────────────────────
-function PredictionTab({ data, loading }: { data: PredictionData | null; loading: boolean }) {
+function PredictionTab({
+  data,
+  loading,
+  jcd,
+  rno,
+}: {
+  data: PredictionData | null;
+  loading: boolean;
+  jcd: string;
+  rno: number;
+}) {
+  const { tickets, isUnlocked, unlockWithTicket, refundAlert } = useTicketUnlock(
+    jcd,
+    rno,
+    data?.result?.is_hit
+  );
+
   if (loading) return <TabSkeleton />;
   if (!data) return <TabEmpty message="レースを選択すると予測データが表示されます" />;
 
   const { ai } = data;
   const isLive = data.phase >= 2;
+
+  // S/Aランク勝負レース判定
+  const confStr = typeof ai.confidence === 'string' ? ai.confidence : (data as any).confidence_score || "";
+  const isTargetRace = (confStr.includes("S") || confStr.includes("A")) && Boolean(ai.solid_focus && ai.solid_focus.length > 0);
+  const isFinished = Boolean(data.result);
+
+  // マスキング適用条件：勝負レース ＆ 未終了 ＆ 未アンロック
+  const shouldMask = isTargetRace && !isFinished && !isUnlocked;
 
   return (
     <div className="space-y-4">
@@ -181,30 +282,100 @@ function PredictionTab({ data, loading }: { data: PredictionData | null; loading
         })()}
       </div>
 
-      {/* Focus picks */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20">
-          <p className="text-sm text-indigo-400 font-bold mb-2">🟦 本命フォーカス</p>
-          <div className="space-y-1.5">
-            {ai.solid_focus && ai.solid_focus.length > 0 ? ai.solid_focus.map((f, i) => (
-              <div key={i} className="px-3 py-2 bg-indigo-500/10 rounded-lg text-sm font-black text-indigo-300 border border-indigo-500/20">
-                {f}
+      {/* Focus picks with Frosted Glass Masking */}
+      <div className="relative">
+        {/* すりガラス・マスキングオーバーレイ */}
+        {shouldMask && (
+          <div className="absolute inset-0 z-20 backdrop-blur-md bg-slate-950/85 border-2 border-emerald-500/40 rounded-2xl flex flex-col items-center justify-center p-6 text-center shadow-2xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold mb-3">
+              <span>🛡️</span>
+              <span>初回体験は【的中保証】付き（外れたら即時全額返還）</span>
+            </div>
+            <h3 className="text-lg font-black text-white mb-1">
+              ★{confStr || "S"}ランク 厳選勝負レース
+            </h3>
+            <p className="text-xs text-slate-300 max-w-sm mb-4 leading-relaxed">
+              直前展示δとオッズ歪みを突いた【プロ公認・黄金フォーメーション（本線＋抑え）】を解禁します。
+            </p>
+
+            {tickets > 0 ? (
+              <div className="space-y-2 w-full max-w-xs">
+                <button
+                  onClick={unlockWithTicket}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <span>🔓</span>
+                  <span>無料チケットで買い目をアンロック</span>
+                </button>
+                <p className="text-[11px] text-emerald-400 font-bold">
+                  🎁 初回登録ボーナス適用中（所持チケット: {tickets}枚）
+                </p>
               </div>
-            )) : (
-              <p className="text-sm text-slate-500">---</p>
+            ) : (
+              <div className="space-y-2 w-full max-w-xs">
+                <a
+                  href="https://buy.stripe.com/3cI3cv3rUbG28Wd9vxgjC05"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-teal-950/50 transition-all text-center"
+                >
+                  💳 100円で買い目をアンロック（Stripe）
+                </a>
+                <p className="text-[11px] text-slate-400">
+                  ※初戦不適中の場合、初回的中保証でチケット即時返還
+                </p>
+              </div>
             )}
           </div>
-        </div>
-        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-          <p className="text-sm text-amber-400 font-bold mb-2">🟧 穴フォーカス</p>
-          <div className="space-y-1.5">
-            {ai.upset_focus && ai.upset_focus.length > 0 ? ai.upset_focus.map((f, i) => (
-              <div key={i} className="px-3 py-2 bg-amber-500/10 rounded-lg text-sm font-black text-amber-300 border border-amber-500/20">
-                {f}
-              </div>
-            )) : (
-              <p className="text-sm text-slate-500">---</p>
-            )}
+        )}
+
+        {/* アンロック済みステータスバッジ */}
+        {isTargetRace && isUnlocked && !isFinished && (
+          <div className="mb-2 p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-between text-xs">
+            <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+              <span>🔓</span>
+              <span>勝負レース買い目アンロック済み（初回的中保証対象）</span>
+            </span>
+            <span className="text-slate-400 font-mono">所持チケット: {tickets}枚</span>
+          </div>
+        )}
+
+        {/* 初回的中保証返還通知バナー */}
+        {refundAlert && (
+          <div className="mb-3 p-3.5 rounded-xl bg-emerald-950/90 border-2 border-emerald-500 text-emerald-200 text-xs font-bold flex items-center gap-3 shadow-xl">
+            <span className="text-2xl">🛡️</span>
+            <div>
+              <div className="text-emerald-300 font-extrabold text-sm">【初回的中保証】チケットを即時返還しました！</div>
+              <div className="text-slate-300">初戦が不的中となったため、チケット1枚をお戻ししました。次の勝負レースを無料でお試しいただけます。</div>
+            </div>
+          </div>
+        )}
+
+        {/* 買い目カード本体（未アンロック時はぼかしを適用） */}
+        <div className={`grid grid-cols-2 gap-3 ${shouldMask ? "filter blur-md select-none pointer-events-none opacity-30" : ""}`}>
+          <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20">
+            <p className="text-sm text-indigo-400 font-bold mb-2">🟦 本命フォーカス</p>
+            <div className="space-y-1.5">
+              {ai.solid_focus && ai.solid_focus.length > 0 ? ai.solid_focus.map((f, i) => (
+                <div key={i} className="px-3 py-2 bg-indigo-500/10 rounded-lg text-sm font-black text-indigo-300 border border-indigo-500/20">
+                  {f}
+                </div>
+              )) : (
+                <p className="text-sm text-slate-500">---</p>
+              )}
+            </div>
+          </div>
+          <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+            <p className="text-sm text-amber-400 font-bold mb-2">🟧 穴フォーカス</p>
+            <div className="space-y-1.5">
+              {ai.upset_focus && ai.upset_focus.length > 0 ? ai.upset_focus.map((f, i) => (
+                <div key={i} className="px-3 py-2 bg-amber-500/10 rounded-lg text-sm font-black text-amber-300 border border-amber-500/20">
+                  {f}
+                </div>
+              )) : (
+                <p className="text-sm text-slate-500">---</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
