@@ -5,7 +5,7 @@
  * - CORS 問題を解消
  * - Next.js のキャッシュ (Stale-While-Revalidate) で無駄なリクエストを削減
  * - GAS_API_URL はサーバーサイドの環境変数に隠蔽
- * - 504 タイムアウトの物理的根絶 (絶対フォールバック保証)
+ * - 504 タイムアウトの物理的根絶 (get_initial_payload / get_race_cache 双方のインメモリ即応保証)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -74,12 +74,15 @@ let cachedInitialPayload: any = null;
 let lastInitialPayloadTime = 0;
 let isFetchingBackground = false;
 
+// レース別キャッシュ
+const raceCacheMap = new Map<string, { data: any; time: number }>();
+
 async function fetchInitialPayloadFromGAS(): Promise<any> {
   const url = `${GAS_API_URL}?action=get_initial_payload`;
   const res = await fetch(url, {
     headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
     cache: "no-store",
-    signal: AbortSignal.timeout(30000), // 30秒に拡大して4.3MBのダウンロードを確実に完了
+    signal: AbortSignal.timeout(30000),
   });
 
   if (!res.ok) {
@@ -120,11 +123,94 @@ async function fetchInitialPayloadFromGAS(): Promise<any> {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const params = searchParams.toString();
-  const isInitialPayload =
-    searchParams.get("action") === "get_initial_payload" ||
-    params.includes("action=get_initial_payload");
+  const action = searchParams.get("action");
 
-  // ─── get_initial_payload の高速・無停止処理 ───
+  // ─── 1. get_race_cache の超高速0msインメモリ解決 ───
+  if (action === "get_race_cache") {
+    const rawJcd = searchParams.get("jcd") || "";
+    const jcdNum = parseInt(rawJcd, 10) || 0;
+    const jcdPad = String(jcdNum).padStart(2, "0");
+    const rno = parseInt(searchParams.get("rno") || "0", 10);
+    const raceKey = `${jcdPad}_${rno}`;
+
+    // ① 個別レースキャッシュにあれば即座に返却
+    const cachedItem = raceCacheMap.get(raceKey);
+    if (cachedItem && Date.now() - cachedItem.time < 300_000) {
+      return NextResponse.json(cachedItem.data);
+    }
+
+    // ② cachedInitialPayload の predictions から該当レースを検索
+    if (cachedInitialPayload && cachedInitialPayload.predictions) {
+      const preds = cachedInitialPayload.predictions;
+      const targetPred =
+        preds[`${jcdPad}_${rno}`] ||
+        preds[`${jcdNum}_${rno}`] ||
+        preds[`${jcdPad}-${rno}`] ||
+        preds[`${jcdNum}-${rno}`];
+
+      if (targetPred) {
+        const hasPhase1 = !!(
+          targetPred.ai ||
+          (targetPred.predictions && targetPred.predictions.length > 0) ||
+          targetPred.first_prediction
+        );
+        const hasPhase2 = !!(targetPred.exhibition_completed || targetPred.second_prediction);
+
+        const resPayload = {
+          success: true,
+          cache: targetPred,
+          has_phase1: hasPhase1,
+          has_phase2: hasPhase2,
+        };
+        raceCacheMap.set(raceKey, { data: resPayload, time: Date.now() });
+        return NextResponse.json(resPayload, {
+          headers: {
+            "Cache-Control": "public, max-age=10, stale-while-revalidate=60",
+          },
+        });
+      }
+    }
+
+    // ③ まだメモリにない場合、GAS へ取得を試みる（タイムアウト12秒）
+    try {
+      const url = `${GAS_API_URL}?${params}`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+      });
+      if (res.ok) {
+        const gasJson = await res.json();
+        if (gasJson && gasJson.success && gasJson.cache) {
+          raceCacheMap.set(raceKey, { data: gasJson, time: Date.now() });
+          return NextResponse.json(gasJson);
+        }
+      }
+    } catch (err: any) {
+      console.warn("[GAS Proxy get_race_cache] fetch timed out or failed:", err?.message);
+    }
+
+    // ④ 万が一 GAS も失敗した場合、画面が504でクラッシュしないよう安全フォールバックを即返却
+    const safeFallback = {
+      success: true,
+      cache: {
+        success: true,
+        data: [],
+        predictions: [],
+        ai: null,
+        confidence: null,
+        exhibition_completed: false,
+      },
+      has_phase1: false,
+      has_phase2: false,
+    };
+    return NextResponse.json(safeFallback);
+  }
+
+  // ─── 2. get_initial_payload の高速・無停止処理 ───
+  const isInitialPayload =
+    action === "get_initial_payload" || params.includes("action=get_initial_payload");
+
   if (isInitialPayload) {
     const nowMs = Date.now();
     const cacheAge = nowMs - lastInitialPayloadTime;
@@ -139,7 +225,6 @@ export async function GET(request: NextRequest) {
     }
 
     // ② キャッシュが存在するが5分を超えている場合（Stale-While-Revalidate）:
-    //    古いキャッシュを即座に返し、裏で非同期に更新する（ユーザーを1ミリ秒も待たせない）
     if (cachedInitialPayload) {
       if (!isFetchingBackground) {
         isFetchingBackground = true;
@@ -162,7 +247,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data);
     } catch (err: any) {
       console.warn("[GAS Proxy] Initial fetch failed, using guaranteed fallback:", err?.message);
-      // 初回通信エラー時でも「本日確定12場」の安全フォールバックを返して504を物理防止！
       const fallbackData = buildDefaultInitialPayload();
       cachedInitialPayload = fallbackData;
       lastInitialPayloadTime = Date.now();
@@ -170,7 +254,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // ─── その他のアクション (get_race_cache 等) ───
+  // ─── 3. その他のアクション ───
   try {
     const url = params ? `${GAS_API_URL}?${params}` : GAS_API_URL;
     const res = await fetch(url, {
