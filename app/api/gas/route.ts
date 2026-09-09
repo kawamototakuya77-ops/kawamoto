@@ -157,7 +157,7 @@ async function fetchInitialPayloadFromGAS(): Promise<any> {
   const res = await fetch(url, {
     headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
     cache: "no-store",
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(35000), // GASは27秒かかるため余裕を持って35秒
   });
 
   if (!res.ok) {
@@ -190,9 +190,138 @@ async function fetchInitialPayloadFromGAS(): Promise<any> {
 
   data.cutoffTimes = buildCutoffMap();
 
-  cachedInitialPayload = data;
-  lastInitialPayloadTime = Date.now();
+  // predictions が空の場合はキャッシュに保存しない（フォールバックデータを誤キャッシュ防止）
+  const predsCount = Object.keys(data.predictions || {}).length;
+  if (predsCount > 0) {
+    cachedInitialPayload = data;
+    lastInitialPayloadTime = Date.now();
+    // レーサースコアのキャッシュもリセット（本日データに基づき再構築させる）
+    cachedRacerScores = null;
+    lastRacerScoresTime = 0;
+    raceCacheMap.clear();
+  } else {
+    console.warn("[GAS Proxy] Fetched data has empty predictions, NOT caching to avoid stale data");
+  }
   return data;
+}
+
+/** 日付変わり検知: JSTの今日の日付と cachedInitialPayload の date を比較して古ければキャッシュ無効化 */
+function invalidateCacheIfDateChanged(): void {
+  if (!cachedInitialPayload) return;
+  const nowJST = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const todayStr = nowJST.toISOString().slice(0, 10).replace(/-/g, "");
+  const cachedDate = String(cachedInitialPayload.date || "");
+  if (cachedDate && cachedDate !== todayStr) {
+    console.log(`[GAS Proxy] Date changed: cache=${cachedDate}, today=${todayStr}. Clearing all caches.`);
+    cachedInitialPayload = null;
+    lastInitialPayloadTime = 0;
+    cachedRacerScores = null;
+    lastRacerScoresTime = 0;
+    raceCacheMap.clear();
+  }
+}
+
+
+/** レース締切予定時刻のタイムスタンプ（ミリ秒）を取得 */
+function getRaceCutoffTimestamp(jcdPad: string, rno: number): number | null {
+  try {
+    const jcdNum = String(parseInt(jcdPad, 10)).padStart(2, "0");
+    const cutoffMap = cachedInitialPayload?.cutoffTimes || buildCutoffMap();
+    const timeStr = cutoffMap?.[jcdNum]?.[String(rno)] || cutoffMap?.[String(parseInt(jcdNum, 10))]?.[String(rno)];
+    if (!timeStr) return null;
+
+    const [hours, minutes] = timeStr.split(":").map((v: string) => parseInt(v, 10));
+    if (isNaN(hours) || isNaN(minutes)) return null;
+
+    const now = new Date();
+    // JST現在時刻
+    const jstNow = new Date(now.getTime() + (now.getTimezoneOffset() + 540) * 60000);
+    const targetJST = new Date(jstNow);
+    targetJST.setHours(hours, minutes, 0, 0);
+
+    // JSTタイムスタンプをエポックミリ秒に換算
+    return now.getTime() + (targetJST.getTime() - jstNow.getTime());
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 競艇データライフサイクルに応じた動的キャッシュTTL（ミリ秒）
+ * - 終了・確定レース: 24時間（永久）
+ * - 直前ゾーン (締切30分前〜締切後10分):
+ *     - 展示前: 6秒 (展示航走確定を即検知)
+ *     - 展示後: 15秒 (最新オッズ・EV・直前気象を追従)
+ * - 待機レース (30分以上先): 300秒 (5分)
+ */
+function getDynamicTTL(raceCache: any, cutoffTs: number | null): number {
+  if (raceCache?.result || raceCache?.review) {
+    return 86400_000; // 結果確定後は24時間
+  }
+  if (!cutoffTs) return 60_000;
+
+  const now = Date.now();
+  const diffMinutes = (cutoffTs - now) / 60000;
+
+  // 直前勝負ゾーン（締切30分前 〜 締切後10分）
+  if (diffMinutes <= 30 && diffMinutes >= -10) {
+    const isExCompleted = Boolean(
+      raceCache?.exhibition_completed ||
+      (raceCache?.second_prediction && Object.keys(raceCache.second_prediction).length > 0)
+    );
+    // 展示前は6秒ごとに監視、展示確定後は15秒でリアルタイム追従
+    return isExCompleted ? 15_000 : 6_000;
+  }
+
+  // レース終了から10分以上経過し結果待ちの場合: 15秒
+  if (diffMinutes < -10) {
+    return 15_000;
+  }
+
+  // 30分以上先の待機レース: 5分
+  return 300_000;
+}
+
+/**
+ * メモリ上の静的データ（出走表・一次予想・能力評価）と、
+ * GASからリアルタイム取得した動的データ（二次予想・気象・展示・オッズ）を安全マージ
+ */
+function mergeRaceData(basePred: any, liveCache: any): any {
+  if (!liveCache) return basePred || {};
+  if (!basePred) return liveCache;
+
+  return {
+    ...basePred,
+    ...liveCache,
+    // 出走表: 静的マスタ情報（選手名・級別・勝率等）を保持しつつ、展示タイム・チルト等を上書き
+    data: Array.isArray(liveCache.data) && liveCache.data.length > 0
+      ? liveCache.data.map((liveR: any) => {
+          const baseR = Array.isArray(basePred.data)
+            ? basePred.data.find((b: any) => Number(b.lane) === Number(liveR.lane))
+            : null;
+          return {
+            ...(baseR || {}),
+            ...liveR,
+            stats: { ...(baseR?.stats || {}), ...(liveR?.stats || {}) },
+          };
+        })
+      : basePred.data,
+    // 気象データ: リアルタイムを最優先
+    weather: liveCache.weather || basePred.weather || null,
+    // 展示確定フラグ
+    exhibition_completed: liveCache.exhibition_completed ?? basePred.exhibition_completed ?? false,
+    // 一次予想（メモリベース保持）
+    first_prediction: liveCache.first_prediction || basePred.first_prediction || null,
+    // 二次予想（リアルタイム取得優先）
+    second_prediction: liveCache.second_prediction || basePred.second_prediction || null,
+    // 直前AI解析・買い目
+    ai: liveCache.ai || basePred.ai || null,
+    predictions: (Array.isArray(liveCache.predictions) && liveCache.predictions.length > 0)
+      ? liveCache.predictions
+      : basePred.predictions || [],
+    // レース結果
+    result: liveCache.result || liveCache.review || basePred.result || null,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -200,7 +329,10 @@ export async function GET(request: NextRequest) {
   const params = searchParams.toString();
   const action = searchParams.get("action");
 
-  // ─── 1. get_race_cache の超高速0msインメモリ解決 ───
+  // 日付変わり自動検知: JST 0時をまたいだらキャッシュを全クリア（昨日データの汚染防止）
+  invalidateCacheIfDateChanged();
+
+  // ─── 1. get_race_cache のハイブリッド解決（一次予想=メモリ / 二次予想・気象=リアルタイム） ───
   if (action === "get_race_cache") {
     const rawJcd = searchParams.get("jcd") || "";
     const jcdNum = parseInt(rawJcd, 10) || 0;
@@ -208,64 +340,116 @@ export async function GET(request: NextRequest) {
     const rno = parseInt(searchParams.get("rno") || "0", 10);
     const raceKey = `${jcdPad}_${rno}`;
 
-    // ① 個別レースキャッシュにあれば即座に返却
-    const cachedItem = raceCacheMap.get(raceKey);
-    if (cachedItem && Date.now() - cachedItem.time < 300_000) {
-      return NextResponse.json(cachedItem.data);
-    }
-
-    // ② cachedInitialPayload の predictions から該当レースを検索
-    if (cachedInitialPayload && cachedInitialPayload.predictions) {
+    // ① メモリの初期ペイロードから静的ベースデータ（出走表・一次予想）を取得
+    let basePred: any = null;
+    if (cachedInitialPayload?.predictions) {
       const preds = cachedInitialPayload.predictions;
-      const targetPred =
+      basePred =
         preds[`${jcdPad}_${rno}`] ||
         preds[`${jcdNum}_${rno}`] ||
         preds[`${jcdPad}-${rno}`] ||
-        preds[`${jcdNum}-${rno}`];
-
-      if (targetPred) {
-        const hasPhase1 = !!(
-          targetPred.ai ||
-          (targetPred.predictions && targetPred.predictions.length > 0) ||
-          targetPred.first_prediction
-        );
-        const hasPhase2 = !!(targetPred.exhibition_completed || targetPred.second_prediction);
-
-        const resPayload = {
-          success: true,
-          cache: targetPred,
-          has_phase1: hasPhase1,
-          has_phase2: hasPhase2,
-        };
-        raceCacheMap.set(raceKey, { data: resPayload, time: Date.now() });
-        return NextResponse.json(resPayload, {
-          headers: {
-            "Cache-Control": "public, max-age=10, stale-while-revalidate=60",
-          },
-        });
-      }
+        preds[`${jcdNum}-${rno}`] ||
+        null;
     }
 
-    // ③ まだメモリにない場合、GAS へ取得を試みる（タイムアウト12秒）
+    // 締切時刻と現在時刻の差分を算出
+    const cutoffTs = getRaceCutoffTimestamp(jcdPad, rno);
+    const diffMinutes = cutoffTs ? (cutoffTs - Date.now()) / 60000 : 999;
+
+    // ② キャッシュチェック（動的TTL判定）
+    const cachedItem = raceCacheMap.get(raceKey);
+    const currentData = cachedItem?.data?.cache || basePred;
+    const ttl = getDynamicTTL(currentData, cutoffTs);
+
+    if (cachedItem && Date.now() - cachedItem.time < ttl) {
+      // キャッシュが有効期間内なら即返却
+      return NextResponse.json(cachedItem.data, {
+        headers: { "Cache-Control": `public, max-age=${Math.round(ttl / 1000)}` },
+      });
+    }
+
+    // ③ 30分以上先の待機レース: 二次予想・気象はまだ出ないためメモリの一次予想を即返却 (GAS通信ゼロ)
+    if (diffMinutes > 30 && basePred) {
+      const hasPhase1 = !!(
+        basePred.ai ||
+        (basePred.predictions && basePred.predictions.length > 0) ||
+        basePred.first_prediction
+      );
+      const resPayload = {
+        success: true,
+        cache: basePred,
+        has_phase1: hasPhase1,
+        has_phase2: false,
+      };
+      raceCacheMap.set(raceKey, { data: resPayload, time: Date.now() });
+      return NextResponse.json(resPayload, {
+        headers: { "Cache-Control": "public, max-age=60" },
+      });
+    }
+
+    // ④ 直前勝負ゾーン（締切30分前〜）または 未取得レース: GASからリアルタイム（二次予想・気象・展示）を取得
     try {
       const url = `${GAS_API_URL}?${params}`;
       const res = await fetch(url, {
         headers: { "User-Agent": "KyoteiAI/2.0 Next.js" },
         cache: "no-store",
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(8000), // 直前軽量フェッチ: 8秒
       });
       if (res.ok) {
         const gasJson = await res.json();
-        if (gasJson && gasJson.success && gasJson.cache) {
-          raceCacheMap.set(raceKey, { data: gasJson, time: Date.now() });
-          return NextResponse.json(gasJson);
+        if (gasJson?.success && gasJson.cache) {
+          // メモリの静的ベースとGASのリアルタイム動的データをマージ
+          const mergedCache = mergeRaceData(basePred, gasJson.cache);
+          const hasPhase1 = !!(
+            mergedCache.ai ||
+            (mergedCache.predictions && mergedCache.predictions.length > 0) ||
+            mergedCache.first_prediction
+          );
+          const hasValidSecond =
+            mergedCache.second_prediction && Object.keys(mergedCache.second_prediction).length > 0;
+          const hasPhase2 = !!(
+            mergedCache.exhibition_completed === true ||
+            mergedCache.live_predict === true ||
+            hasValidSecond
+          );
+
+          const livePayload = {
+            success: true,
+            cache: mergedCache,
+            has_phase1: hasPhase1,
+            has_phase2: hasPhase2,
+          };
+          raceCacheMap.set(raceKey, { data: livePayload, time: Date.now() });
+          return NextResponse.json(livePayload, {
+            headers: {
+              "Cache-Control": hasPhase2 ? "public, max-age=15" : "public, max-age=5",
+            },
+          });
         }
       }
     } catch (err: any) {
-      console.warn("[GAS Proxy get_race_cache] fetch timed out or failed:", err?.message);
+      console.warn(`[GAS Proxy get_race_cache] Real-time fetch timed out for ${raceKey}:`, err?.message);
     }
 
-    // ④ 万が一 GAS も失敗した場合、画面が504でクラッシュしないよう安全フォールバックを即返却
+    // ⑤ GASが遅延・エラーの場合: メモリの静的データ＋一次予想で安全フォールバック（画面白落ち完全防止）
+    if (basePred) {
+      const hasPhase1 = !!(
+        basePred.ai ||
+        (basePred.predictions && basePred.predictions.length > 0) ||
+        basePred.first_prediction
+      );
+      const fallbackPayload = {
+        success: true,
+        cache: basePred,
+        has_phase1: hasPhase1,
+        has_phase2: false,
+      };
+      // 直前ゾーンなら次回すぐに再試行できるようTTLを5秒に設定
+      raceCacheMap.set(raceKey, { data: fallbackPayload, time: Date.now() - (ttl - 5000) });
+      return NextResponse.json(fallbackPayload);
+    }
+
+    // ⑥ 完全にデータがない場合の最小限フォールバック
     const safeFallback = {
       success: true,
       cache: {
@@ -281,6 +465,7 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(safeFallback);
   }
+
 
   // ─── 2. get_racer_score_cache のインメモリ0ms即応 ───
   if (action === "get_racer_score_cache") {
