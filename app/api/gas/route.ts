@@ -77,6 +77,81 @@ let isFetchingBackground = false;
 // レース別キャッシュ
 const raceCacheMap = new Map<string, { data: any; time: number }>();
 
+// 全レーサースコアキャッシュ（predictionsのracer_scoresから自動構築）
+let cachedRacerScores: any = null;
+let lastRacerScoresTime = 0;
+
+/**
+ * cachedInitialPayload の predictions.*.racer_scores から全レーサースコアを集約してキャッシュする
+ * GASへの外部通信を完全に排除し、インメモリで即応（0ms）
+ */
+function buildRacerScoresFromPredictions(): Record<string, any> {
+  const scores: Record<string, any> = {};
+  if (!cachedInitialPayload?.predictions) return scores;
+  for (const pred of Object.values(cachedInitialPayload.predictions) as any[]) {
+    // racer_scores: オブジェクト形式 {regNo: {...}} または 配列形式 [{reg_no, score, components}]
+    const rs = pred?.racer_scores;
+    if (Array.isArray(rs)) {
+      // 配列形式の場合: data配列と紐付けてregNoを取得
+      const racerData = pred?.data;
+      if (Array.isArray(racerData)) {
+        for (const rsItem of rs) {
+          const lane = rsItem?.lane || rsItem?.course_num;
+          const racer = racerData.find((r: any) => Number(r?.lane) === Number(lane));
+          const reg = String(racer?.regNo || racer?.toban || rsItem?.reg_no || "").trim();
+          if (reg && !scores[reg] && racer) {
+            const comps = rsItem?.components || {};
+            const st = racer?.stats || {};
+            scores[reg] = {
+              name: racer?.name || "",
+              cls: racer?.cls || "",
+              win: Math.round((parseFloat(String(comps.rate || racer?.rate || "0")) || 0) * 10),
+              start: Math.round((parseFloat(String(comps.smoothed_win_rate || "0")) || 0) * 100),
+              escape: Math.round((parseFloat(String(comps.smoothed_3ren || "0")) || 0) * 100),
+              turn: 0,
+              maint: Math.round((parseFloat(String(comps.motor_rate || racer?.motor_rate || "0")) || 0) * 10),
+              safety: Math.round((parseFloat(String(comps.venue_win_rate || "0")) || 0) * 10),
+              clsSc: rsItem?.score || 0,
+              period: st?.period || "",
+            };
+          }
+        }
+      }
+    } else if (rs && typeof rs === "object") {
+      // オブジェクト形式の場合: {regNo: {...}}
+      for (const [regNo, val] of Object.entries(rs)) {
+        if (regNo && !scores[regNo]) {
+          scores[regNo] = val;
+        }
+      }
+    }
+    // data配列から基本情報を補完（まだscoresに登録されていない場合）
+    const racers = pred?.data;
+    if (Array.isArray(racers)) {
+      for (const r of racers) {
+        const reg = String(r?.regNo || r?.toban || "").trim();
+        if (reg && !scores[reg]) {
+          const st = r?.stats || {};
+          scores[reg] = {
+            name: r?.name || "",
+            cls: r?.cls || "",
+            win: Math.round((parseFloat(String(st.venue_win_rate || st.win_rate || r?.rate || "0")) || 0) * 10),
+            start: 0,
+            escape: 0,
+            turn: 0,
+            maint: Math.round((parseFloat(String(r?.motor_rate || "0")) || 0) * 10),
+            safety: 0,
+            clsSc: 0,
+            period: st?.period || "",
+          };
+        }
+      }
+    }
+  }
+  return scores;
+}
+
+
 async function fetchInitialPayloadFromGAS(): Promise<any> {
   const url = `${GAS_API_URL}?action=get_initial_payload`;
   const res = await fetch(url, {
@@ -207,7 +282,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(safeFallback);
   }
 
-  // ─── 2. get_initial_payload の高速・無停止処理 ───
+  // ─── 2. get_racer_score_cache のインメモリ0ms即応 ───
+  if (action === "get_racer_score_cache") {
+    // ① 5分以内のキャッシュがあれば即座に返却
+    if (cachedRacerScores && Date.now() - lastRacerScoresTime < 300_000) {
+      return NextResponse.json(cachedRacerScores, {
+        headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=3600" },
+      });
+    }
+    // ② predictionsから全レーサースコアを集約（GAS通信ゼロ）
+    const scores = buildRacerScoresFromPredictions();
+    const racerScoresPayload = {
+      success: true,
+      scores,
+      updated_at: new Date().toISOString(),
+    };
+    cachedRacerScores = racerScoresPayload;
+    lastRacerScoresTime = Date.now();
+    return NextResponse.json(racerScoresPayload, {
+      headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=3600" },
+    });
+  }
+
+  // ─── 3. get_initial_payload の高速・無停止処理 ───
   const isInitialPayload =
     action === "get_initial_payload" || params.includes("action=get_initial_payload");
 
