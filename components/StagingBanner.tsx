@@ -1,9 +1,21 @@
-﻿"use client";
+"use client";
+
+import { useEffect, useState } from "react";
 
 export default function StagingBanner() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   const isPreview =
     process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ||
-    (typeof window !== "undefined" && (window.location.hostname.includes("staging") || window.location.hostname.includes("localhost")));
+    (typeof window !== "undefined" &&
+      (window.location.hostname.includes("staging") ||
+        window.location.hostname.includes("localhost")));
 
   if (!isPreview) return null;
 
