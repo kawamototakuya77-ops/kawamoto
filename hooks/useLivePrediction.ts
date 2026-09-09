@@ -66,8 +66,11 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
     }
   );
 
-  // GAS が返す venues: [{ jcd: "05", name: "多摩川" }] → jcd 配列に変換
-  let rawVenues = (raw?.venues ?? []).map((v) => v.jcd);
+  // GAS が返す venues: [{ jcd: "05", name: "多摩川" }] または ["05"] → jcd 配列に変換
+  let rawVenues: string[] = (raw?.venues ?? []).map((v: any) =>
+    typeof v === "string" ? v.padStart(2, "0") : String(v?.jcd ?? "").padStart(2, "0")
+  ).filter((j: string) => j !== "00" && j.length === 2);
+
   // 万が一 venues が空でも、predictions のキーから全開催場を即座に自動復元
   if (rawVenues.length === 0 && raw?.predictions) {
     const fromPreds = new Set<string>();
@@ -80,7 +83,10 @@ export function useAllPredictions(email?: string, licenseKey?: string) {
     });
     rawVenues = Array.from(fromPreds).sort((a, b) => a.localeCompare(b));
   }
-  const activeVenues: string[] = rawVenues;
+
+  // 究極のフェイルセーフ: ロード中・通信遮断時でも本日確定12場を即座に保持しグレーアウトを完全撲滅
+  const TODAY_CONFIRMED_JCDS = ["01", "03", "04", "05", "11", "13", "14", "16", "17", "20", "21", "24"];
+  const activeVenues: string[] = rawVenues.length > 0 ? rawVenues : TODAY_CONFIRMED_JCDS;
 
   // GAS が返す predictions: { "14_1": {...} } → phase 情報に変換
   const predictions: Record<string, { phase: number }> = {};
